@@ -1,0 +1,450 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="phase" id="PHASE_0" version="1">
+  <meta>
+    <title>Phase 0 — Monorepo Foundation + Design System</title>
+    <status>pending</status>
+    <created>2026-05-16</created>
+    <blocks>ALL subsequent phases. No feature phase may start without gates passing.</blocks>
+  </meta>
+
+  <intent>
+    <one-liner>
+      Scaffold the pnpm + Turborepo monorepo and build @surte/design-system as a
+      standalone React component library — independent of @surte/core — consumed by
+      every package and app.
+    </one-liner>
+    <why>
+      Without a frozen monorepo scaffold and a real React component library, every
+      feature phase will invent its own tokens, buttons, and spacing. This phase
+      establishes the single source of truth for the entire visual and structural
+      foundation of Surte.
+    </why>
+  </intent>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       STACK — congelado en esta fase. Cambio requiere nueva decisión DS-NNN.
+       ═══════════════════════════════════════════════════════════════════ -->
+  <stack>
+    <runtime>Node 20 LTS · pnpm 9.15.4 · Turborepo 2.3.3</runtime>
+    <language>TypeScript 5.7.3 strict (noUncheckedIndexedAccess, exactOptionalPropertyTypes, verbatimModuleSyntax)</language>
+    <ui>React 18.x · Next.js 14 App Router (apps only)</ui>
+    <styling>Tailwind CSS 3.4.17 · class-variance-authority 0.7.1 · tailwind-merge 3.3.0 · clsx 2.1.1</styling>
+    <primitives>Radix UI headless (Dialog, Select, Slot, NavigationMenu, Label, AlertDialog)</primitives>
+    <icons>lucide-react 0.511.0 — stroke 1.75px por defecto</icons>
+    <build>tsup 8.4.0 → ESM + CJS + .d.ts · "use client" banner automático</build>
+    <testing>Vitest · @testing-library/react · Playwright (E2E en apps)</testing>
+    <storybook>Storybook 8 en apps/playground (solo depende de @surte/design-system)</storybook>
+    <quality>ESLint 9.17.0 · Prettier 3.4.2 + prettier-plugin-tailwindcss · commitlint · husky · lint-staged</quality>
+    <versioning>Changesets 2.27.9 — independiente por package</versioning>
+    <ci>GitHub Actions · Turborepo remote cache · size-limit · Lighthouse CI</ci>
+  </stack>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       ARQUITECTURA DE PACKAGES
+       ═══════════════════════════════════════════════════════════════════ -->
+  <package-architecture>
+    <rule>@surte/design-system tiene CERO dependencias de @surte/core.
+      Puede importarse en cualquier package, app, o contexto externo.</rule>
+    <rule>@surte/core depende de @surte/design-system para renderizar shells.</rule>
+    <rule>Domain packages (products, stock, etc.) dependen de core + design-system.</rule>
+    <rule>apps/playground depende SOLO de @surte/design-system — es el Storybook del DS.</rule>
+
+    <dependency-graph><![CDATA[
+      @surte/design-system   (sin deps — base de todo)
+              ↑
+        @surte/core           (depende de design-system)
+              ↑
+        @surte/products       (depende de core + design-system)
+        @surte/stock          (depende de core + design-system)
+        @surte/expiration     (depende de core + design-system)
+        @surte/sales          (depende de core + design-system)
+        @surte/auth           (depende de core)
+        @surte/reports        (depende de core + design-system)
+              ↑
+        apps/wholesale        (usa todos los packages necesarios)
+        apps/bodega-simple    (usa subset: core + design-system + products)
+        apps/playground       (usa SOLO design-system → Storybook)
+    ]]></dependency-graph>
+
+    <structure><![CDATA[
+      inventory/
+      ├── package.json                 (workspaces, private:true, pnpm 9.15.4)
+      ├── pnpm-workspace.yaml
+      ├── turbo.json
+      ├── tsconfig.base.json
+      ├── .prettierrc
+      ├── .editorconfig
+      ├── commitlint.config.js
+      ├── .gitignore
+      ├── .npmrc
+      │
+      ├── apps/
+      │   ├── wholesale/               (full — todos los packages)
+      │   ├── bodega-simple/           (minimal — core + design-system + products)
+      │   └── playground/              (Storybook 8 — SOLO @surte/design-system)
+      │
+      └── packages/
+          ├── tsconfig/                @surte/tsconfig    (base, react, lib)
+          ├── design-system/           @surte/design-system  ← construido en esta fase
+          ├── core/                    @surte/core           ← fase posterior
+          ├── auth/                    @surte/auth           ← fase posterior
+          ├── products/                @surte/products       ← fase posterior
+          ├── stock/                   @surte/stock          ← fase posterior
+          ├── expiration/              @surte/expiration     ← fase posterior
+          ├── sales/                   @surte/sales          ← fase posterior
+          └── reports/                 @surte/reports        ← fase posterior
+    ]]></structure>
+  </package-architecture>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       ENTREGABLES — PARTE 1: MONOREPO ROOT
+       ═══════════════════════════════════════════════════════════════════ -->
+  <deliverables-part-1 name="Monorepo Root Config">
+
+    <deliverable id="D1-01" file="package.json">
+      Workspaces (apps/*, packages/*), scripts (dev, build, test, lint, typecheck, storybook),
+      devDeps: turbo 2.3.3, typescript 5.7.3, eslint 9.17.0, prettier 3.4.2,
+      changesets 2.27.9, husky 9.1.7, commitlint 19.6.1.
+    </deliverable>
+
+    <deliverable id="D1-02" file="pnpm-workspace.yaml">
+      packages: ["apps/*", "packages/*"]
+    </deliverable>
+
+    <deliverable id="D1-03" file="turbo.json">
+      Pipeline: build (^build) · dev (^build, persistent) · typecheck (^build) ·
+      test (depende de typecheck) · lint (independiente) ·
+      storybook (^build, persistent) · size-limit (depende de build).
+      ui: "tui" (Turborepo 2.x terminal UI).
+    </deliverable>
+
+    <deliverable id="D1-04" file="tsconfig.base.json">
+      Strict: noUncheckedIndexedAccess, exactOptionalPropertyTypes, verbatimModuleSyntax,
+      noUnusedLocals, noUnusedParameters, noImplicitReturns, moduleResolution: Bundler.
+    </deliverable>
+
+    <deliverable id="D1-05" file=".prettierrc">
+      semi:false, singleQuote:true, trailingComma:all, printWidth:100,
+      plugins: [prettier-plugin-tailwindcss], tailwindFunctions: [cn, cva, clsx].
+    </deliverable>
+
+    <deliverable id="D1-06" file=".editorconfig">charset utf-8, lf, indent 2, insert_final_newline.</deliverable>
+    <deliverable id="D1-07" file="commitlint.config.js">Conventional commits. Scopes: todos los packages + apps.</deliverable>
+    <deliverable id="D1-08" file=".gitignore">node_modules, dist, .next, .turbo, coverage, storybook-static, .env*</deliverable>
+    <deliverable id="D1-09" file=".npmrc">shamefully-hoist=false, auto-install-peers=true, engine-strict=true.</deliverable>
+
+  </deliverables-part-1>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       ENTREGABLES — PARTE 2: packages/tsconfig/
+       ═══════════════════════════════════════════════════════════════════ -->
+  <deliverables-part-2 name="packages/tsconfig/ — @surte/tsconfig">
+
+    <deliverable id="D2-01" file="packages/tsconfig/package.json">
+      name: @surte/tsconfig, private: true.
+      exports: ./base.json, ./react.json, ./lib.json.
+    </deliverable>
+
+    <deliverable id="D2-02" file="packages/tsconfig/base.json">Extiende tsconfig.base.json raíz. outDir: dist.</deliverable>
+
+    <deliverable id="D2-03" file="packages/tsconfig/react.json">
+      Extiende base. lib: [ES2022, DOM, DOM.Iterable], jsx: react-jsx.
+      Para packages que usan React.
+    </deliverable>
+
+    <deliverable id="D2-04" file="packages/tsconfig/lib.json">
+      Extiende base. Sin DOM. emitDeclarationOnly: true.
+      Para packages TS puros (core, domain, utils).
+    </deliverable>
+
+  </deliverables-part-2>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       ENTREGABLES — PARTE 3: packages/design-system/
+       ═══════════════════════════════════════════════════════════════════ -->
+  <deliverables-part-3 name="packages/design-system/ — @surte/design-system">
+
+    <deliverable id="D3-01" file="packages/design-system/package.json">
+      name: @surte/design-system, version: 0.1.0.
+      exports: "." (ESM+CJS+types) + "./styles" (tokens.css).
+      peerDeps: react ^18, react-dom ^18.
+      deps: radix-ui, cva, clsx, tailwind-merge, lucide-react.
+      devDeps: tsup, tailwindcss, @surte/tsconfig.
+    </deliverable>
+
+    <deliverable id="D3-02" file="packages/design-system/tsconfig.json">Extiende @surte/tsconfig/react.</deliverable>
+
+    <deliverable id="D3-03" file="packages/design-system/tsup.config.ts">
+      entry: src/index.ts. format: ESM + CJS. dts: true. clean: true. treeshake: true.
+      banner "use client" (Next.js App Router compatibility).
+      onSuccess: copia tokens.css → dist/tokens.css.
+    </deliverable>
+
+    <deliverable id="D3-04" file="packages/design-system/tailwind.config.ts">
+      theme.extend con TODOS los tokens mapeados como referencias a CSS vars.
+      colors (ink, terracotta, olive, semantic surfaces, text, brand, status),
+      spacing (space-0..space-20), borderRadius (sm..pill), boxShadow (sm..focus),
+      fontFamily (Manrope sans, JetBrains Mono mono), fontSize (xs..4xl),
+      fontWeight (regular..extra), lineHeight (tight..relaxed),
+      letterSpacing (tight..eyebrow), zIndex (base..toast),
+      transitionDuration (fast/base/slow), transitionTimingFunction (ease-out/ease-in).
+    </deliverable>
+
+    <deliverable id="D3-05" file="packages/design-system/src/tokens.css">
+      :root con ~80 CSS custom properties completas:
+      brand anchors, ink scale (0..900), terracotta (50..900), olive (50..900, sparse),
+      semantic surfaces, semantic text, semantic brand, status semaphore,
+      typography vars, spacing (space-0..space-20), radius, shadows (carbon-tinted),
+      motion, z-index, layout (sidebar-w, topbar-h, content-max, measure-prose).
+      @import Google Fonts: Manrope + JetBrains Mono.
+    </deliverable>
+
+    <deliverable id="D3-06" file="packages/design-system/src/cn.ts">
+      cn(...inputs: ClassValue[]) = twMerge(clsx(inputs)).
+    </deliverable>
+
+    <deliverable id="D3-07" file="packages/design-system/src/ThemeProvider.tsx">
+      Props: tokens (DesignTokenOverrides), mode (light|dark), scoped (boolean).
+      Scoped=false → aplica CSS vars a document.documentElement.
+      Scoped=true → aplica a wrapper div (para embedding en host pages).
+      isSafeCSSValue guard — bloquea ; { } / * antes de setProperty.
+      Exporta: ThemeProvider, useTheme, DesignTokenOverrides, ThemeMode.
+    </deliverable>
+
+    <deliverable id="D3-08" file="packages/design-system/src/types/tokens.ts">
+      TypeScript unions: ColorToken, SpaceToken, RadiusToken, ShadowToken,
+      ZIndexToken, DurationToken. Autocomplete sin importar CSS.
+    </deliverable>
+
+    <deliverable id="D3-09" file="packages/design-system/src/index.ts">
+      Barrel export: cn, ThemeProvider + useTheme, los 12 componentes + sus tipos,
+      token types.
+    </deliverable>
+
+    <!-- 12 componentes — specs en PHASE_0/components/C01..C12.xml -->
+    <deliverable id="D3-10" file="packages/design-system/src/components/Button.tsx">
+      cva variants: primary|secondary|ghost|danger × sizes: sm(36px)|md(44px)|lg(52px).
+      States: default, hover, focus (terracotta ring), active, disabled, loading.
+      Radix Slot (asChild pattern). Spec: components/C01_BUTTON.xml.
+    </deliverable>
+
+    <deliverable id="D3-11" file="packages/design-system/src/components/Input.tsx">
+      Types: text|number|integer|tel|email|date|search|textarea.
+      Sizes: md(44px)|lg(52px). prefix-icon, suffix-unit, mono-numbers.
+      States: hover, focus, error, disabled, readonly. Spec: C02_INPUT.xml.
+    </deliverable>
+
+    <deliverable id="D3-12" file="packages/design-system/src/components/Select.tsx">
+      Radix UI Select base. Variants: native|custom|searchable.
+      Spec: C03_SELECT.xml.
+    </deliverable>
+
+    <deliverable id="D3-13" file="packages/design-system/src/components/FormGroup.tsx">
+      Wrapper canónico: label + required(*) + hint + error + input slot.
+      NUNCA usar inputs sin FormGroup. Spec: C04_FORM_GROUP.xml.
+    </deliverable>
+
+    <deliverable id="D3-14" file="packages/design-system/src/components/Card.tsx">
+      Variants: flat|bordered|elevated|warm|dark. Parts: CardHeader, CardTitle,
+      CardContent, CardFooter. Spec: C05_CARD.xml.
+    </deliverable>
+
+    <deliverable id="D3-15" file="packages/design-system/src/components/KpiCard.tsx">
+      Big number (JetBrains Mono) + label + delta opcional.
+      Variants: default|investment|movement|profit|risk (Triángulo de Valor).
+      Sizes: md(3xl)|lg(4xl). Spec: C06_KPI_CARD.xml.
+    </deliverable>
+
+    <deliverable id="D3-16" file="packages/design-system/src/components/Table.tsx">
+      Desktop: semantic table con thead/tbody. Mobile: reflow a list-card.
+      States: sortable, loading, empty. Parts: t-mono, t-right, t-actions.
+      Spec: C07_TABLE.xml.
+    </deliverable>
+
+    <deliverable id="D3-17" file="packages/design-system/src/components/Badge.tsx">
+      cva variants: ok|caution|critical|info|neutral|dark × sizes: sm(22px)|md(28px).
+      radius-pill. Máximo 3 palabras + Lucide icon opcional. Spec: C08_BADGE.xml.
+    </deliverable>
+
+    <deliverable id="D3-18" file="packages/design-system/src/components/Alert.tsx">
+      Radix AlertDialog base. Variants: info|success|warning|danger.
+      Estructura: icon(20px) + body(title+text) + dismiss opcional.
+      role="alert" si dinámico. Spec: C09_ALERT.xml.
+    </deliverable>
+
+    <deliverable id="D3-19" file="packages/design-system/src/components/Modal.tsx">
+      Radix Dialog base. Sizes: sm(440px)|md(560px)|lg(720px)|xl(960px).
+      Focus trap, ESC close, backdrop click configurable, return focus.
+      Parts: ModalHeader, ModalTitle, ModalDescription, ModalFooter. Spec: C10_MODAL.xml.
+    </deliverable>
+
+    <deliverable id="D3-20" file="packages/design-system/src/components/SidebarNav.tsx">
+      Dark surface (Carbon #1F2528), 272px fixed, sticky.
+      Items 44px, radius-md, active = terracotta bg.
+      Responsive: sidebar → drawer trigger en mobile (&lt;1024px).
+      Parts: SidebarNavItem, SidebarNavGroup. Spec: C11_SIDEBAR_NAV.xml.
+    </deliverable>
+
+    <deliverable id="D3-21" file="packages/design-system/src/components/EmptyState.tsx">
+      Variants: first-use|no-results|error.
+      icon(80px, terracotta-50 bg) + title(text-xl) + body + CTA primary + secondary opcional.
+      Copy en 2ª persona informal. NUNCA estado vacío ciego. Spec: C12_EMPTY_STATE.xml.
+    </deliverable>
+
+  </deliverables-part-3>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       ENTREGABLES — PARTE 4: apps/playground/
+       ═══════════════════════════════════════════════════════════════════ -->
+  <deliverables-part-4 name="apps/playground/ — Storybook 8">
+
+    <deliverable id="D4-01" file="apps/playground/package.json">
+      Storybook 8 setup. depende SOLO de @surte/design-system (workspace:*).
+    </deliverable>
+
+    <deliverable id="D4-02" file="apps/playground/.storybook/main.ts">
+      framework: @storybook/react-vite. addons: addon-a11y, addon-docs, addon-viewport.
+      stories: ["../../packages/design-system/src/**/*.stories.tsx"].
+    </deliverable>
+
+    <deliverable id="D4-03" file="apps/playground/.storybook/preview.ts">
+      Import tokens.css de @surte/design-system/styles.
+      Viewports: 375px (mobile), 768px (tablet), 1280px (desktop), 1440px (wide).
+    </deliverable>
+
+    <rule>Un story por componente (*.stories.tsx co-located en packages/design-system/src/components/).</rule>
+    <rule>Cada story muestra: todas las variantes, todos los sizes, todos los estados.</rule>
+
+  </deliverables-part-4>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       BUILD ORDER — secuencial, cada paso depende del anterior
+       ═══════════════════════════════════════════════════════════════════ -->
+  <build-order>
+    <step n="1" name="monorepo-root">
+      Crear package.json + pnpm-workspace.yaml + turbo.json + tsconfig.base.json +
+      .prettierrc + .editorconfig + commitlint.config.js + .gitignore + .npmrc.
+    </step>
+
+    <step n="2" name="tsconfig-package">
+      Crear packages/tsconfig/ con package.json + base.json + react.json + lib.json.
+    </step>
+
+    <step n="3" name="design-system-config">
+      Crear packages/design-system/package.json + tsconfig.json + tsup.config.ts +
+      tailwind.config.ts.
+    </step>
+
+    <step n="4" name="tokens">
+      Crear packages/design-system/src/tokens.css con todos los CSS custom properties.
+      Leer TOKENS.xml como referencia. Verificar gate G0-T1..T5.
+    </step>
+
+    <step n="5" name="utilities">
+      Crear src/cn.ts + src/types/tokens.ts + src/ThemeProvider.tsx.
+    </step>
+
+    <step n="6" name="components">
+      Crear los 12 componentes en src/components/*.tsx.
+      Leer components/C01..C12.xml como spec de cada uno.
+      Orden: Button → Input → Select → FormGroup → Card → KpiCard →
+             Table → Badge → Alert → Modal → SidebarNav → EmptyState.
+    </step>
+
+    <step n="7" name="stories">
+      Crear *.stories.tsx co-located con cada componente.
+      Un story por variante + un story de "all variants" para review rápido.
+    </step>
+
+    <step n="8" name="barrel">
+      Crear src/index.ts con todos los exports.
+    </step>
+
+    <step n="9" name="playground">
+      Crear apps/playground/ con Storybook 8 config.
+    </step>
+
+    <step n="10" name="verify">
+      pnpm install → pnpm typecheck → pnpm build → pnpm storybook.
+      Correr gates G0-*. Todos deben pasar antes de marcar fase completa.
+    </step>
+  </build-order>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       GATES
+       ═══════════════════════════════════════════════════════════════════ -->
+  <gates>
+
+    <gate-category name="install">
+      <gate id="G0-I1">pnpm install termina limpio (0 errores, 0 peer dep warnings críticos).</gate>
+      <gate id="G0-I2">pnpm -r typecheck pasa con 0 errores en todos los packages.</gate>
+      <gate id="G0-I3">pnpm -r build pasa. dist/ generado en packages/design-system/ y packages/tsconfig/.</gate>
+    </gate-category>
+
+    <gate-category name="tokens">
+      <gate id="G0-T1">tokens.css expone las 6 brand colors como nombres semánticos bajo :root.</gate>
+      <gate id="G0-T2">Escala ink-0..900 (12 pasos) + terracotta-50..900 (10 pasos) + olive sparse presentes.</gate>
+      <gate id="G0-T3">Spacing usa SOLO múltiplos de 4. space-1=4px, space-2=8px confirmados.</gate>
+      <gate id="G0-T4">Radius: sm(4px) md(8px) lg(12px) xl(16px) 2xl(24px) pill(999px).</gate>
+      <gate id="G0-T5">Shadows tintadas con rgba(31,37,40,α). Cero rgb(0,0,0) en shadows.</gate>
+      <gate id="G0-T6">tailwind.config.ts referencia los tokens SOLO via var(--*). Cero hex hardcoded.</gate>
+    </gate-category>
+
+    <gate-category name="design-system">
+      <gate id="G0-DS1">@surte/design-system exporta los 12 componentes desde src/index.ts.</gate>
+      <gate id="G0-DS2">dist/tokens.css existe y es importable via @surte/design-system/styles.</gate>
+      <gate id="G0-DS3">ThemeProvider acepta tokens override + funciona en modo scoped y global.</gate>
+      <gate id="G0-DS4">cn() resuelve conflictos de clases Tailwind correctamente (twMerge).</gate>
+      <gate id="G0-DS5">Cero !important. Cero magic numbers en componentes — todo via tokens.</gate>
+      <gate id="G0-DS6">@surte/design-system NO importa @surte/core ni ningún otro @surte/* package.</gate>
+    </gate-category>
+
+    <gate-category name="visual">
+      <gate id="G0-V1">Carbon/Linen contraste ≥ 11:1 (WCAG AA pass).</gate>
+      <gate id="G0-V2">Terracotta/White contraste ≥ 4.5:1 (WCAG AA pass).</gate>
+      <gate id="G0-V3">Font families: SOLO Manrope (sans) + JetBrains Mono (mono). Nada más.</gate>
+      <gate id="G0-V4">Iconos: SOLO lucide-react, stroke 1.75px. Cero SVGs inline ad-hoc.</gate>
+      <gate id="G0-V5">Focus ring: 2px terracotta + 2px offset en todos los elementos focusables.</gate>
+      <gate id="G0-V6">Hit targets ≥ 44px en mobile (Button md, Input md, SidebarNavItem).</gate>
+    </gate-category>
+
+    <gate-category name="storybook">
+      <gate id="G0-SB1">pnpm storybook arranca sin errores. URL accesible en localhost.</gate>
+      <gate id="G0-SB2">Los 12 componentes tienen story. Todas las variantes visibles.</gate>
+      <gate id="G0-SB3">addon-a11y no reporta violations en ningún story.</gate>
+      <gate id="G0-SB4">Viewports 375px y 1440px funcionan en Storybook viewport switcher.</gate>
+    </gate-category>
+
+    <gate-category name="bundle">
+      <gate id="G0-B1">dist/index.js (ESM) ≤ 60kb gzip (sin contar peer deps: react, radix).</gate>
+      <gate id="G0-B2">Tree-shaking funciona: import { Button } from @surte/design-system no arrastra Table ni Modal.</gate>
+    </gate-category>
+
+  </gates>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       CONSUMER RULES — cómo consumir @surte/design-system
+       ═══════════════════════════════════════════════════════════════════ -->
+  <consumer-rules>
+    <rule>Importar tokens.css via @surte/design-system/styles en el root layout de cada app.</rule>
+    <rule>Usar ThemeProvider en el root layout. Sin ThemeProvider, los tokens no se aplican.</rule>
+    <rule>JAMÁS usar hex literales o px hardcoded en feature code — siempre var(--*) o clases Tailwind del preset.</rule>
+    <rule>JAMÁS sobreescribir estilos base de un componente desde un feature package.</rule>
+    <rule>Componente nuevo requiere: spec XML en PHASE_0/components/ + decisión DS-NNN + story en playground.</rule>
+    <rule>Variantes ad-hoc prohibidas. Si un caso no está cubierto, se discute antes de codear.</rule>
+  </consumer-rules>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       REFERENCIAS
+       ═══════════════════════════════════════════════════════════════════ -->
+  <references>
+    <ref type="tokens">PHASE_0/TOKENS.xml — definición completa de todos los design tokens</ref>
+    <ref type="components">PHASE_0/CONTRACT.xml — mapa de los 12 componentes y sus contratos</ref>
+    <ref type="components">PHASE_0/components/C01..C12.xml — spec detallada por componente</ref>
+    <ref type="decisions">memory/DESIGN_DECISIONS.xml DS-011..DS-020 (paleta + componentes v2)</ref>
+    <ref type="decisions">memory/DESIGN_DECISIONS.xml DS-021..DS-028 (tech stack)</ref>
+    <ref type="architecture">builder-guide/ARCHITECTURE.xml — package architecture y dependency graph</ref>
+  </references>
+
+  <next>PHASE_1_PRODUCTOS — solo puede arrancar cuando todos los gates G0-* pasan.</next>
+</artifact>

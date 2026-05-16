@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="agent" id="MODULE_AGENT" version="1">
+  <meta>
+    <title>MODULE_AGENT — Pluggable Module Builder</title>
+    <owner>orchestrator</owner>
+    <runnable-by>Claude Code (autónomo).</runnable-by>
+  </meta>
+
+  <responsibility>
+    Construye packages/modules/&lt;X&gt; siguiendo el contrato de @surte/core ModuleManifest.
+    Cada módulo es autocontenido: declara routes, steps, navItems, slots, providers, repositories, eventHandlers.
+    Garantiza que add/remove en surte.config.ts NO rompe la app.
+  </responsibility>
+
+  <inputs>
+    <input>ARCHITECTURE.xml (sección plugin-architecture)</input>
+    <input>Phase XML del módulo (ej PHASE_1_PRODUCTOS/README.xml + modules/M1_*.xml)</input>
+    <input>Domain package del módulo (ej @surte/domain-product)</input>
+  </inputs>
+
+  <protocol>
+    <step n="1">Leer phase XML del módulo y resolver dependencias.</step>
+    <step n="2">Crear packages/modules/&lt;X&gt;/src/ con esta estructura mínima:
+      - manifest.ts          (ModuleManifest export)
+      - index.ts             (factory: export default function xModule(opts) { return manifest })
+      - steps/               (StepDefinition por cada step del flow)
+      - components/          (UI específica del módulo, consume @surte/ui)
+      - hooks/               (hooks específicos)
+      - guards/              (StepGuard si aplica)
+      - migrations/          (schema versions para persistencia)
+      - module.test.ts       (test: manifest registrable, steps montables, guards aplicables)
+    </step>
+    <step n="3">Validar Manifest contra el schema declarado en @surte/core.</step>
+    <step n="4">Validar dependsOn: cada módulo listado existe en el registry simulado.</step>
+    <step n="5">Correr tests: add a registry, render shell, navegar steps, remove → app no crashea.</step>
+    <step n="6">Correr los 12 evaluadores sobre el módulo.</step>
+    <step n="7">Si OK → registrar DS-NNN si aplica + entrada CHANGELOG.</step>
+  </protocol>
+
+  <invariants>
+    <invariant>Un módulo JAMÁS importa otro módulo directamente. Comunicación via EventBus o dependsOn declarada.</invariant>
+    <invariant>Un módulo JAMÁS importa @surte/infra-* directamente. Recibe repositorios vía DI Container.</invariant>
+    <invariant>Todo step debe declarar guards y transitions explícitas.</invariant>
+    <invariant>Migrations de schema persistido obligatorias si el módulo persiste data.</invariant>
+    <invariant>Manifest version bumpea con SemVer (DS-045).</invariant>
+  </invariants>
+
+  <step-decision-matrix>
+    <note>StepDecision determina cómo el StepRunner responde.</note>
+    <case decision="push">Apila nuevo step sobre el actual. Back vuelve al anterior. Usar para sub-flows.</case>
+    <case decision="replace">Reemplaza el step actual sin historia. Usar para login required mid-flow.</case>
+    <case decision="redirect">Navega a una URL externa al flow (otra ruta de la app). Usar al completar venta → ver detalle.</case>
+    <case decision="complete">Termina el flow exitosamente y emite output. Caller decide qué hacer.</case>
+    <case decision="fail">Termina el flow con error. Renderiza ErrorBoundary del flow.</case>
+  </step-decision-matrix>
+
+  <guard-examples>
+    <example name="AuthGuard">
+      Si !session → { type: 'replace-with', step: 'auth:login' }. Al hacer login → 'auth:login' completa con redirect al step original.
+    </example>
+    <example name="RoleGuard">
+      Si !permissions.includes(required) → { type: 'redirect', url: '/no-autorizado' }.
+    </example>
+    <example name="FeatureFlagGuard">
+      Si !flag('beta-existencias-v2') → { type: 'replace-with', step: 'existencias:legacy' }.
+    </example>
+  </guard-examples>
+
+  <outputs>
+    <output>packages/modules/&lt;X&gt;/* completo.</output>
+    <output>module-report.md con qué slots llena, qué routes registra, qué steps expone.</output>
+  </outputs>
+</artifact>

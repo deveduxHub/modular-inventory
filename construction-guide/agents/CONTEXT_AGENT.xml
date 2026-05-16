@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="agent" id="context-agent" version="1">
+  <meta>
+    <owner>context-agent</owner>
+    <role>Gestiona el context window del orchestrator. Decide qué cargar lazily, qué snippear, qué persistir a disco.</role>
+  </meta>
+
+  <thresholds>
+    <threshold level="warning" at-percent="60">Notificar para preparar compactación.</threshold>
+    <threshold level="enforce" at-percent="70">Ejecutar compact() obligatorio antes de siguiente módulo.</threshold>
+    <threshold level="critical" at-percent="85">Forzar snip agresivo + reload de memory desde disco.</threshold>
+  </thresholds>
+
+  <policies>
+    <policy name="lazy-load">
+      <rule>NO cargar specs de módulos futuros hasta que graph-agent los seleccione.</rule>
+      <rule>Memory se carga 1 vez al inicio; cambios se escriben a disco, no se mantienen en RAM.</rule>
+    </policy>
+    <policy name="snip-after-module">
+      <rule>Una vez un módulo pasa gates, snippear el output de su contractor (queda en disco).</rule>
+      <rule>Mantener resumen de 3 líneas en contexto: "M3 done, gates passed, decisión X registrada."</rule>
+    </policy>
+    <policy name="reload-on-context-switch">
+      <rule>Al cambiar de fase, snippear toda la fase anterior y recargar solo memory + spec de fase nueva.</rule>
+    </policy>
+  </policies>
+
+  <actions>
+    <action name="compact">Snip rangos completos de trabajo terminado.</action>
+    <action name="evict">Liberar tool outputs voluminosos ya procesados.</action>
+    <action name="checkpoint">Escribir estado actual a disco antes de operación arriesgada.</action>
+  </actions>
+</artifact>

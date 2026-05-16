@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="component-spec" id="C05_CARD" version="1">
+  <meta name="Card" decision-ref="DS-017, DS-018, DS-019, DS-020"/>
+  <class>.card</class>
+
+  <variants>
+    <variant name="flat" modifier=".card--flat"><bg>--surface</bg><border>1px solid var(--border-subtle)</border><shadow>none</shadow></variant>
+    <variant name="bordered" default="true"><bg>--surface</bg><border>1px solid var(--border-default)</border><shadow>var(--shadow-sm)</shadow></variant>
+    <variant name="elevated" modifier=".card--elevated"><bg>--surface</bg><border>none</border><shadow>var(--shadow-md)</shadow></variant>
+    <variant name="warm" modifier=".card--warm"><bg>--surface-warm</bg><border>1px solid var(--border-subtle)</border></variant>
+    <variant name="dark" modifier=".card--dark"><bg>--surface-dark</bg><text>--text-inverse</text></variant>
+  </variants>
+
+  <base-style>
+    <radius>--radius-lg</radius>
+    <padding-default>--space-6</padding-default>
+  </base-style>
+
+  <parts optional="true">
+    <part class=".card__header">flex · justify-between · pb: space-4 · border-bottom: 1px solid var(--divider)</part>
+    <part class=".card__title">font: var(--text-lg) / var(--fw-bold) · letter-spacing: var(--ls-snug)</part>
+    <part class=".card__eyebrow">font-mono · uppercase · var(--text-xs) · ls: var(--ls-eyebrow) · color: var(--text-muted)</part>
+    <part class=".card__body">pt: space-4</part>
+    <part class=".card__footer">mt: space-4 · pt: space-4 · border-top: 1px solid var(--divider) · flex · gap: space-2</part>
+  </parts>
+
+  <structure html='<article class="card">
+  <header class="card__header">
+    <span class="card__eyebrow">Producto</span>
+    <h3 class="card__title">Arroz Costeño 50kg</h3>
+  </header>
+  <div class="card__body">…</div>
+  <footer class="card__footer"><button class="btn btn--primary btn--sm">Ver</button></footer>
+</article>'/>
+
+  <do-and-dont>
+    <do>Card .bordered es el default; .elevated solo para modals o overlays internos.</do>
+    <do>Card .dark se usa para sidebar y resúmenes nocturnos (cierres del día).</do>
+    <dont>NO anidar cards a más de 1 nivel (rompe jerarquía).</dont>
+  </do-and-dont>
+</artifact>

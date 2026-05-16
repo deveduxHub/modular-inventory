@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="tokens" id="DS-TOKENS" version="1">
+  <meta>
+    <title>Design Tokens — Single Source</title>
+    <consumed-by>design-system/tokens.css (generado)</consumed-by>
+    <decisions>DS-003, DS-004, DS-005, DS-008, DS-011..DS-020</decisions>
+  </meta>
+
+  <!-- ════════════════ COLOR ════════════════ -->
+  <tokens group="color-brand-raw" comment="DS-011 · 6 anclas literales">
+    <token name="--brand-linen"       value="#EFEBE3"/>
+    <token name="--brand-slate-blue"  value="#3F5963"/>
+    <token name="--brand-carbon"      value="#1F2528"/>
+    <token name="--brand-olive"       value="#6C8260"/>
+    <token name="--brand-terracotta"  value="#A86250"/>
+    <token name="--brand-slate-gray"  value="#7E8FA0"/>
+  </tokens>
+
+  <tokens group="ink-scale" comment="DS-013 · neutros warm">
+    <token name="--ink-0"   value="#FFFFFF"/>
+    <token name="--ink-50"  value="#F7F4ED"/>
+    <token name="--ink-100" value="#EFEBE3"/>
+    <token name="--ink-150" value="#E5E1D7"/>
+    <token name="--ink-200" value="#D2CEC4"/>
+    <token name="--ink-300" value="#B8B4A8"/>
+    <token name="--ink-400" value="#9C988C"/>
+    <token name="--ink-500" value="#7E8FA0"/>
+    <token name="--ink-600" value="#5C6A78"/>
+    <token name="--ink-700" value="#3F5963"/>
+    <token name="--ink-800" value="#2A3338"/>
+    <token name="--ink-900" value="#1F2528"/>
+  </tokens>
+
+  <tokens group="terracotta-scale" comment="DS-014 · brand primary">
+    <token name="--terracotta-50"  value="#FBF2EE"/>
+    <token name="--terracotta-100" value="#F4DDD3"/>
+    <token name="--terracotta-200" value="#E8BBA8"/>
+    <token name="--terracotta-300" value="#D9957C"/>
+    <token name="--terracotta-400" value="#BD7560"/>
+    <token name="--terracotta-500" value="#A86250"/>
+    <token name="--terracotta-600" value="#8E4D3F"/>
+    <token name="--terracotta-700" value="#6F3B30"/>
+    <token name="--terracotta-800" value="#4F2A22"/>
+    <token name="--terracotta-900" value="#331B16"/>
+  </tokens>
+
+  <tokens group="olive-scale" comment="DS-015 · success">
+    <token name="--olive-50"  value="#EEF1EB"/>
+    <token name="--olive-100" value="#D5DDCD"/>
+    <token name="--olive-300" value="#A0B395"/>
+    <token name="--olive-500" value="#6C8260"/>
+    <token name="--olive-700" value="#4A5D40"/>
+    <token name="--olive-900" value="#2A3724"/>
+  </tokens>
+
+  <tokens group="status-semaforo" comment="DS-016 · margen/stock/vencimiento">
+    <token name="--status-ok"        value="var(--olive-500)"/>
+    <token name="--status-ok-bg"     value="var(--olive-50)"/>
+    <token name="--status-caution"   value="#C89968"/>
+    <token name="--status-caution-bg" value="#F5EAD9"/>
+    <token name="--status-critical"  value="var(--terracotta-700)"/>
+    <token name="--status-critical-bg" value="var(--terracotta-100)"/>
+    <token name="--status-info"      value="var(--ink-700)"/>
+    <token name="--status-info-bg"   value="var(--ink-50)"/>
+  </tokens>
+
+  <tokens group="semantic-surface" comment="DS-018">
+    <token name="--canvas"            value="var(--ink-100)"/>
+    <token name="--surface"           value="var(--ink-0)"/>
+    <token name="--surface-warm"      value="var(--ink-50)"/>
+    <token name="--surface-dark"      value="var(--ink-900)"/>
+    <token name="--surface-dark-soft" value="var(--ink-700)"/>
+    <token name="--border-subtle"     value="var(--ink-150)"/>
+    <token name="--border-default"    value="var(--ink-200)"/>
+    <token name="--border-strong"     value="var(--ink-300)"/>
+    <token name="--divider"           value="var(--ink-150)"/>
+  </tokens>
+
+  <tokens group="semantic-text">
+    <token name="--text-primary"   value="var(--ink-900)"/>
+    <token name="--text-secondary" value="var(--ink-700)"/>
+    <token name="--text-muted"     value="var(--ink-500)"/>
+    <token name="--text-disabled"  value="var(--ink-300)"/>
+    <token name="--text-inverse"   value="var(--ink-0)"/>
+    <token name="--text-brand"     value="var(--terracotta-500)"/>
+  </tokens>
+
+  <tokens group="semantic-brand">
+    <token name="--brand-primary"        value="var(--terracotta-500)"/>
+    <token name="--brand-primary-hover"  value="var(--terracotta-600)"/>
+    <token name="--brand-primary-active" value="var(--terracotta-700)"/>
+    <token name="--brand-primary-subtle" value="var(--terracotta-50)"/>
+    <token name="--focus-ring"           value="0 0 0 3px rgba(168,98,80,0.30)"/>
+  </tokens>
+
+  <tokens group="triangle-of-value" comment="DS-012">
+    <token name="--value-investment" value="var(--ink-900)"/>
+    <token name="--value-movement"   value="var(--ink-500)"/>
+    <token name="--value-profit"     value="var(--olive-500)"/>
+    <token name="--value-risk"       value="var(--terracotta-500)"/>
+  </tokens>
+
+  <!-- ════════════════ TYPE ════════════════ DS-003 -->
+  <tokens group="type-family">
+    <token name="--font-display" value="'Manrope', system-ui, sans-serif"/>
+    <token name="--font-body"    value="'Manrope', system-ui, sans-serif"/>
+    <token name="--font-mono"    value="'JetBrains Mono', ui-monospace, monospace"/>
+  </tokens>
+  <tokens group="type-size" comment="modular 1.125">
+    <token name="--text-xs"   value="12px"/>
+    <token name="--text-sm"   value="14px"/>
+    <token name="--text-base" value="16px"/>
+    <token name="--text-md"   value="18px"/>
+    <token name="--text-lg"   value="20px"/>
+    <token name="--text-xl"   value="24px"/>
+    <token name="--text-2xl"  value="32px"/>
+    <token name="--text-3xl"  value="40px"/>
+    <token name="--text-4xl"  value="52px"/>
+    <token name="--text-display" value="clamp(40px, 6vw, 64px)"/>
+  </tokens>
+  <tokens group="type-weight">
+    <token name="--fw-regular"  value="400"/>
+    <token name="--fw-medium"   value="500"/>
+    <token name="--fw-semibold" value="600"/>
+    <token name="--fw-bold"     value="700"/>
+    <token name="--fw-extra"    value="800"/>
+  </tokens>
+  <tokens group="type-leading">
+    <token name="--lh-tight"  value="1.15"/>
+    <token name="--lh-snug"   value="1.30"/>
+    <token name="--lh-normal" value="1.50"/>
+    <token name="--lh-relaxed" value="1.70"/>
+  </tokens>
+  <tokens group="type-tracking">
+    <token name="--ls-tight"   value="-0.03em"/>
+    <token name="--ls-snug"    value="-0.015em"/>
+    <token name="--ls-normal"  value="0"/>
+    <token name="--ls-wide"    value="0.04em"/>
+    <token name="--ls-eyebrow" value="0.10em"/>
+  </tokens>
+
+  <!-- ════════════════ SPACING ════════════════ DS-004 -->
+  <tokens group="space" comment="múltiplos de 4, base 8">
+    <token name="--space-0"  value="0"/>
+    <token name="--space-1"  value="4px"/>
+    <token name="--space-2"  value="8px"/>
+    <token name="--space-3"  value="12px"/>
+    <token name="--space-4"  value="16px"/>
+    <token name="--space-5"  value="20px"/>
+    <token name="--space-6"  value="24px"/>
+    <token name="--space-7"  value="28px"/>
+    <token name="--space-8"  value="32px"/>
+    <token name="--space-10" value="40px"/>
+    <token name="--space-12" value="48px"/>
+    <token name="--space-14" value="56px"/>
+    <token name="--space-16" value="64px"/>
+    <token name="--space-20" value="80px"/>
+    <token name="--space-24" value="96px"/>
+  </tokens>
+
+  <!-- ════════════════ RADIUS ════════════════ DS-019 -->
+  <tokens group="radius">
+    <token name="--radius-sm"  value="4px"/>
+    <token name="--radius-md"  value="8px"/>
+    <token name="--radius-lg"  value="12px"/>
+    <token name="--radius-xl"  value="16px"/>
+    <token name="--radius-2xl" value="24px"/>
+    <token name="--radius-pill" value="999px"/>
+  </tokens>
+
+  <!-- ════════════════ SHADOW ════════════════ DS-020 -->
+  <tokens group="shadow">
+    <token name="--shadow-sm"    value="0 1px 2px rgba(31,37,40,0.06)"/>
+    <token name="--shadow-md"    value="0 4px 12px rgba(31,37,40,0.08)"/>
+    <token name="--shadow-lg"    value="0 12px 32px rgba(31,37,40,0.12)"/>
+    <token name="--shadow-xl"    value="0 24px 64px rgba(31,37,40,0.16)"/>
+    <token name="--shadow-focus" value="0 0 0 3px rgba(168,98,80,0.30)"/>
+  </tokens>
+
+  <!-- ════════════════ MOTION ════════════════ DS-008 -->
+  <tokens group="motion">
+    <token name="--dur-fast" value="120ms"/>
+    <token name="--dur-base" value="200ms"/>
+    <token name="--dur-slow" value="320ms"/>
+    <token name="--ease-out" value="cubic-bezier(0.22, 1, 0.36, 1)"/>
+    <token name="--ease-in"  value="cubic-bezier(0.65, 0, 0.35, 1)"/>
+  </tokens>
+
+  <!-- ════════════════ LAYOUT ════════════════ -->
+  <tokens group="layout">
+    <token name="--sidebar-w"  value="272px"/>
+    <token name="--topbar-h"   value="64px"/>
+    <token name="--content-max" value="1280px"/>
+    <token name="--measure-prose" value="72ch"/>
+  </tokens>
+
+  <!-- ════════════════ Z-INDEX ════════════════ -->
+  <tokens group="z-index">
+    <token name="--z-base"    value="1"/>
+    <token name="--z-sticky"  value="100"/>
+    <token name="--z-overlay" value="800"/>
+    <token name="--z-modal"   value="900"/>
+    <token name="--z-toast"   value="1000"/>
+  </tokens>
+
+  <!-- ════════════════ BREAKPOINTS ════════════════ -->
+  <tokens group="breakpoints" note="referencia para @media, no son var() consumibles">
+    <token name="bp-sm"  value="640px"/>
+    <token name="bp-md"  value="768px"/>
+    <token name="bp-lg"  value="1024px"/>
+    <token name="bp-xl"  value="1280px"/>
+    <token name="bp-2xl" value="1440px"/>
+  </tokens>
+</artifact>

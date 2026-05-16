@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="component-spec" id="C09_ALERT" version="1">
+  <meta name="Alert" decision-ref="DS-016, DS-017"/>
+  <class>.alert</class>
+  <intent>Mensaje contextual con icono + título + cuerpo. Inline (dentro de un flujo). Para toast efímero → ver Toast (futuro).</intent>
+
+  <variants>
+    <variant name="info"    modifier=".alert--info"   ><bg>--ink-50</bg>             <text>--ink-700</text>      <icon>info</icon></variant>
+    <variant name="success" modifier=".alert--success"><bg>--olive-50</bg>           <text>--olive-700</text>    <icon>check-circle</icon></variant>
+    <variant name="warning" modifier=".alert--warning"><bg>--status-caution-bg</bg>  <text>#7C5A2E</text>        <icon>alert-triangle</icon></variant>
+    <variant name="danger"  modifier=".alert--danger" ><bg>--terracotta-100</bg>     <text>--terracotta-800</text><icon>alert-octagon</icon></variant>
+  </variants>
+
+  <base-style>
+    <padding>--space-4 --space-5</padding>
+    <radius>--radius-lg</radius>
+    <display>flex</display>
+    <gap>--space-3</gap>
+    <border>1px solid currentColor (a 20% opacidad)</border>
+  </base-style>
+
+  <parts>
+    <part class=".alert__icon">flex-shrink: 0 · 20px · Lucide stroke 1.75</part>
+    <part class=".alert__body">flex: 1 · display: flex · flex-direction: column · gap: var(--space-1)</part>
+    <part class=".alert__title">font: var(--text-base) / var(--fw-semibold)</part>
+    <part class=".alert__text">font: var(--text-sm) / var(--lh-normal)</part>
+    <part class=".alert__dismiss">btn-ghost icon-only · 32×32 · X icon</part>
+  </parts>
+
+  <structure html='<div class="alert alert--warning" role="alert">
+  <svg class="alert__icon"/>
+  <div class="alert__body">
+    <p class="alert__title">2 lotes vencen en 7 días</p>
+    <p class="alert__text">Considera ofrecer en promoción o devolver al proveedor.</p>
+  </div>
+  <button class="alert__dismiss" aria-label="Cerrar"></button>
+</div>'/>
+
+  <accessibility>
+    <rule>role="alert" si la información cambia dinámicamente.</rule>
+    <rule>role="status" si es información persistente.</rule>
+  </accessibility>
+</artifact>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="component-spec" id="C06_KPI_CARD" version="1">
+  <meta name="KpiCard" decision-ref="DS-003, DS-012, DS-017"/>
+  <class>.kpi</class>
+  <intent>Tarjeta para mostrar UN número grande + label + delta opcional. Núcleo del dashboard y del Triángulo de Valor.</intent>
+
+  <variants>
+    <variant name="default" note="bg surface, número en ink-900"/>
+    <variant name="value-investment" modifier=".kpi--investment"><accent>--value-investment</accent></variant>
+    <variant name="value-movement"   modifier=".kpi--movement"  ><accent>--value-movement</accent></variant>
+    <variant name="value-profit"     modifier=".kpi--profit"    ><accent>--value-profit</accent></variant>
+    <variant name="value-risk"       modifier=".kpi--risk"      ><accent>--value-risk</accent></variant>
+  </variants>
+
+  <sizes>
+    <size name="md" default="true"><value-font>--text-3xl</value-font><label-font>--text-sm</label-font></size>
+    <size name="lg" modifier=".kpi--lg"><value-font>--text-4xl</value-font></size>
+  </sizes>
+
+  <parts>
+    <part class=".kpi__label">font: var(--text-sm) · color: var(--text-muted) · uppercase · ls: var(--ls-eyebrow) · font-mono optional</part>
+    <part class=".kpi__value">font-family: var(--font-mono) · font-weight: 600 · letter-spacing: var(--ls-tight) · color: var(--text-primary)</part>
+    <part class=".kpi__delta">font: var(--text-sm) · font-mono · with arrow icon · color depends on sign (olive-500 up · terracotta-500 down)</part>
+    <part class=".kpi__caption">font: var(--text-xs) · color: var(--text-muted) · mt: space-2</part>
+  </parts>
+
+  <structure html='<div class="kpi kpi--profit">
+  <span class="kpi__label">Ganancia del día</span>
+  <span class="kpi__value">S/. 2,640</span>
+  <span class="kpi__delta kpi__delta--up">▲ 12.4%</span>
+  <span class="kpi__caption">vs. ayer S/. 2,350</span>
+</div>'/>
+
+  <do-and-dont>
+    <do>Números SIEMPRE en font-mono — evita saltos en columnas.</do>
+    <do>Delta solo si hay comparativo significativo (no inventar baselines).</do>
+    <dont>NO usar 4+ KPIs en una fila — rompe foco.</dont>
+  </do-and-dont>
+</artifact>

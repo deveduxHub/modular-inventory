@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="module" id="M1_1_INFO_BASICA" version="1">
+  <meta>
+    <name>Información Básica del Producto</name>
+    <phase>PHASE_1_PRODUCTOS</phase>
+    <priority>CRÍTICA — primer campo del formulario y de la lista</priority>
+    <depends-on>CONTRACT.xml → entidad Producto (campos de info básica)</depends-on>
+    <created>2026-05-11</created>
+  </meta>
+
+  <purpose>
+    Capturar y mostrar la identidad de un producto: cómo se llama, cómo se identifica (SKU),
+    a qué categoría pertenece, su marca y presentación. Es la "tarjeta de identidad" del producto.
+  </purpose>
+
+  <!-- ═══════════════════════════
+       CONTRATO DE DATOS (lectura del CONTRACT.xml)
+       ═══════════════════════════ -->
+  <data-contract>
+    <reads-fields>nombre, sku, categoria_id, marca, presentacion, descripcion, es_perecedero, estado, imagen_url</reads-fields>
+    <writes-fields>nombre, sku, categoria_id, marca, presentacion, descripcion, es_perecedero, estado</writes-fields>
+    <reads-entities>Categoria (para el select de categoría)</reads-entities>
+  </data-contract>
+
+  <!-- ═══════════════════════════
+       SPEC DE UI
+       ═══════════════════════════ -->
+  <ui-spec>
+
+    <!-- VISTA 1: Lista de Productos -->
+    <view id="lista-productos" layout="full-content-area">
+      <topbar>
+        <title>Productos</title>
+        <subtitle>X productos activos</subtitle>
+        <action-primary icon="plus" label="Nuevo producto" navigates-to="form-producto"/>
+      </topbar>
+
+      <toolbar>
+        <search placeholder="Buscar por nombre o SKU..." applies-to="nombre,sku" realtime="true"/>
+        <filter-select label="Categoría" field="categoria_id" options-from="Categoria.all" default="Todas"/>
+        <filter-select label="Estado" field="estado" options="activo|inactivo|descontinuado" default="activo"/>
+      </toolbar>
+
+      <!-- Desktop: DataTable -->
+      <data-table show-when="viewport >= 768px" component="DataTable" ds-ref="DS-007">
+        <column field="nombre"          label="Producto"     sortable="true"  width="flex">
+          <render>
+            Nombre en font-body-md bold + SKU debajo en font-mono text-sm text-ink-400
+          </render>
+        </column>
+        <column field="categoria_id"    label="Categoría"    sortable="true"  width="160px">
+          <render>Badge con color de la categoría + nombre</render>
+        </column>
+        <column field="es_perecedero"   label="Tipo"         sortable="false" width="100px">
+          <render>Badge "Perecedero" (warning) o "Estable" (neutral)</render>
+        </column>
+        <column field="precio_venta"    label="Precio venta" sortable="true"  width="120px" align="right">
+          <render>font-mono. Formato: S/. X,XXX.XX</render>
+        </column>
+        <column field="margen_ganancia" label="Margen"       sortable="true"  width="100px" align="right">
+          <render>font-mono. Color: verde si >20%, amarillo si 10-20%, rojo si menos de 10%</render>
+        </column>
+        <column field="estado"          label="Estado"       sortable="false" width="100px">
+          <render>Badge: activo=success, inactivo=neutral, descontinuado=error</render>
+        </column>
+        <column field="actions" label="" width="48px">
+          <render>Botón icon "..." → dropdown: Editar | Descontinuar</render>
+        </column>
+      </data-table>
+
+      <!-- Mobile: Cards apiladas -->
+      <card-list show-when="viewport &lt; 768px">
+        <card-item>
+          <row-1>Nombre (bold) + Badge categoría (derecha)</row-1>
+          <row-2>SKU en font-mono text-ink-400 + Badge estado (derecha)</row-2>
+          <row-3>S/. precio_venta + "·" + margen% en font-mono</row-3>
+        </card-item>
+      </card-list>
+
+      <!-- Empty state cuando no hay resultados -->
+      <empty-state ds-ref="DS-009">
+        <icon>package-x</icon>
+        <title>No se encontraron productos</title>
+        <message>Intenta con otro nombre, SKU o ajusta los filtros.</message>
+        <cta-primary label="Limpiar búsqueda" action="reset-filters"/>
+        <cta-secondary label="Nuevo producto" action="navigate-to-form"/>
+      </empty-state>
+
+      <!-- Empty state cuando el catálogo está vacío (sin seed data) -->
+      <empty-state-blank ds-ref="DS-009">
+        <icon>package-plus</icon>
+        <title>Tu catálogo está vacío</title>
+        <message>Agrega tu primer producto para empezar a controlar tu inventario.</message>
+        <cta-primary label="Agregar primer producto" action="navigate-to-form"/>
+      </empty-state-blank>
+    </view>
+
+    <!-- VISTA 2: Formulario de creación / edición (sección Info Básica) -->
+    <view id="form-info-basica" layout="form-section">
+      <section-header icon="tag" title="Información Básica" subtitle="Datos de identidad del producto"/>
+
+      <form-fields>
+        <field name="nombre" component="Input" type="text" label="Nombre del producto" placeholder="Ej: Arroz Costeño Extra" required="true" max="120" hint="Usa el nombre comercial completo."/>
+
+        <field name="sku" component="Input" type="text" label="SKU / Código" placeholder="Ej: ARR-COST-001" required="true" max="20"
+               hint="Identificador único. Usa MAYÚSCULAS, números y guiones."
+               transform="uppercase"
+               validate-on="blur"
+               validation="unique-sku"
+               error-message="Este SKU ya existe en tu catálogo."/>
+
+        <field name="categoria_id" component="Select" label="Categoría" required="true"
+               options-from="Categoria.all"
+               option-label="nombre" option-value="id"
+               placeholder="Selecciona una categoría"
+               footer-action="+ Nueva categoría" footer-action-opens="modal-nueva-categoria"/>
+
+        <field name="marca" component="Input" type="text" label="Marca" placeholder="Ej: Costeño" required="false" max="80"/>
+
+        <field name="presentacion" component="Input" type="text" label="Presentación" placeholder="Ej: Saco 50kg, Caja 12 unid" required="false" max="100" hint="Describe cómo viene empacado el producto."/>
+
+        <field name="descripcion" component="Textarea" label="Descripción interna" placeholder="Notas sobre el producto..." required="false" max="500" rows="3" hint="Solo visible para el administrador."/>
+
+        <field name="es_perecedero" component="Toggle" label="Producto perecedero" description="Activa si este producto tiene fecha de vencimiento." required="true" default="false"/>
+
+        <!-- Solo visible en modo edición -->
+        <field name="estado" component="Select" label="Estado" required="true" show-on="edit-only"
+               options="activo|inactivo|descontinuado"
+               option-labels="Activo|Inactivo|Descontinuado"/>
+      </form-fields>
+    </view>
+
+  </ui-spec>
+
+  <!-- ═══════════════════════════
+       DESIGN SYSTEM CHECKLIST
+       ═══════════════════════════ -->
+  <design-system-checklist>
+    <check ref="DS-001">Colores de badge por categoría: usar color de Categoria.color si está definido, else var(--color-brand-500).</check>
+    <check ref="DS-003">SKU en la tabla/lista usa class con font-family: var(--font-mono).</check>
+    <check ref="DS-004">Gap entre campos del formulario: var(--space-4) = 16px.</check>
+    <check ref="DS-005">Input min-height: 44px. Botones de acción min-height: 44px.</check>
+    <check ref="DS-006">Ícono de la topbar: "package" (Lucide). Búsqueda: "search". Filtro: "sliders-horizontal".</check>
+    <check ref="DS-007">DataTable en desktop usa el componente del DS, no una tabla HTML cruda.</check>
+    <check ref="DS-008">Toast de confirmación al guardar: duración 3000ms, easing cubic-bezier(0.22, 1, 0.36, 1).</check>
+    <check ref="DS-009">Ambos empty states (vacío y sin resultados) implementados con los 4 elementos: icon + title + message + cta.</check>
+    <check ref="DS-010">Input de SKU con spellcheck="false" y autocomplete="off".</check>
+  </design-system-checklist>
+
+  <!-- ═══════════════════════════
+       COPY OFICIAL (no improvisar)
+       ═══════════════════════════ -->
+  <copy>
+    <text id="toast-saved">Producto guardado correctamente.</text>
+    <text id="toast-updated">Producto actualizado.</text>
+    <text id="error-sku-duplicate">Este SKU ya existe en tu catálogo. Usa uno diferente.</text>
+    <text id="error-nombre-required">El nombre del producto es obligatorio.</text>
+    <text id="error-sku-format">SKU inválido. Usa solo letras mayúsculas, números y guiones (mín. 3 caracteres).</text>
+    <text id="confirm-discontinue-title">¿Descontinuar este producto?</text>
+    <text id="confirm-discontinue-body">El producto ya no aparecerá en las listas de entrada y venta, pero conservará su historial.</text>
+    <text id="confirm-discontinue-cta">Sí, descontinuar</text>
+  </copy>
+
+  <!-- ═══════════════════════════
+       GATES DE MÓDULO
+       ═══════════════════════════ -->
+  <gates>
+    <gate id="G1-1-C1" type="contract" blocker="true">
+      <criterion>El campo SKU hace transform a mayúsculas automáticamente al escribir (sin necesidad de caps lock).</criterion>
+      <how-to-verify>eval_js: escribir "arr-cost" en el input de SKU → valor debe ser "ARR-COST".</how-to-verify>
+    </gate>
+    <gate id="G1-1-C2" type="contract" blocker="true">
+      <criterion>La validación de SKU único se ejecuta on-blur (al salir del campo), no solo al submit.</criterion>
+      <how-to-verify>Escribir SKU existente → click en otro campo → debe aparecer error sin necesidad de hacer click en Guardar.</how-to-verify>
+    </gate>
+    <gate id="G1-1-V1" type="visual" blocker="true">
+      <criterion>El SKU en la tabla de lista usa font-mono y color ink-400 (secundario al nombre).</criterion>
+      <how-to-verify>screenshot de la lista + getComputedStyle del elemento SKU.</how-to-verify>
+    </gate>
+    <gate id="G1-1-V2" type="visual" blocker="false">
+      <criterion>Badge de categoría tiene icono Lucide correspondiente al campo Categoria.icono.</criterion>
+      <how-to-verify>screenshot visual de la lista.</how-to-verify>
+    </gate>
+    <gate id="G1-1-U1" type="ux" blocker="true">
+      <criterion>El toggle "es_perecedero" tiene descripción explicativa visible debajo del label.</criterion>
+      <how-to-verify>screenshot del formulario.</how-to-verify>
+    </gate>
+    <gate id="G1-1-U2" type="ux" blocker="true">
+      <criterion>El campo "Estado" solo aparece en modo edición (no en creación).</criterion>
+      <how-to-verify>Abrir formulario de nuevo producto → "Estado" no visible. Abrir edición → "Estado" visible.</how-to-verify>
+    </gate>
+    <gate id="G1-1-S1" type="state" blocker="true">
+      <criterion>Crear producto con información básica guarda correctamente en localStorage con id, created_at y updated_at generados automáticamente.</criterion>
+      <how-to-verify>eval_js post-guardado: verificar estructura del objeto en localStorage.</how-to-verify>
+    </gate>
+  </gates>
+
+</artifact>

@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="contract" id="PATTERN_CONTRACT" version="2">
+  <meta>
+    <title>Pattern Contract v2 — atomic unit with metadata + selector + extensions</title>
+    <supersedes>v1 buildPatternsBy / Pattern.NamePattern enum</supersedes>
+    <enforced-by>PATTERN_AGENT · CONTRACT_AGENT · BOUNDARY_AGENT</enforced-by>
+    <decision-refs>R-1, R-2, R-3, R-4, R-5, R-6 · DS-076..DS-079</decision-refs>
+    <signed-by>W1-SOLID, W2-CleanCode, W3-BigO, W4-CC, W5-CI, W6-ISP</signed-by>
+  </meta>
+
+  <definition>
+    <description>
+      A Pattern is the atomic, reusable UI unit of the inventory system. It owns a single
+      visual responsibility, declares the capabilities it consumes, and is composable
+      through extensions. Patterns are mounted into Views, never directly into Steps.
+    </description>
+
+    <invariants>
+      <invariant id="P-I1">Patterns NEVER read from a global store; they consume context capabilities declared in `requires`.</invariant>
+      <invariant id="P-I2">Patterns within the same `slotKind` MUST be substitutable (LSP).</invariant>
+      <invariant id="P-I3">Pattern `Component` MUST be lazy(); eager imports are blocked by ESLint.</invariant>
+      <invariant id="P-I4">`selector` MUST be pure and memoized via reselect with structural sharing.</invariant>
+      <invariant id="P-I5">`visibility` MUST be a pure predicate; no hooks, no side effects.</invariant>
+      <invariant id="P-I6">Pattern config drift between definition and instance is rejected at build time.</invariant>
+    </invariants>
+  </definition>
+
+  <schema lang="typescript"><![CDATA[
+import type { LazyExoticComponent, ComponentType } from 'react';
+import type { ZodSchema, infer as zinfer } from 'zod';
+
+// ─── BRANDED ID — refactor-safe ─────────────────────────────────────
+declare const __pattern_id__: unique symbol;
+export type PatternId<S extends string = string> = S & { readonly [__pattern_id__]: true };
+export const asPatternId = <S extends string>(s: S): PatternId<S> => s as PatternId<S>;
+
+// ─── SLOT KINDS — LSP contract ──────────────────────────────────────
+export type SlotKind =
+  | 'data-display'    // tables, lists, grids, kpis
+  | 'action'          // buttons, menus, toolbars
+  | 'feedback'        // alerts, toasts, banners
+  | 'navigation'      // breadcrumbs, tabs, sidebar items
+  | 'layout'          // headers, footers, frames
+  | 'form';           // inputs, wizards
+
+// ─── CAPABILITY REQUIREMENTS — ISP ──────────────────────────────────
+export type Capability = `${string}:${'read' | 'write' | 'stream'}` | string;
+
+// ─── EXTENSIONS — OCP ───────────────────────────────────────────────
+export interface PatternExtension<TConfig = unknown> {
+  readonly id: string;
+  readonly apply: (def: PatternDefinition<TConfig>) => PatternDefinition<TConfig>;
+}
+
+// ─── SELECTOR — pure mapping ctx → component props ──────────────────
+export type Selector<TConfig, TProps> = (
+  ctx: ResolvedContext,
+  config: TConfig,
+) => TProps;
+
+// ─── VISIBILITY — pure predicate ────────────────────────────────────
+export type VisibilityPredicate = (ctx: ResolvedContext) => boolean;
+
+// ─── PATTERN DEFINITION — what definePattern returns ────────────────
+export interface PatternDefinition<
+  TConfig extends object = {},
+  TProps extends object = {},
+> {
+  readonly id:         PatternId;
+  readonly version:    `${number}.${number}.${number}`;
+  readonly slotKind:   SlotKind;
+  readonly requires:   ReadonlyArray<Capability>;
+  readonly extensions: ReadonlyArray<PatternExtension>;
+
+  readonly Component:  LazyExoticComponent<ComponentType<TProps>>;
+  readonly selector:   Selector<TConfig, TProps>;
+  readonly visibility: VisibilityPredicate;
+  readonly config:     ZodSchema<TConfig>;
+
+  // Factory: produces a PatternInstance bound to a slot of a View.
+  readonly instance:   (opts?: PatternInstanceOptions<TConfig>) => PatternInstance<TConfig>;
+}
+
+// ─── PATTERN INSTANCE — bound, configured pattern for a slot ────────
+export interface PatternInstanceOptions<TConfig> {
+  readonly config?:  Partial<TConfig>;
+  readonly slots?:   Record<string, ComponentType<any> | LazyExoticComponent<any>>;
+  readonly on?:      Partial<Record<string, (payload: unknown) => void>>;  // event hooks (L2)
+  readonly key?:     string;
+}
+
+export interface PatternInstance<TConfig> {
+  readonly definitionId: PatternId;
+  readonly options:      PatternInstanceOptions<TConfig>;
+  readonly _brand:       'PatternInstance';
+}
+
+// ─── definePattern — the factory ────────────────────────────────────
+export function definePattern<TConfig extends object, TProps extends object>(
+  spec: {
+    id:         PatternId;
+    version:    `${number}.${number}.${number}`;
+    slotKind:   SlotKind;
+    requires:   ReadonlyArray<Capability>;
+    extensions?: ReadonlyArray<PatternExtension>;
+    Component:  LazyExoticComponent<ComponentType<TProps>>;
+    selector:   Selector<TConfig, TProps>;
+    visibility?: VisibilityPredicate;
+    config:     ZodSchema<TConfig>;
+  }
+): PatternDefinition<TConfig, TProps>;
+  ]]></schema>
+
+  <skip-chain>
+    <note>Pattern skip-check is a chain-of-responsibility, not a monolithic if.</note>
+    <step n="1" handler="requiresCheck">All required capabilities are resolvable in the provider tree.</step>
+    <step n="2" handler="visibilityCheck">visibility(ctx) returns true.</step>
+    <step n="3" handler="permissionCheck">session has permissions declared in config.</step>
+    <step n="4" handler="featureFlagCheck">applied by withFeatureFlag extension if present.</step>
+    <result>If ANY step returns {skip: true, reason}, pattern is omitted from render. Reason is logged.</result>
+  </skip-chain>
+
+  <example><![CDATA[
+// packages/patterns/product-table/src/index.ts
+import { definePattern, asPatternId, withTelemetry, withErrorBoundary, withFeatureFlag } from '@surte/core';
+import { lazy } from 'react';
+import { z } from 'zod';
+import { reselectStable } from '@surte/core/selectors';
+
+export const PRODUCT_TABLE_PATTERN_ID = asPatternId('pattern.product-table');
+
+const ConfigSchema = z.object({
+  density: z.enum(['compact', 'comfortable']).default('comfortable'),
+  pageSize: z.number().int().positive().default(20),
+  showSku: z.boolean().default(true),
+});
+
+export const ProductTablePattern = definePattern({
+  id:       PRODUCT_TABLE_PATTERN_ID,
+  version:  '1.0.0',
+  slotKind: 'data-display',
+  requires: ['products:read', 'session:read'] as const,
+  extensions: [
+    withTelemetry({ events: ['rowSelected', 'sortChanged'] }),
+    withErrorBoundary({ fallbackId: 'product-table-error' }),
+    withFeatureFlag('products.table.v2'),
+  ],
+  Component: lazy(() => import('./ProductTable.component').then(m => ({ default: m.ProductTable }))),
+  selector:  reselectStable((ctx, config) => ({
+    products: ctx['products:read'].list({ limit: config.pageSize }),
+    density:  config.density,
+    showSku:  config.showSku,
+  })),
+  visibility: (ctx) => ctx['session:read'].permissions.has('products.read'),
+  config:     ConfigSchema,
+});
+  ]]></example>
+
+  <gates>
+    <gate id="P-G1">Every pattern exports a branded PatternId const.</gate>
+    <gate id="P-G2">Component is wrapped in lazy(). ESLint rule no-eager-pattern enforces.</gate>
+    <gate id="P-G3">selector is wrapped in reselectStable() or equivalent memoizer.</gate>
+    <gate id="P-G4">visibility is a pure function (no React imports inside).</gate>
+    <gate id="P-G5">requires entries match capability tokens declared in a provider.</gate>
+    <gate id="P-G6">slotKind is one of the canonical 6 values.</gate>
+    <gate id="P-G7">Pattern has a *.component.test.tsx (unit) AND *.pattern.test.tsx (integration).</gate>
+    <gate id="P-G8">Pattern bundle size ≤ 80kb gzip (measured per chunk).</gate>
+  </gates>
+</artifact>

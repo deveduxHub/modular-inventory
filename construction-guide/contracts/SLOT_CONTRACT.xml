@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="contract" id="SLOT_CONTRACT" version="1">
+  <meta>
+    <title>Slot Contract — Lista canónica de slots del sistema</title>
+    <enforced-by>STEP_AGENT, MODULE_AGENT</enforced-by>
+    <decision-refs>D3, DS-047</decision-refs>
+  </meta>
+
+  <canonical-slots>
+    <category name="layout">
+      <slot name="header"        owner="shell" description="Header completo (override si está definido)"/>
+      <slot name="header.left"   owner="shell" description="Logo + brand"/>
+      <slot name="header.center" owner="shell" description="Breadcrumbs o título"/>
+      <slot name="header.right"  owner="shell" description="Notificaciones, user menu, acciones globales" max-items="5"/>
+      <slot name="sidebar"       owner="shell" description="Sidebar completo (o 'hidden')"/>
+      <slot name="sidebar.nav"   owner="shell" description="Items de navegación principal"/>
+      <slot name="sidebar.footer" owner="shell" description="Items al pie del sidebar (settings, logout)"/>
+      <slot name="footer"        owner="shell" description="Footer de la app"/>
+      <slot name="right-panel"   owner="shell" description="Panel derecho contextual (detalles, ayuda)"/>
+    </category>
+
+    <category name="content">
+      <slot name="main"          owner="step" required="true" description="Contenido principal del step (la view)"/>
+      <slot name="main.actions"  owner="step" description="Acciones del view (botones del header del content)"/>
+      <slot name="main.filters"  owner="step" description="Filtros / búsqueda del view"/>
+      <slot name="main.tabs"     owner="step" description="Tabs internos del view"/>
+      <slot name="main.empty"    owner="step" description="Estado vacío del view (override del default)"/>
+    </category>
+
+    <category name="cross-cutting">
+      <slot name="dashboard.widgets" owner="dashboard-step" description="Widgets KPI contribuidos por módulos"/>
+      <slot name="notifications"     owner="header.right"  description="Bell de notificaciones"/>
+      <slot name="modals"            owner="root"          description="Modales globales"/>
+      <slot name="toasts"            owner="root"          description="Toasts del sistema"/>
+    </category>
+
+    <category name="custom">
+      <slot name="slot.*"  owner="module" description="Slots custom por módulo. Prefix 'slot.' obligatorio. Ej: 'slot.products.bulk-action'"/>
+    </category>
+  </canonical-slots>
+
+  <resolution-order>
+    <rule>Step-level slot OVERRIDE shell-level slot.</rule>
+    <rule>Shell-level slot agrega contribuciones de TODOS los módulos activos por priority.</rule>
+    <rule>Si SlotContent.when() devuelve false, se omite (igual que si no existiera).</rule>
+    <rule>Slot 'main' es siempre del step actual, nunca compartido.</rule>
+  </resolution-order>
+
+  <forbidden-patterns>
+    <pattern>Crear slot custom sin prefix 'slot.' → debe seguir convención.</pattern>
+    <pattern>Renderizar SlotContent eager (sin lazy) → bundle estallado.</pattern>
+    <pattern>Slot con múltiples 'main' → ambiguo, prohibido.</pattern>
+  </forbidden-patterns>
+</artifact>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="agent" id="SCAFFOLD_AGENT" version="1">
+  <meta>
+    <title>SCAFFOLD_AGENT — Monorepo Scaffolder</title>
+    <owner>orchestrator</owner>
+    <runnable-by>Claude Code (autónomo).</runnable-by>
+  </meta>
+
+  <responsibility>
+    Materializa el monorepo @surte/* en disco según ARCHITECTURE.xml + PACKAGES.xml.
+    Crea estructura, configs, kernel y shell. Valida gates de Fase -1.
+  </responsibility>
+
+  <inputs>
+    <input>builder-guide/ARCHITECTURE.xml</input>
+    <input>builder-guide/phases/PHASE_NEG_1_BOOTSTRAP/README.xml</input>
+    <input>builder-guide/phases/PHASE_NEG_1_BOOTSTRAP/PACKAGES.xml</input>
+    <input>builder-guide/memory/DESIGN_DECISIONS.xml (DS-029..DS-045)</input>
+  </inputs>
+
+  <protocol>
+    <step n="1">Crear root: package.json (workspaces), pnpm-workspace.yaml, turbo.json (pipeline build/dev/test/lint/typecheck), tsconfig.base.json, .gitignore, .editorconfig, .nvmrc (20.x).</step>
+    <step n="2">Crear packages/configs/{eslint,tailwind,typescript,tsup} con contenido según PACKAGES.xml.</step>
+    <step n="3">Crear packages/core/ con src/{result,id,money,errors,events,container,module,clock,capability}.ts + src/index.ts + tests Vitest + tsconfig.json + tsup.config.ts + package.json.</step>
+    <step n="4">Crear packages/shell/ con src/{registry,provider,app-shell,slots,step-runner,guards,config,router}.tsx + tests + package.json.</step>
+    <step n="5">Crear stubs vacíos pero válidos para: design-tokens, ui, icons, utils, domain/*, application, infrastructure/*. Cada uno con index.ts exportando algo trivial y package.json válido.</step>
+    <step n="6">Crear apps/web (Next 14 App Router + surte.config.ts con modules:[]) y apps/storybook (Storybook 8).</step>
+    <step n="7">Crear .github/workflows/ci.yml + .husky/{pre-commit,commit-msg} + commitlint.config.cjs + lint-staged config + .changeset/config.json.</step>
+    <step n="8">Crear README.md y CONTRIBUTING.md según D7 de Fase -1.</step>
+    <step n="9">Reportar estructura creada y comandos de validación a correr: `pnpm install`, `pnpm -r typecheck`, `pnpm -r lint`, `pnpm -r build`, `pnpm -r test`, `pnpm --filter @surte/web dev`.</step>
+    <step n="10">Si gates G-BS-* pasan → invocar MEMORY_AGENT para registrar DS-029..DS-045 + CHG-005.</step>
+  </protocol>
+
+  <invariants>
+    <invariant>NUNCA crear código en apps/web/src/ — la lógica vive en packages/modules/*. apps/web solo orquesta.</invariant>
+    <invariant>NUNCA inventar dependencias fuera de PACKAGES.xml. Si una falta, abrir decisión DS-NNN.</invariant>
+    <invariant>Todo package debe tener: package.json, tsconfig.json, src/index.ts, README.md mínimo.</invariant>
+    <invariant>Cada package "sideEffects": false en package.json (para tree-shaking) salvo apps/.</invariant>
+  </invariants>
+
+  <errors>
+    <error code="ARCH_MISSING">ARCHITECTURE.xml o PACKAGES.xml no existen → halt.</error>
+    <error code="PNPM_FAIL">pnpm install retorna no-cero → reportar y halt.</error>
+    <error code="TS_FAIL">typecheck retorna errores → reportar lista y halt.</error>
+    <error code="BOUNDARIES_FAIL">test de boundaries (importar capa prohibida) NO falla cuando debería → halt (config rota).</error>
+  </errors>
+
+  <outputs>
+    <output>build-report.md con lista de archivos creados + resultados de gates.</output>
+    <output>memory/CHANGELOG.xml entrada CHG-005.</output>
+  </outputs>
+</artifact>

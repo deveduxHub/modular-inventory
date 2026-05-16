@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="agent" id="orchestrator" version="1">
+  <meta>
+    <owner>orchestrator</owner>
+    <role>Coordinador maestro. Decide qué fase ejecutar, llama a sub-agentes, gestiona el estado global del build.</role>
+    <created>2026-05-11</created>
+  </meta>
+
+  <inputs>
+    <input name="user-command" type="string">
+      <example>ejecutar fase 1</example>
+      <example>validar gates de M5</example>
+      <example>regenerar M3 con tweak X</example>
+    </input>
+  </inputs>
+
+  <protocol>
+    <step n="1" name="bootstrap">
+      <action>read(builder-guide/README.md)</action>
+      <action>read(builder-guide/memory/*.xml)</action>
+      <action>read(design-system/tokens.css)</action>
+      <action>read(design-system/components.css)</action>
+    </step>
+
+    <step n="2" name="resolve-phase">
+      <action>map(user-command) → phase-id + module-ids</action>
+      <action>read(phases/{phase-id}/README.xml)</action>
+      <action>invoke(GRAPH_AGENT, modules) → ordered-list</action>
+    </step>
+
+    <step n="3" name="execute-modules">
+      <loop on="ordered-list" as="module-id">
+        <invoke agent="SPEC_AGENT" with="module-id" emit="parsed-spec"/>
+        <invoke agent="STATE_AGENT" with="parsed-spec.data-needs" emit="fake-state"/>
+        <invoke agent="CONTRACTOR" with="parsed-spec, fake-state" emit="ui-artifact"/>
+        <invoke agent="EVALUATOR_AGENT" with="parsed-spec.gates, ui-artifact" emit="report"/>
+        <branch>
+          <case if="report.failed.any">
+            <emit type="FixRequest" to="CONTRACTOR" with="report.failures"/>
+            <goto step="3" iteration="retry"/>
+          </case>
+          <case if="report.passed.all">
+            <invoke agent="MEMORY_AGENT" with="parsed-spec.decisions" mode="append"/>
+            <invoke agent="CONTEXT_AGENT" with="module-id" action="maybe-compact"/>
+          </case>
+        </branch>
+      </loop>
+    </step>
+
+    <step n="4" name="phase-gates">
+      <invoke agent="EVALUATOR_AGENT" with="phases/{phase-id}/gates.xml" mode="phase-level"/>
+      <branch>
+        <case if="passed">
+          <action>mark-phase-complete</action>
+          <action>emit user-summary</action>
+        </case>
+        <case if="failed">
+          <action>emit FixRequest list</action>
+          <action>halt</action>
+        </case>
+      </branch>
+    </step>
+  </protocol>
+
+  <rules>
+    <rule>Nunca avanzar a fase N+1 si gates de fase N no pasan.</rule>
+    <rule>PHASE_0 bloquea TODAS las fases siguientes. Sin monorepo scaffold + @surte/design-system aprobados (gates G0-*), no se puede tocar ninguna feature.</rule>
+    <rule id="R-AGENTS-UNANIMOUS">
+      Gate transversal en TODA fase: los 12 agentes en builder-guide/evaluators/ deben devolver OK sobre los artefactos generados antes de cerrar la fase.
+      Agentes: 01-react-patterns · 02-composition · 03-pure-functions · 04-solid · 05-design-patterns · 06-big-o · 07-tailwind · 08-storybook · 09-ddd (Fase 1+) · 10-overriding · 11-theme-provider · 12-ci-formatting.
+      Un solo FAIL bloquea la entrega. Ver builder-guide/evaluators/README.md.
+    </rule>
+    <rule>Stack tecnológico congelado en DS-021..DS-028 (Tailwind+cva+cn, Radix headless, DDD layered, Storybook, ThemeProvider, RHF+zod). Cambiar un layer requiere nueva decisión DS-NNN.</rule>
+    <rule>Si context > 70%, forzar CONTEXT_AGENT.compact antes de continuar.</rule>
+    <rule>Toda decisión nueva debe escribirse a memory/ antes de cerrar el módulo.</rule>
+    <rule>Si un agente devuelve formato inválido, abortar con error claro (no improvisar).</rule>
+    <rule>Toda referencia de color, type, spacing, radius, shadow en cualquier artefacto debe venir de tokens — JAMÁS hex/px literales fuera de tokens.css.</rule>
+  </rules>
+
+    <phase-order>
+    <phase n="0"   id="PHASE_0"          status="pending" blocks-all-others="true"/>
+    <phase n="1"   id="PHASE_1_PRODUCTOS" status="planned"/>
+    <phase n="2"   id="PHASE_2_STOCK"     status="planned"/>
+    <phase n="3"   id="PHASE_3_VENTAS"    status="planned"/>
+    <phase n="4"   id="PHASE_4_COMPRAS"   status="planned"/>
+    <phase n="5"   id="PHASE_5_REPORTES"  status="planned"/>
+    <phase n="6"   id="PHASE_6_CONFIG"    status="planned"/>
+  </phase-order>
+
+  <outputs>
+    <output name="build-report" type="markdown"/>
+    <output name="artifacts" type="file-list"/>
+  </outputs>
+</artifact>

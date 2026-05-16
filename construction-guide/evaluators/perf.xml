@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="evaluator" id="perf" version="1">
+  <budgets>
+    <budget metric="TTI" max="2000ms" condition="3G simulado"/>
+    <budget metric="interaction-latency" max="100ms"/>
+    <budget metric="period-recalc" max="200ms" context="dashboard"/>
+    <budget metric="alert-compute" max="100ms" context="sobre 500 SKUs"/>
+    <budget metric="bundle-js" max="200KB" condition="gzipped"/>
+  </budgets>
+</artifact>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="component-spec" id="C08_BADGE" version="1">
+  <meta name="Badge" decision-ref="DS-016, DS-017, DS-019"/>
+  <class>.badge</class>
+  <intent>Píldora corta de estado. Para texto largo o mensaje accionable → usar Alert, no Badge.</intent>
+
+  <variants>
+    <variant name="ok"       modifier=".badge--ok"      ><bg>--status-ok-bg</bg>      <text>--olive-700</text></variant>
+    <variant name="caution"  modifier=".badge--caution" ><bg>--status-caution-bg</bg> <text>#7C5A2E</text></variant>
+    <variant name="critical" modifier=".badge--critical"><bg>--status-critical-bg</bg><text>--terracotta-800</text></variant>
+    <variant name="info"     modifier=".badge--info"    ><bg>--status-info-bg</bg>    <text>--ink-700</text></variant>
+    <variant name="neutral"  default="true"             ><bg>--ink-100</ bg>          <text>--ink-700</text></variant>
+    <variant name="dark"     modifier=".badge--dark"    ><bg>--ink-900</bg>           <text>--ink-0</text></variant>
+  </variants>
+
+  <sizes>
+    <size name="sm" default="true"><h>22px</h><px>--space-2</px><font>--text-xs</font></size>
+    <size name="md" modifier=".badge--md"><h>28px</h><px>--space-3</px><font>--text-sm</font></size>
+  </sizes>
+
+  <base-style>
+    <radius>--radius-pill</radius>
+    <font-weight>--fw-semibold</font-weight>
+    <display>inline-flex</display>
+    <gap>--space-1</gap>
+    <align>center</align>
+  </base-style>
+
+  <structure html='<span class="badge badge--ok">Activo</span>'/>
+  <structure html='<span class="badge badge--critical"><svg class="i-sm"/>Stock 0</span>'/>
+  <structure html='<span class="badge badge--caution">Por vencer 7d</span>'/>
+
+  <do-and-dont>
+    <do>Texto en 1-3 palabras MAX.</do>
+    <do>Icono opcional prefix, Lucide 14px.</do>
+    <dont>NO badges con sombra.</dont>
+    <dont>NO usar badge--ok para "Vendido" — semáforo verde es para estado sano, no para histórico.</dont>
+  </do-and-dont>
+</artifact>

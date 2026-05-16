@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="component-spec" id="C03_SELECT" version="1">
+  <meta name="Select" decision-ref="DS-017"/>
+  <class>.select</class>
+
+  <variants>
+    <variant name="native" tag="select" note="nativo, sin JS"/>
+    <variant name="custom" modifier=".select--custom" note="botón + dropdown panel, requiere JS para teclado"/>
+    <variant name="searchable" modifier=".select--searchable" note="custom + input filter (usado en proveedor selector)"/>
+  </variants>
+
+  <sizes inherit-from="C02_INPUT"/>
+
+  <base-style inherit-from="C02_INPUT">
+    <append>caret icon Lucide chevron-down absolute right --space-4</append>
+    <append>padding-right: var(--space-10) para dejar espacio al caret</append>
+  </base-style>
+
+  <states inherit-from="C02_INPUT"/>
+
+  <structure html='<select class="select"><option>Categoría…</option><option>Abarrotes</option></select>'/>
+  <structure html='<div class="select--searchable" role="combobox" aria-expanded="false">
+  <button class="select__trigger">Proveedores Andinos SAC</button>
+  <div class="select__panel" hidden>
+    <input class="input" placeholder="Buscar…"/>
+    <ul class="select__list">…</ul>
+  </div>
+</div>'/>
+
+  <accessibility>
+    <rule>role="combobox" + aria-expanded en custom variants.</rule>
+    <rule>Teclado: ↑/↓ navega opciones, Enter selecciona, Esc cierra.</rule>
+    <rule>Empty state dentro del panel si filter sin resultados.</rule>
+  </accessibility>
+</artifact>

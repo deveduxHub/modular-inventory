@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="contract" id="DS-CONTRACT" version="1">
+  <meta>
+    <title>Design System — Component Contract Map</title>
+    <decision-ref>DS-017</decision-ref>
+    <intent>Índice maestro de los 12 componentes. Cada uno tiene un XML detallado en components/.</intent>
+  </meta>
+
+  <invariants>
+    <invariant id="I-DS-1">Ningún componente toca state global ni localStorage. 100% presentacional.</invariant>
+    <invariant id="I-DS-2">Ningún componente usa !important.</invariant>
+    <invariant id="I-DS-3">Cero magic numbers — todo valor debe venir de un token.</invariant>
+    <invariant id="I-DS-4">Variantes y sizes son enumeraciones cerradas (whitelist). Pasar una variante fuera = error.</invariant>
+    <invariant id="I-DS-5">Todo focusable expone focus-ring shadow visible (DS-020).</invariant>
+    <invariant id="I-DS-6">Hit target ≥ 44px en mobile para todo componente interactivo (DS-005).</invariant>
+  </invariants>
+
+  <components>
+    <component id="C01" name="Button"       file="components/C01_BUTTON.xml"        priority="critical"/>
+    <component id="C02" name="Input"        file="components/C02_INPUT.xml"         priority="critical"/>
+    <component id="C03" name="Select"       file="components/C03_SELECT.xml"        priority="critical"/>
+    <component id="C04" name="FormGroup"    file="components/C04_FORM_GROUP.xml"    priority="critical"/>
+    <component id="C05" name="Card"         file="components/C05_CARD.xml"          priority="critical"/>
+    <component id="C06" name="KpiCard"      file="components/C06_KPI_CARD.xml"      priority="critical"/>
+    <component id="C07" name="Table"        file="components/C07_TABLE.xml"         priority="critical"/>
+    <component id="C08" name="Badge"        file="components/C08_BADGE.xml"         priority="critical"/>
+    <component id="C09" name="Alert"        file="components/C09_ALERT.xml"         priority="high"/>
+    <component id="C10" name="Modal"        file="components/C10_MODAL.xml"         priority="high"/>
+    <component id="C11" name="SidebarNav"   file="components/C11_SIDEBAR_NAV.xml"   priority="critical"/>
+    <component id="C12" name="EmptyState"   file="components/C12_EMPTY_STATE.xml"   priority="high"/>
+  </components>
+
+  <consumption-rules>
+    <rule>Importar tokens.css ANTES de components.css ANTES de cualquier CSS de módulo.</rule>
+    <rule>Wrapper classes permitidas en módulos: layout (grid/flex), spacing, posicionamiento. NO colores ni tipografía ad-hoc.</rule>
+    <rule>Para extender un componente, usar modifier class (--variant) documentada en su XML — no reescribir base.</rule>
+    <rule>Componente nuevo → ABRIR builder-guide/phases/PHASE_0_DESIGN_SYSTEM/components/C13_*.xml + DS-NNN en memory.</rule>
+  </consumption-rules>
+
+  <gates-summary>
+    <gate-ref>G-DS-C1 — cada componente documentado en showcase</gate-ref>
+    <gate-ref>G-DS-C2 — cada componente respeta su contrato XML</gate-ref>
+    <gate-ref>G-DS-C3 — cero !important, cero magic numbers</gate-ref>
+  </gates-summary>
+</artifact>

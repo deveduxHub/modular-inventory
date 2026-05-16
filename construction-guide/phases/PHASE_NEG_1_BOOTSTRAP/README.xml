@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="phase-spec" id="PHASE_NEG_1_BOOTSTRAP" version="1">
+  <meta>
+    <title>Fase -1 — Monorepo Bootstrap</title>
+    <position>PRIMERA de todas. Bloquea PHASE_0_DESIGN_SYSTEM y todas las siguientes.</position>
+    <created>2026-05-12</created>
+    <duration-estimate>1 build · ~10 min en CI</duration-estimate>
+    <runnable-by>Claude Code (autónomo) leyendo ARCHITECTURE.xml + este archivo + PACKAGES.xml.</runnable-by>
+  </meta>
+
+  <intent>
+    <one-liner>Crear el monorepo @surte/* con la estructura, configs y kernel pluggable funcionando antes de tocar el Design System.</one-liner>
+    <why>
+      El Design System (Fase 0) y todos los módulos posteriores dependen de un workspace pnpm con TS strict, Tailwind preset compartido, ESLint boundaries, Turborepo cache y el kernel @surte/core + @surte/shell (ModuleRegistry, Slots, StepRunner) ya tipados. Sin esto, cada package se construiría con configs duplicadas, sin enforcement de capas y sin plugin system.
+    </why>
+    <output>
+      Monorepo navegable con `pnpm install` limpio, `pnpm typecheck` 0 errores, `pnpm build` exitoso en todos los packages stub, `pnpm test` corriendo (aunque sea con 1 test smoke por package), CI verde.
+    </output>
+  </intent>
+
+  <dependencies>
+    <depends-on>builder-guide/ARCHITECTURE.xml</depends-on>
+    <depends-on>builder-guide/phases/PHASE_NEG_1_BOOTSTRAP/PACKAGES.xml</depends-on>
+    <blocks>PHASE_0_DESIGN_SYSTEM</blocks>
+    <blocks>Todas las fases posteriores</blocks>
+  </dependencies>
+
+  <deliverables>
+    <deliverable id="D1" type="workspace" file="package.json + pnpm-workspace.yaml + turbo.json + tsconfig.base.json">
+      Root del monorepo con scripts dev/build/test/typecheck/lint orquestados por turbo.
+    </deliverable>
+    <deliverable id="D2" type="configs" file="packages/configs/*">
+      @surte/config-eslint (con ESLint boundaries), @surte/config-tailwind (preset desde design-tokens), @surte/config-typescript (3 tsconfig: base, library, nextjs), @surte/config-tsup.
+    </deliverable>
+    <deliverable id="D3" type="kernel" file="packages/core/*">
+      Result, Id, Money, errors, EventBus, Container, ModuleManifest interface, capability types. Zero React.
+    </deliverable>
+    <deliverable id="D4" type="shell" file="packages/shell/*">
+      ModuleRegistry, ModuleProvider, AppShell (con grid + slots), SlotRegistry, StepRunner, StepGuard, useStepRunner, ModuleRouter helpers. Stubs tipados y exportados.
+    </deliverable>
+    <deliverable id="D5" type="apps" file="apps/web + apps/storybook">
+      apps/web con Next 14 App Router + surte.config.ts vacío de módulos (solo shell visible). apps/storybook con Storybook 8 instalado y un story trivial.
+    </deliverable>
+    <deliverable id="D6" type="ci" file=".github/workflows/ci.yml + .husky/*">
+      CI con typecheck + lint + test + build paralelos por package. Husky pre-commit con lint-staged. Commitlint conventional.
+    </deliverable>
+    <deliverable id="D7" type="docs" file="README.md + CONTRIBUTING.md">
+      Cómo agregar un módulo (paso a paso: crear package, definir Manifest, registrar en surte.config.ts).
+    </deliverable>
+  </deliverables>
+
+  <scope-in>
+    <item>Estructura completa de carpetas según ARCHITECTURE.xml sección 2.</item>
+    <item>Configs compartidas funcionando (ESLint, Prettier, Tailwind preset stub, TS).</item>
+    <item>@surte/core con interfaces y utilidades de kernel.</item>
+    <item>@surte/shell con plugin system tipado y funcional aunque sin módulos.</item>
+    <item>apps/web arrancando con `pnpm dev` mostrando AppShell vacío.</item>
+    <item>CI matrix verde.</item>
+  </scope-in>
+
+  <scope-out>
+    <item>Tokens reales (vendrán en Fase 0).</item>
+    <item>Componentes UI (Fase 0).</item>
+    <item>Módulos de negocio (Fase 0.5 y siguientes).</item>
+    <item>Persistencia real (storage adapters viven en Fase 7 — solo se scaffolean stubs).</item>
+  </scope-out>
+
+  <gates>
+    <gate-category name="install">
+      <gate id="G-BS-I1" type="contract">`pnpm install` corre limpio (0 warnings de peer-deps no satisfechos críticos).</gate>
+      <gate id="G-BS-I2" type="contract">pnpm-lock.yaml committed.</gate>
+    </gate-category>
+    <gate-category name="typecheck">
+      <gate id="G-BS-T1" type="contract">`pnpm -r typecheck` retorna 0 errores en TODOS los packages.</gate>
+      <gate id="G-BS-T2" type="contract">TS project references entre packages funcionan (incremental builds).</gate>
+    </gate-category>
+    <gate-category name="lint">
+      <gate id="G-BS-L1" type="contract">`pnpm -r lint` 0 errors, 0 warnings.</gate>
+      <gate id="G-BS-L2" type="contract">ESLint boundaries activo: importar @surte/domain-* desde @surte/ui FALLA con error claro.</gate>
+    </gate-category>
+    <gate-category name="build">
+      <gate id="G-BS-B1" type="contract">`pnpm -r build` exitoso en todos los packages.</gate>
+      <gate id="G-BS-B2" type="contract">`pnpm --filter @surte/web build` produce .next/ válido.</gate>
+      <gate id="G-BS-B3" type="contract">apps/web bundle inicial &lt;180kb gzipped (medido con next-bundle-analyzer).</gate>
+    </gate-category>
+    <gate-category name="test">
+      <gate id="G-BS-TT1" type="contract">`pnpm -r test` pasa (cada package con al menos un test smoke).</gate>
+      <gate id="G-BS-TT2" type="contract">@surte/shell test: registrar y desregistrar un módulo dummy retorna OK.</gate>
+      <gate id="G-BS-TT3" type="contract">@surte/core test: EventBus publish/subscribe entrega el evento.</gate>
+    </gate-category>
+    <gate-category name="runtime">
+      <gate id="G-BS-R1" type="runtime">`pnpm dev --filter @surte/web` arranca en :3000 sin errores.</gate>
+      <gate id="G-BS-R2" type="runtime">AppShell renderiza con sidebar/header/footer/main visibles aunque vacíos.</gate>
+      <gate id="G-BS-R3" type="runtime">surte.config.ts con `modules: []` no crashea, solo muestra empty state.</gate>
+    </gate-category>
+    <gate-category name="ci">
+      <gate id="G-BS-CI1" type="contract">.github/workflows/ci.yml corre en push/PR.</gate>
+      <gate id="G-BS-CI2" type="contract">Husky pre-commit bloquea commit con error de lint.</gate>
+      <gate id="G-BS-CI3" type="contract">commitlint bloquea mensaje no convencional.</gate>
+    </gate-category>
+    <gate-category name="docs">
+      <gate id="G-BS-D1" type="docs">README.md explica cómo agregar un módulo en ≤10 pasos.</gate>
+      <gate id="G-BS-D2" type="docs">CONTRIBUTING.md cubre changesets workflow.</gate>
+    </gate-category>
+    <gate-category name="agents" critical="true">
+      <gate id="G-BS-AG-UNANIMOUS" type="agents">
+        Los 12 evaluadores en builder-guide/evaluators/ aplicables a esta fase devuelven OK
+        (03-pure-functions sobre core, 04-solid, 06-big-o, 09-ddd, 12-ci-formatting principalmente).
+      </gate>
+    </gate-category>
+  </gates>
+
+  <build-order>
+    <step n="1">Leer ARCHITECTURE.xml + PACKAGES.xml.</step>
+    <step n="2">Crear root package.json, pnpm-workspace.yaml, turbo.json, tsconfig.base.json, .gitignore, .editorconfig.</step>
+    <step n="3">Crear packages/configs/* (eslint, tailwind, typescript, tsup).</step>
+    <step n="4">Crear packages/core/* con interfaces y kernel utilidades + tests.</step>
+    <step n="5">Crear packages/shell/* con ModuleRegistry, AppShell, Slots, StepRunner + tests.</step>
+    <step n="6">Crear packages/design-tokens, ui, icons, utils como STUBS exportando algo vacío válido (Fase 0 los llenará).</step>
+    <step n="7">Crear packages/modules/ vacío (placeholder .gitkeep).</step>
+    <step n="8">Crear packages/domain/* como STUBS (Fase 1+ los llena).</step>
+    <step n="9">Crear packages/infrastructure-storage-local con LocalStorageRepository genérico.</step>
+    <step n="10">Crear packages/application como STUB.</step>
+    <step n="11">Crear apps/web (Next 14 App Router) con AppShell montado y surte.config.ts con modules: [].</step>
+    <step n="12">Crear apps/storybook con Storybook 8 inicializado.</step>
+    <step n="13">Configurar .github/workflows/ci.yml + husky + commitlint + lint-staged + changesets.</step>
+    <step n="14">Escribir README.md y CONTRIBUTING.md.</step>
+    <step n="15">Correr todos los gates G-BS-*.</step>
+    <step n="16">Si todos OK → MEMORY_AGENT.append(DS-029..DS-045) → marcar fase completa.</step>
+  </build-order>
+
+  <claude-code-instructions>
+    <note>Este bloque permite a Claude Code ejecutar la fase sin humano.</note>
+    <instruction>Lee ARCHITECTURE.xml para stack, estructura y reglas.</instruction>
+    <instruction>Lee PACKAGES.xml para la lista exacta de packages, sus dependencias y exports esperados.</instruction>
+    <instruction>Genera cada archivo en el orden de build-order. No saltes pasos.</instruction>
+    <instruction>Después de cada step, corre el comando de validación aplicable (pnpm install, pnpm typecheck, etc.).</instruction>
+    <instruction>Si un gate falla, NO continúes. Reporta el error y propone fix.</instruction>
+    <instruction>Al completar la fase, escribe entrada CHG-005 en CHANGELOG.xml y añade DS-029..DS-045 a DESIGN_DECISIONS.xml (ya están en ARCHITECTURE.xml decisions-emitted).</instruction>
+  </claude-code-instructions>
+</artifact>

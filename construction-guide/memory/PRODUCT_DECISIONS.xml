@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="memory" id="product-decisions" version="1" append-only="true">
+  <decision id="PD-001" category="icp" source="CEO" date="2026-05-11">
+    <statement>ICP v1: Mayorista establecido (S/. 50K-500K stock mensual), 35-60 años, Android user, ubicado en mercado mayorista de Lima.</statement>
+    <rationale>Tiene capacidad de pago, dolor real cuantificable. Bodegueros (E1, E3) entran después con freemium.</rationale>
+  </decision>
+
+  <decision id="PD-002" category="wedge" source="CEO+PM" date="2026-05-11">
+    <statement>Wedge de adopción = Alertas de vencimiento + registro por audio.</statement>
+    <rationale>6/6 entrevistas validan dolor + interés en alertas. Audio diferencia de Excel.</rationale>
+  </decision>
+
+  <decision id="PD-003" category="platform" source="PM" date="2026-05-11">
+    <statement>Mobile-first PWA. NO desktop primero. NO app nativa en Fase 1.</statement>
+    <rationale>Cero fricción de instalación, ICP no usa laptop en su jornada.</rationale>
+  </decision>
+
+  <decision id="PD-004" category="onboarding" source="PL" date="2026-05-11">
+    <statement>Onboarding "aprende usando" — sin tutorial largo. Empty states + tooltips contextuales.</statement>
+    <rationale>E4 abandonó su sistema por tedio. Cero curva.</rationale>
+  </decision>
+
+  <decision id="PD-005" category="auth" source="PM" date="2026-05-11">
+    <statement>Auth = WhatsApp OTP. No email/password.</statement>
+    <rationale>WhatsApp es el canal default del ICP.</rationale>
+  </decision>
+
+  <decision id="PD-006" category="data" source="PM" date="2026-05-11">
+    <statement>Offline-first. Sync cuando hay conexión. Estado en localStorage hasta Fase 2.</statement>
+    <rationale>Conectividad de mercado es inestable.</rationale>
+  </decision>
+
+  <decision id="PD-007" category="monetization" source="CEO" date="2026-05-11">
+    <statement>Freemium en Fase 1-2. Suscripción + take-rate marketplace en Fase 3+. NO cobrar hasta validar PMF.</statement>
+    <rationale>E4 no usa sistema pagado. Adopción primero, monetización después.</rationale>
+  </decision>
+
+  <decision id="PD-008" category="scope" source="CEO" date="2026-05-11">
+    <statement>Out of scope inicial: facturación SUNAT, control de personal, control de transporte.</statement>
+    <rationale>Scope creep. Hay competidores que ya lo hacen. No nuestro diferenciador.</rationale>
+  </decision>
+
+  <decision id="PD-009" category="catalogo" source="PM" date="2026-05-11">
+    <statement>Pre-cargar top 500 SKUs peruanos en catálogo desde día 1. Búsqueda fuzzy. "Crear producto rápido" con 3 campos cuando falta.</statement>
+    <rationale>Riesgo R3 del PM critique: catálogo desde cero mata adopción.</rationale>
+  </decision>
+
+  <decision id="PD-010" category="notificaciones" source="PM" date="2026-05-11">
+    <statement>Máximo 1 push diaria consolidada. Solo urgencia (vence en &lt;48h) genera push individual. Resumen semanal por WhatsApp.</statement>
+    <rationale>Evitar notification blindness (Riesgo R4).</rationale>
+  </decision>
+
+  <decision id="PD-011" category="north-star" source="CEO" date="2026-05-11">
+    <statement>NSM = Productos activos siendo trackeados diariamente, por mayorista activo, por mercado geográfico.</statement>
+    <rationale>Captura uso real + densidad necesaria para marketplace futuro.</rationale>
+  </decision>
+
+  <decision id="PD-012" category="kpi-90d" source="CEO" date="2026-05-11">
+    <statement>KPIs 90 días: 20 mayoristas activos 4+ días/sem · 70% retención día 60 · 5 mayoristas dicen "te pago".</statement>
+    <rationale>Triple gate de validación antes de invertir más capital.</rationale>
+  </decision>
+</artifact>

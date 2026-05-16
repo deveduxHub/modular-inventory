@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="phase" id="phase-1-productos" version="1">
+  <meta>
+    <name>Control de Productos</name>
+    <status>pending</status>
+    <priority>CRÍTICA — sin productos, ningún otro módulo puede operar</priority>
+    <created>2026-05-11</created>
+    <contract>PHASE_1_PRODUCTOS/CONTRACT.xml</contract>
+  </meta>
+
+  <objective>
+    Construir el catálogo maestro de productos del sistema. Toda la información
+    de un producto (qué es, cuánto cuesta, en qué unidad se maneja, quién lo provee)
+    vive aquí. Es la base de datos de referencia para todas las fases siguientes.
+  </objective>
+
+  <user-stories>
+    <story id="US-1.1">Como administrador, quiero registrar un nuevo producto con toda su información básica para tenerlo disponible en el sistema.</story>
+    <story id="US-1.2">Como administrador, quiero definir el costo de adquisición y precio de venta de un producto para saber su margen de ganancia automáticamente.</story>
+    <story id="US-1.3">Como administrador, quiero definir en qué unidad compro y en qué unidad vendo el producto para que el sistema convierta automáticamente.</story>
+    <story id="US-1.4">Como administrador, quiero registrar mis proveedores y asociarlos a los productos para saber a quién llamar cuando necesite reponer.</story>
+    <story id="US-1.5">Como administrador, quiero ver el listado de todos mis productos con su estado, categoría y margen para tener una visión rápida de mi catálogo.</story>
+    <story id="US-1.6">Como administrador, quiero buscar y filtrar productos por nombre, categoría o SKU para encontrarlos rápido.</story>
+    <story id="US-1.7">Como administrador, quiero editar un producto existente si cambia su precio o información.</story>
+    <story id="US-1.8">Como administrador, quiero descontinuar un producto que ya no manejo, sin perder su historial.</story>
+  </user-stories>
+
+  <modules>
+    <module id="M1_1" file="modules/M1_1_INFO_BASICA.xml"     name="Información Básica"     depends-on=""/>
+    <module id="M1_2" file="modules/M1_2_COSTOS_PRECIOS.xml"  name="Costos y Precios"       depends-on="M1_1"/>
+    <module id="M1_3" file="modules/M1_3_UNIDADES.xml"        name="Unidades y Medidas"     depends-on="M1_1"/>
+    <module id="M1_4" file="modules/M1_4_PROVEEDORES.xml"     name="Proveedores"            depends-on="M1_1"/>
+  </modules>
+
+  <ui-architecture>
+    <description>
+      Control de Productos tiene 3 vistas principales dentro del content area.
+      El sidebar muestra "Productos" activo. La topbar muestra el título + botón "Nuevo producto".
+    </description>
+    <views>
+      <view id="lista-productos"  route="/productos"          description="Tabla/grid de productos con filtros y búsqueda"/>
+      <view id="form-producto"    route="/productos/nuevo"    description="Formulario de creación en 4 secciones (una por sub-módulo)"/>
+      <view id="detalle-producto" route="/productos/:id"      description="Vista de detalle + edición inline"/>
+      <view id="lista-proveedores" route="/proveedores"       description="Tabla de proveedores del sistema"/>
+      <view id="form-proveedor"   route="/proveedores/nuevo"  description="Formulario de nuevo proveedor"/>
+    </views>
+
+    <navigation-flow>
+      Lista productos → [click producto] → Detalle/Editar
+      Lista productos → [+ Nuevo producto] → Formulario de creación
+      Formulario creación → [Guardar] → Lista productos (con toast "Producto guardado")
+      Formulario creación → [Cancelar] → Lista productos (sin cambios)
+      Detalle → [Descontinuar] → Confirmación modal → Lista productos
+    </navigation-flow>
+
+    <form-sections>
+      El formulario de producto está dividido en tabs o secciones acordeón:
+      1. "Información Básica" → M1_1 fields
+      2. "Costos y Precios"  → M1_2 fields
+      3. "Unidades"          → M1_3 fields
+      4. "Proveedor"         → M1_4 fields (selección de proveedor existente)
+    </form-sections>
+  </ui-architecture>
+
+  <design-system-rules>
+    <rule ref="DS-001">Colores solo de var(--color-*). Prohibido hex hardcoded.</rule>
+    <rule ref="DS-003">Manrope para labels y texto. JetBrains Mono para SKU, precios y márgenes.</rule>
+    <rule ref="DS-004">Spacing solo múltiplos de 4px usando var(--space-*).</rule>
+    <rule ref="DS-005">Hit targets ≥ 44px. Inputs min-height: 44px.</rule>
+    <rule ref="DS-006">Iconos solo Lucide, stroke 1.75px.</rule>
+    <rule ref="DS-007">Componentes permitidos: Button, Input, Card, Badge, Alert, DataTable, EmptyState, Toast.</rule>
+    <rule ref="DS-009">EmptyState siempre con icono + título + descripción + CTA.</rule>
+    <rule ref="DS-010">Inputs numéricos con inputmode="decimal". Teléfonos con inputmode="tel".</rule>
+  </design-system-rules>
+
+  <!-- ═══════════════════════════════════════════════════
+       GATES DE FASE — deben pasar TODOS para cerrar Phase 1
+       ═══════════════════════════════════════════════════ -->
+  <gates>
+
+    <!-- CONTRACT GATES — verifican que el contrato se respeta -->
+    <gate id="G1-C1" type="contract" blocker="true">
+      <criterion>Todas las entidades del CONTRACT.xml están implementadas en el state: Producto, Categoria, UnidadMedida, Proveedor.</criterion>
+      <how-to-verify>eval_js: localStorage.getItem('inv_productos'), inv_categorias, inv_unidades, inv_proveedores — todos deben devolver JSON válido.</how-to-verify>
+    </gate>
+    <gate id="G1-C2" type="contract" blocker="true">
+      <criterion>El seed data del CONTRACT.xml está cargado: mínimo 6 productos, 7 categorías, 8 unidades, 5 proveedores.</criterion>
+      <how-to-verify>eval_js: JSON.parse(localStorage.getItem('inv_productos')).length >= 6</how-to-verify>
+    </gate>
+    <gate id="G1-C3" type="contract" blocker="true">
+      <criterion>INV-002: precio_venta siempre mayor que costo_adquisicion en todos los productos del seed.</criterion>
+      <how-to-verify>eval_js: todos los productos en localStorage tienen precio_venta > costo_adquisicion.</how-to-verify>
+    </gate>
+    <gate id="G1-C4" type="contract" blocker="true">
+      <criterion>INV-003: todos los SKU del seed son únicos.</criterion>
+      <how-to-verify>eval_js: array de SKUs no tiene duplicados.</how-to-verify>
+    </gate>
+
+    <!-- VISUAL GATES — design system compliance -->
+    <gate id="G1-V1" type="visual" blocker="true">
+      <criterion>Ningún color hardcoded en el HTML/CSS generado. Solo var(--color-*).</criterion>
+      <how-to-verify>grep en el archivo HTML: no debe haber #[0-9a-fA-F]{3,6} fuera de tokens.css y components.css.</how-to-verify>
+    </gate>
+    <gate id="G1-V2" type="visual" blocker="true">
+      <criterion>SKU, precios y margen% usan font-family: var(--font-mono) en la UI.</criterion>
+      <how-to-verify>screenshot + eval_js: getComputedStyle(document.querySelector('[data-field="sku"]')).fontFamily includes 'JetBrains'</how-to-verify>
+    </gate>
+    <gate id="G1-V3" type="visual" blocker="false">
+      <criterion>Badge de categoría usa el color definido en Categoria.color, con fallback a --color-brand-500.</criterion>
+      <how-to-verify>screenshot visual</how-to-verify>
+    </gate>
+    <gate id="G1-V4" type="visual" blocker="true">
+      <criterion>Margen de ganancia se muestra como porcentaje con 2 decimales (ej: "31.58%") en font-mono.</criterion>
+      <how-to-verify>screenshot + eval_js</how-to-verify>
+    </gate>
+
+    <!-- UX GATES -->
+    <gate id="G1-U1" type="ux" blocker="true">
+      <criterion>Flujo completo sin dead-ends: Lista → Nuevo → Guardar → Lista (con toast) funciona sin errores.</criterion>
+      <how-to-verify>ejecutar flujo manualmente + console sin errores.</how-to-verify>
+    </gate>
+    <gate id="G1-U2" type="ux" blocker="true">
+      <criterion>Validación en submit: si precio_venta ≤ costo_adquisicion, muestra error específico inline bajo el campo precio_venta.</criterion>
+      <how-to-verify>Intentar guardar con precio_venta=50, costo=100. Debe aparecer mensaje de error.</how-to-verify>
+    </gate>
+    <gate id="G1-U3" type="ux" blocker="true">
+      <criterion>Validación SKU duplicado: si se intenta guardar SKU ya existente, muestra error inline.</criterion>
+      <how-to-verify>Intentar guardar producto con SKU "ARR-COST-001". Debe fallar con mensaje.</how-to-verify>
+    </gate>
+    <gate id="G1-U4" type="ux" blocker="true">
+      <criterion>EmptyState visible cuando no hay productos que coincidan con búsqueda/filtro activo.</criterion>
+      <how-to-verify>Buscar "ZZZZZ". Debe mostrar EmptyState con CTA "Limpiar búsqueda".</how-to-verify>
+    </gate>
+    <gate id="G1-U5" type="ux" blocker="false">
+      <criterion>Margen de ganancia se recalcula en tiempo real mientras el usuario escribe costo o precio (sin necesidad de guardar).</criterion>
+      <how-to-verify>En formulario, cambiar precio → ver que el % de margen cambia inmediatamente.</how-to-verify>
+    </gate>
+    <gate id="G1-U6" type="ux" blocker="true">
+      <criterion>Acción "Descontinuar" requiere confirmación modal. No es reversible en un click.</criterion>
+      <how-to-verify>Click en descontinuar → debe aparecer modal de confirmación antes de ejecutar.</how-to-verify>
+    </gate>
+
+    <!-- STATE GATES -->
+    <gate id="G1-S1" type="state" blocker="true">
+      <criterion>localStorage persiste todos los cambios. Crear producto → recargar página → producto sigue en lista.</criterion>
+      <how-to-verify>Crear producto "TEST-001" → F5 → debe seguir visible.</how-to-verify>
+    </gate>
+    <gate id="G1-S2" type="state" blocker="true">
+      <criterion>Editar producto actualiza updated_at en el registro.</criterion>
+      <how-to-verify>eval_js antes y después de editar: updated_at debe ser diferente.</how-to-verify>
+    </gate>
+    <gate id="G1-S3" type="state" blocker="true">
+      <criterion>Descontinuar producto cambia estado a "descontinuado" pero NO elimina el registro.</criterion>
+      <how-to-verify>eval_js: JSON.parse(localStorage.getItem('inv_productos')).find(p=>p.sku==='TEST').estado === 'descontinuado'</how-to-verify>
+    </gate>
+
+    <!-- RESPONSIVE GATES -->
+    <gate id="G1-R1" type="responsive" blocker="true">
+      <criterion>Lista de productos sin overflow horizontal en 375px.</criterion>
+      <how-to-verify>screenshot en 375px width.</how-to-verify>
+    </gate>
+    <gate id="G1-R2" type="responsive" blocker="true">
+      <criterion>Formulario de producto usable en 375px: todos los inputs visibles, labels legibles, botones alcanzables.</criterion>
+      <how-to-verify>screenshot en 375px.</how-to-verify>
+    </gate>
+    <gate id="G1-R3" type="responsive" blocker="false">
+      <criterion>En desktop (1440px+), lista usa la DataTable del DS. En mobile (≤768px), usa cards apiladas.</criterion>
+      <how-to-verify>screenshot en ambos viewports.</how-to-verify>
+    </gate>
+  </gates>
+
+  <out-of-scope>
+    <item>Stock disponible (Phase 2)</item>
+    <item>Alertas de vencimiento (Phase 3)</item>
+    <item>Órdenes de compra (Phase 4)</item>
+    <item>Historial de movimientos (Phase 2)</item>
+    <item>Múltiples imágenes por producto</item>
+    <item>Importación masiva por CSV</item>
+  </out-of-scope>
+</artifact>

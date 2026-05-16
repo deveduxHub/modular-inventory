@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="component-spec" id="C07_TABLE" version="1">
+  <meta name="Table" decision-ref="DS-017"/>
+  <class>.table</class>
+  <intent>Vista tabular en desktop (≥768px). Mobile → reflow a .list-card (definido aquí).</intent>
+
+  <structure html='<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">SKU</th>
+      <th scope="col">Producto</th>
+      <th scope="col" class="t-right">Stock</th>
+      <th scope="col" class="t-right">Precio</th>
+      <th scope="col">Estado</th>
+      <th scope="col" aria-label="Acciones"></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="t-mono">ARR-COS-50</td>
+      <td>Arroz Costeño 50kg</td>
+      <td class="t-mono t-right">128</td>
+      <td class="t-mono t-right">S/. 142.00</td>
+      <td><span class="badge badge--ok">Activo</span></td>
+      <td class="t-actions">…</td>
+    </tr>
+  </tbody>
+</table>'/>
+
+  <base-style>
+    <width>100%</width>
+    <border-collapse>collapse</border-collapse>
+    <font>--text-sm</font>
+  </base-style>
+
+  <parts>
+    <part class="thead th">bg: var(--surface-warm) · color: var(--text-muted) · font-mono · uppercase · var(--text-xs) · letter-spacing: var(--ls-eyebrow) · py: var(--space-3)</part>
+    <part class="tbody td">py: var(--space-3) · px: var(--space-4) · border-bottom: 1px solid var(--divider)</part>
+    <part class="tbody tr:hover">bg: var(--surface-warm)</part>
+    <part class=".t-mono">font-family: var(--font-mono)</part>
+    <part class=".t-right">text-align: right</part>
+    <part class=".t-actions">text-align: right · ghost buttons inline</part>
+  </parts>
+
+  <variants>
+    <variant name="zebra" modifier=".table--zebra" note="tbody tr:nth-child(even) bg surface-warm"/>
+    <variant name="compact" modifier=".table--compact" note="padding reducido para densidad"/>
+  </variants>
+
+  <states>
+    <state name="sortable"><add-to-th>aria-sort="none|ascending|descending" + chevron icon</add-to-th></state>
+    <state name="loading"><show>skeleton rows (5)</show></state>
+    <state name="empty"><show>EmptyState component dentro de tbody con colspan</show></state>
+  </states>
+
+  <mobile-reflow note="@media (max-width: 767px) → tabla se convierte en lista de cards">
+    <structure html='<ul class="list-card">
+  <li class="list-card__item">
+    <div class="list-card__head"><strong>Arroz Costeño 50kg</strong><span class="badge badge--ok">Activo</span></div>
+    <dl class="list-card__meta">
+      <dt>SKU</dt><dd class="t-mono">ARR-COS-50</dd>
+      <dt>Stock</dt><dd class="t-mono">128</dd>
+      <dt>Precio</dt><dd class="t-mono">S/. 142.00</dd>
+    </dl>
+  </li>
+</ul>'/>
+  </mobile-reflow>
+
+  <do-and-dont>
+    <do>Números siempre en .t-mono + .t-right.</do>
+    <dont>NO scroll horizontal en mobile — usar list-card reflow.</dont>
+  </do-and-dont>
+</artifact>

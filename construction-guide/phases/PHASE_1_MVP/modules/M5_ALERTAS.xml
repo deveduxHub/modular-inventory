@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="module" id="M5_ALERTAS" version="1">
+  <meta>
+    <name>Alertas de Vencimiento — El Wedge</name>
+    <phase>1</phase>
+    <priority>CRITICAL</priority>
+    <depends-on>M3_ENTRADA, M4_STOCK</depends-on>
+  </meta>
+
+  <purpose>Es la función-puerta del producto. Si esta pantalla no entrega valor en 5 segundos, el resto del MVP no importa. Validado por 6/6 entrevistas.</purpose>
+
+  <data-needs>
+    <reads>STATE.productos, STATE.entradas (con fecha vence)</reads>
+    <derives>alertas: vencimiento (≤30/15/7/2 días), stock-critico (≤stock-minimo)</derives>
+  </data-needs>
+
+  <ui-spec>
+    <layout>Mobile-first. Lista vertical de alertas ordenadas por severidad descendente.</layout>
+    <components>
+      <use>Alert (error|warning|info) del design system</use>
+      <use>EmptyState cuando no hay alertas</use>
+      <use>Badge para contador en bottom-nav</use>
+    </components>
+    <copy-tone>
+      <example severity="error">"3 productos vencen en 48 horas"</example>
+      <example severity="warning">"Stock crítico: Arroz Costeño — quedan 5 sacos"</example>
+      <example severity="info">"Tu Aceite Primor vence en 2 semanas"</example>
+    </copy-tone>
+  </ui-spec>
+
+  <interactions>
+    <action>Tap en alerta → BottomSheet con detalle + acciones: "Rematar precio", "Marcar como visto", "Devolver al proveedor"</action>
+    <action>Swipe-right en alerta → marcar como visto (con undo toast)</action>
+    <action>Pull-to-refresh recalcula alertas</action>
+  </interactions>
+
+  <gates>
+    <gate type="visual">Solo tokens del DS. Sin hex hardcoded.</gate>
+    <gate type="ux">Una alerta es legible en &lt;1s (verificar con eye-tracking simulado).</gate>
+    <gate type="state">Marcar visto persiste en localStorage. Recargar mantiene estado.</gate>
+    <gate type="ux">Sin alertas → empty state amistoso, no pantalla blanca.</gate>
+    <gate type="responsive">Funciona 375-1920px sin overflow.</gate>
+    <gate type="perf">Recalcular alertas sobre 500 productos &lt;100ms.</gate>
+  </gates>
+
+  <decisions-emitted>
+    <decision>Tiempo de aviso default: 7 días para vencimiento (basado en E1: "un mes antes" es overkill; 7 días es accionable). Configurable en tweaks.</decision>
+    <decision>Stock crítico default: 20% del promedio de venta semanal del producto.</decision>
+  </decisions-emitted>
+</artifact>

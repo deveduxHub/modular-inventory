@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="evaluator" id="state" version="1">
+  <checks>
+    <check id="S1">localStorage persiste todo STATE relevante al recargar.</check>
+    <check id="S2">Mutar entrada → stock se actualiza atómicamente.</check>
+    <check id="S3">Stock nunca puede ser negativo (invariante).</check>
+    <check id="S4">Fecha vencimiento siempre futura al registrar.</check>
+    <check id="S5">KPIs derivados recalculan al cambiar entradas o ventas.</check>
+    <check id="S6">Re-render del orchestrator sobre mismo estado produce mismo HTML (determinismo).</check>
+  </checks>
+</artifact>

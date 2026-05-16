@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="evaluator" id="visual" version="1">
+  <checks>
+    <check id="V1">Todo color CSS proviene de var(--color-*) del DS.</check>
+    <check id="V2">Toda font-family es 'Manrope' o 'JetBrains Mono'.</check>
+    <check id="V3">Todo padding/margin es múltiplo de 4px.</check>
+    <check id="V4">Contraste foreground/background &gt;=4.5:1 (WCAG AA) en texto body.</check>
+    <check id="V5">Hit targets interactivos &gt;=44px.</check>
+    <check id="V6">Iconos: solo Lucide, stroke 1.75px.</check>
+  </checks>
+  <how-to-run>eval_js sobre el DOM final + axe-core para contraste.</how-to-run>
+</artifact>

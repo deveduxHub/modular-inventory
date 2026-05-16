@@ -1,0 +1,144 @@
+/* ============================================================
+   DESIGN TOKENS — Sistema de Inventario para Mayoristas
+   ============================================================
+   Single source of truth para colores, spacing, type, etc.
+   NUNCA hardcodear valores en componentes — siempre usar token.
+   ============================================================ */
+
+:root {
+  /* ---------- COLOR — Brand ---------- */
+  /* Identidad: confianza + acción + claridad de mercado */
+  --color-brand-50:  #f0f7ff;
+  --color-brand-100: #dceefe;
+  --color-brand-200: #b9ddfd;
+  --color-brand-300: #84c4fb;
+  --color-brand-400: #4aa6f6;
+  --color-brand-500: #0693e3;  /* Primary — cyan profundo */
+  --color-brand-600: #0273b8;
+  --color-brand-700: #035c93;
+  --color-brand-800: #064a76;
+  --color-brand-900: #073d62;
+
+  /* ---------- COLOR — Semánticos KPI ---------- */
+  --color-inversion:    #1a1b4b;  /* Indigo profundo — lo gastado */
+  --color-movimiento:   #0693e3;  /* Cyan — lo que se mueve */
+  --color-ganancia:     #f5a524;  /* Ámbar — lo ganado */
+
+  /* ---------- COLOR — Estados ---------- */
+  --color-success-50:  #ecfdf5;
+  --color-success-500: #10b981;
+  --color-success-700: #047857;
+
+  --color-warning-50:  #fffbeb;
+  --color-warning-500: #f59e0b;
+  --color-warning-700: #b45309;
+
+  --color-error-50:    #fef2f2;
+  --color-error-500:   #ef4444;
+  --color-error-700:   #b91c1c;
+
+  --color-info-50:     #eff6ff;
+  --color-info-500:    #3b82f6;
+  --color-info-700:    #1d4ed8;
+
+  /* ---------- COLOR — Neutrales (warm gray) ---------- */
+  --color-ink-0:       #ffffff;
+  --color-ink-25:      #fbfbfa;
+  --color-ink-50:      #f6f5f3;
+  --color-ink-100:     #ecebe8;
+  --color-ink-200:     #d9d7d2;
+  --color-ink-300:     #b8b5ad;
+  --color-ink-400:     #8f8c83;
+  --color-ink-500:     #6b6862;
+  --color-ink-600:     #4d4a45;
+  --color-ink-700:     #3a3833;
+  --color-ink-800:     #25241f;
+  --color-ink-900:     #16150f;
+
+  /* ---------- SPACING ---------- */
+  /* SOLO múltiplos de 4. Base = 8. */
+  --space-0:  0;
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+
+  /* ---------- RADII ---------- */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-pill: 999px;
+
+  /* ---------- TYPOGRAPHY ---------- */
+  --font-display: 'Manrope', system-ui, sans-serif;
+  --font-body:    'Manrope', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, monospace;
+
+  /* Mobile-first sizes: NUNCA bajar de 16px en body */
+  --text-xs:   12px;   /* Solo labels / metadata */
+  --text-sm:   14px;   /* Solo capciones */
+  --text-base: 16px;   /* Body default */
+  --text-md:   18px;
+  --text-lg:   22px;
+  --text-xl:   28px;
+  --text-2xl:  36px;
+  --text-3xl:  48px;   /* KPI display */
+  --text-4xl:  64px;   /* Hero only */
+
+  --leading-tight:  1.15;
+  --leading-snug:   1.3;
+  --leading-normal: 1.5;
+  --leading-loose:  1.7;
+
+  --weight-regular: 400;
+  --weight-medium:  500;
+  --weight-semi:    600;
+  --weight-bold:    700;
+  --weight-black:   800;
+
+  /* ---------- SHADOWS ---------- */
+  --shadow-xs: 0 1px 2px rgba(22, 21, 15, 0.04);
+  --shadow-sm: 0 2px 4px rgba(22, 21, 15, 0.06), 0 1px 2px rgba(22, 21, 15, 0.04);
+  --shadow-md: 0 6px 16px rgba(22, 21, 15, 0.08), 0 2px 4px rgba(22, 21, 15, 0.04);
+  --shadow-lg: 0 18px 40px rgba(22, 21, 15, 0.12), 0 4px 8px rgba(22, 21, 15, 0.06);
+  --shadow-xl: 0 32px 64px rgba(22, 21, 15, 0.18);
+
+  /* ---------- MOTION ---------- */
+  --ease-out:    cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --duration-fast:   120ms;
+  --duration-base:   200ms;
+  --duration-slow:   320ms;
+
+  /* ---------- HIT TARGETS ---------- */
+  --tap-min:    44px;   /* iOS / Material Accessibility */
+  --tap-comfy:  56px;
+
+  /* ---------- LAYOUT ---------- */
+  --container-max: 1240px;
+  --sidebar-width: 280px;
+  --bottombar-h:   72px;  /* Mobile nav */
+}
+
+/* ---------- TIPOGRAFÍA UTILS ---------- */
+.t-display-3xl { font-family: var(--font-display); font-weight: var(--weight-bold); font-size: var(--text-3xl); line-height: var(--leading-tight); letter-spacing: -0.02em; }
+.t-display-2xl { font-family: var(--font-display); font-weight: var(--weight-bold); font-size: var(--text-2xl); line-height: var(--leading-tight); letter-spacing: -0.015em; }
+.t-display-xl  { font-family: var(--font-display); font-weight: var(--weight-bold); font-size: var(--text-xl); line-height: var(--leading-snug); letter-spacing: -0.01em; }
+.t-h1          { font-family: var(--font-display); font-weight: var(--weight-bold); font-size: var(--text-2xl); line-height: var(--leading-tight); letter-spacing: -0.015em; }
+.t-h2          { font-family: var(--font-display); font-weight: var(--weight-semi); font-size: var(--text-xl); line-height: var(--leading-snug); }
+.t-h3          { font-family: var(--font-display); font-weight: var(--weight-semi); font-size: var(--text-lg); line-height: var(--leading-snug); }
+.t-body        { font-family: var(--font-body);    font-weight: var(--weight-regular); font-size: var(--text-base); line-height: var(--leading-normal); }
+.t-body-medium { font-family: var(--font-body);    font-weight: var(--weight-medium); font-size: var(--text-base); line-height: var(--leading-normal); }
+.t-caption     { font-family: var(--font-body);    font-weight: var(--weight-regular); font-size: var(--text-sm); line-height: var(--leading-normal); color: var(--color-ink-500); }
+.t-overline    { font-family: var(--font-body);    font-weight: var(--weight-semi); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-ink-500); }
+.t-mono        { font-family: var(--font-mono); }
+.t-num         { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }

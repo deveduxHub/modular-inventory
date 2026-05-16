@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inventario Mayoristas — Project Index</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="design-system/tokens.css">
+<link rel="stylesheet" href="design-system/components.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--color-ink-50); font-family: var(--font-body); color: var(--color-ink-800); }
+
+  /* ── Layout ── */
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 64px 32px 120px; }
+
+  /* ── Hero ── */
+  .hero { margin-bottom: 72px; }
+  .eyebrow { font-family: var(--font-mono); font-size: 12px; color: var(--color-brand-500); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 16px; }
+  h1 { font-family: var(--font-display); font-size: clamp(36px, 5vw, 60px); font-weight: 800; letter-spacing: -0.03em; line-height: 1.05; color: var(--color-ink-900); margin-bottom: 20px; }
+  .lead { font-size: 18px; color: var(--color-ink-500); max-width: 680px; line-height: 1.6; margin-bottom: 32px; }
+  .status-strip { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  /* ── Phase banner ── */
+  .phase-now { background: var(--color-brand-500); color: white; border-radius: var(--radius-xl); padding: 28px 32px; margin-bottom: 56px; display: flex; align-items: center; gap: 32px; }
+  .phase-now-badge { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 99px; white-space: nowrap; }
+  .phase-now-text h2 { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 6px; }
+  .phase-now-text p { font-size: 14px; opacity: 0.85; line-height: 1.5; }
+  .phase-now-meta { margin-left: auto; display: flex; flex-direction: column; gap: 6px; text-align: right; font-family: var(--font-mono); font-size: 12px; opacity: 0.8; white-space: nowrap; }
+
+  /* ── Section ── */
+  .section { margin-bottom: 64px; }
+  .section-head { display: flex; align-items: baseline; gap: 16px; margin-bottom: 8px; }
+  .section-num { font-family: var(--font-mono); font-size: 12px; color: var(--color-ink-300); }
+  .section-title { font-family: var(--font-display); font-size: 22px; font-weight: 700; letter-spacing: -0.02em; color: var(--color-ink-800); }
+  .section-desc { font-size: 14px; color: var(--color-ink-400); margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--color-ink-150, #eee); line-height: 1.5; }
+
+  /* ── Grid ── */
+  .grid { display: grid; gap: 12px; }
+  .grid-2 { grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
+  .grid-3 { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+  .grid-4 { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+
+  /* ── Tile ── */
+  .tile { background: var(--color-ink-0); border: 1px solid var(--color-ink-150, #e8e8ec); border-radius: 14px; padding: 20px 22px; text-decoration: none; color: inherit; display: flex; flex-direction: column; gap: 8px; transition: border-color 150ms, box-shadow 150ms, transform 150ms; }
+  .tile:hover { border-color: var(--color-brand-400); box-shadow: 0 4px 16px rgba(6,147,227,0.10); transform: translateY(-2px); }
+  .tile-tag { font-family: var(--font-mono); font-size: 10px; color: var(--color-ink-350, #aaa); text-transform: uppercase; letter-spacing: 0.08em; }
+  .tile-title { font-weight: 700; font-size: 15px; color: var(--color-ink-900); line-height: 1.3; }
+  .tile-desc { font-size: 13px; color: var(--color-ink-500); line-height: 1.5; }
+  .tile-meta { font-family: var(--font-mono); font-size: 11px; color: var(--color-ink-350, #aaa); margin-top: 4px; }
+
+  /* Featured tile variants */
+  .tile-brand { background: var(--color-brand-500); border-color: transparent; }
+  .tile-brand .tile-tag { color: rgba(255,255,255,0.6); }
+  .tile-brand .tile-title { color: white; }
+  .tile-brand .tile-desc { color: rgba(255,255,255,0.8); }
+  .tile-brand .tile-meta { color: rgba(255,255,255,0.55); }
+  .tile-brand:hover { border-color: transparent; box-shadow: 0 8px 24px rgba(6,147,227,0.35); }
+
+  .tile-dark { background: var(--color-ink-900); border-color: transparent; }
+  .tile-dark .tile-tag { color: rgba(255,255,255,0.4); }
+  .tile-dark .tile-title { color: white; }
+  .tile-dark .tile-desc { color: rgba(255,255,255,0.65); }
+  .tile-dark:hover { border-color: transparent; box-shadow: 0 8px 24px rgba(0,0,0,0.25); }
+
+  .tile-contract { background: var(--color-ink-900); border: 2px solid var(--color-brand-500); }
+  .tile-contract .tile-tag { color: var(--color-brand-400); }
+  .tile-contract .tile-title { color: white; }
+  .tile-contract .tile-desc { color: rgba(255,255,255,0.7); }
+
+  /* Gate pills */
+  .gate-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .gate-pill { font-family: var(--font-mono); font-size: 10px; padding: 2px 8px; border-radius: 99px; background: var(--color-ink-100); color: var(--color-ink-500); border: 1px solid var(--color-ink-200); }
+  .gate-pill.contract { background: #eef2ff; color: #4338ca; border-color: #c7d2fe; }
+  .gate-pill.visual   { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+  .gate-pill.ux       { background: #f0fdf4; color: #166534; border-color: #bbf7d0; }
+  .gate-pill.state    { background: #fdf4ff; color: #7e22ce; border-color: #e9d5ff; }
+  .gate-pill.resp     { background: #fff1f2; color: #9f1239; border-color: #fecdd3; }
+
+  /* Divider */
+  .divider { height: 1px; background: var(--color-ink-150, #eee); margin: 48px 0; }
+
+  /* Flow diagram */
+  .flow { display: flex; align-items: center; flex-wrap: wrap; gap: 0; background: var(--color-ink-0); border: 1px solid var(--color-ink-150, #eee); border-radius: 14px; padding: 20px 24px; margin-bottom: 20px; }
+  .flow-step { display: flex; flex-direction: column; gap: 4px; padding: 0 16px; }
+  .flow-step:first-child { padding-left: 0; }
+  .flow-step-num { font-family: var(--font-mono); font-size: 10px; color: var(--color-brand-400); text-transform: uppercase; letter-spacing: 0.06em; }
+  .flow-step-name { font-size: 13px; font-weight: 600; color: var(--color-ink-800); }
+  .flow-arrow { font-size: 14px; color: var(--color-ink-300); padding: 0 4px; }
+
+  /* Callout */
+  .callout { border-radius: 12px; padding: 20px 24px; display: flex; gap: 16px; margin-bottom: 20px; }
+  .callout-principle { background: #eef2ff; border: 1px solid #c7d2fe; }
+  .callout-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+  .callout-body { display: flex; flex-direction: column; gap: 4px; }
+  .callout-title { font-weight: 700; font-size: 14px; color: #312e81; }
+  .callout-text { font-size: 13px; color: #4338ca; line-height: 1.5; }
+
+  @media (max-width: 640px) {
+    .wrap { padding: 40px 16px 80px; }
+    .phase-now { flex-direction: column; gap: 16px; }
+    .phase-now-meta { margin-left: 0; text-align: left; }
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="eyebrow">Sistema de Inventario · Mayoristas · v0.1</div>
+    <h1>Del cuaderno al control total.<br>Con datos reales.</h1>
+    <p class="lead">Sistema web de control de inventario para mayoristas. 7 módulos, 4 fases, 1 administrador. Construido con contract-first y design system propio.</p>
+    <div class="status-strip">
+      <span class="badge badge-success">✓ Discovery</span>
+      <span class="badge badge-warning">● Fase 0 — Design System</span>
+      <span class="badge badge-neutral">◌ Fase 1 — Productos (bloqueado)</span>
+      <span class="badge badge-neutral">○ Fase 2 — Existencias</span>
+      <span class="badge badge-neutral">○ Fase 3 — Vencimientos</span>
+      <span class="badge badge-neutral">○ Fase 4 — Compras</span>
+      <span class="badge badge-neutral">○ Fase 5 — Ventas</span>
+      <span class="badge badge-neutral">○ Fase 6 — Reportes</span>
+      <span class="badge badge-neutral">○ Fase 7 — Config</span>
+    </div>
+  </header>
+
+  <!-- FASE ACTIVA -->
+  <div class="phase-now" style="background:#A86250;">
+    <div>
+      <div class="phase-now-badge">▶ FASE ACTIVA</div>
+    </div>
+    <div class="phase-now-text">
+      <h2>Fase 0 — Design System Foundation</h2>
+      <p>Bloquea todas las fases siguientes. Paleta warm-earth congelada (6 colores brand). 12 componentes reutilizables especificados. Pendiente: construir tokens.css + components.css + DESIGN_SYSTEM.html.</p>
+    </div>
+    <div class="phase-now-meta">
+      <span>6 brand colors</span>
+      <span>12 componentes</span>
+      <span>19 gates</span>
+    </div>
+  </div>
+
+  <!-- PALETTE STRIP -->
+  <div style="display:grid; grid-template-columns:repeat(6,1fr); gap:8px; margin-bottom:56px; border-radius:14px; overflow:hidden;">
+    <div style="background:#EFEBE3; padding:24px 16px; color:#1F2528;"><div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;">EFEBE3</div><div style="font-size:12px;opacity:0.7;margin-top:4px;">Soft Linen · canvas</div></div>
+    <div style="background:#3F5963; padding:24px 16px; color:#fff;"><div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;">3F5963</div><div style="font-size:12px;opacity:0.75;margin-top:4px;">Blue Slate · surface dark soft</div></div>
+    <div style="background:#1F2528; padding:24px 16px; color:#fff;"><div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;">1F2528</div><div style="font-size:12px;opacity:0.75;margin-top:4px;">Carbon Black · text</div></div>
+    <div style="background:#6C8260; padding:24px 16px; color:#fff;"><div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;">6C8260</div><div style="font-size:12px;opacity:0.85;margin-top:4px;">Dusty Olive · success</div></div>
+    <div style="background:#A86250; padding:24px 16px; color:#fff;"><div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;">A86250</div><div style="font-size:12px;opacity:0.85;margin-top:4px;">Terracotta · BRAND</div></div>
+    <div style="background:#7E8FA0; padding:24px 16px; color:#fff;"><div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;">7E8FA0</div><div style="font-size:12px;opacity:0.85;margin-top:4px;">Slate Gray · muted</div></div>
+  </div>
+
+  <!-- PRINCIPIO: CONTRACT FIRST -->
+  <div class="callout callout-principle">
+    <div class="callout-icon">📋</div>
+    <div class="callout-body">
+      <div class="callout-title">Principio: Contract First</div>
+      <div class="callout-text">Ningún módulo se construye sin CONTRACT.xml aprobado. El contrato define entidades, campos, tipos, validaciones e invariantes antes de tocar HTML. Los gates verifican que el código respete el contrato. Si el gate falla, se bloquea la entrega.</div>
+    </div>
+  </div>
+
+  <!-- ── 1. PLAN ── -->
+  <section class="section">
+    <div class="section-head"><span class="section-num">01</span><h2 class="section-title">Plan de Producto</h2></div>
+    <p class="section-desc">La fuente de verdad: qué construimos, por qué, en qué orden, con qué reglas.</p>
+    <div class="grid grid-2">
+      <a class="tile tile-dark" href="PLAN.md">
+        <span class="tile-tag">★ Fuente de verdad</span>
+        <span class="tile-title">PLAN.md</span>
+        <span class="tile-desc">Qué estamos construyendo · scope (7 módulos) · flujo de negocio · reglas de negocio · tech stack · arquitectura de UI · fases · cómo opera el builder guide.</span>
+        <span class="tile-meta">7 secciones · 3 decisiones abiertas (PA-001..003)</span>
+      </a>
+      <a class="tile" href="design-system/DESIGN_SYSTEM.html">
+        <span class="tile-tag">Design System</span>
+        <span class="tile-title">Design System v0.1 — Showcase</span>
+        <span class="tile-desc">Colores · Tipografía · Spacing · 12 componentes base. Todo el sistema visual del producto.</span>
+        <span class="tile-meta">DS-001..DS-010 · Manrope + JetBrains Mono</span>
+      </a>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ── 2. FASE 0 DESIGN SYSTEM ── -->
+  <section class="section">
+    <div class="section-head"><span class="section-num">02</span><h2 class="section-title">Fase 0 — Design System Foundation</h2></div>
+    <p class="section-desc">Tokens + 12 componentes reutilizables. Sin esto congelado, ninguna fase siguiente puede empezar — evita que cada módulo reinvente botones, inputs y badges con variaciones sutiles.</p>
+
+    <div class="flow">
+      <div class="flow-step"><span class="flow-step-num">Paso 1</span><span class="flow-step-name">TOKENS.xml</span></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step"><span class="flow-step-num">Paso 2</span><span class="flow-step-name">CONTRACT.xml</span></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step"><span class="flow-step-num">Paso 3</span><span class="flow-step-name">C01..C12 specs</span></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step"><span class="flow-step-num">Paso 4</span><span class="flow-step-name">tokens.css</span></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step"><span class="flow-step-num">Paso 5</span><span class="flow-step-name">components.css</span></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step"><span class="flow-step-num">Paso 6</span><span class="flow-step-name">SHOWCASE.html</span></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step"><span class="flow-step-num">Paso 7</span><span class="flow-step-name">19 gates</span></div>
+    </div>
+
+    <div class="grid grid-2">
+      <a class="tile tile-contract" href="builder-guide/phases/PHASE_0_DESIGN_SYSTEM/README.xml">
+        <span class="tile-tag">★ Phase spec</span>
+        <span class="tile-title">README.xml — Fase 0</span>
+        <span class="tile-desc">Intent + dependencias + 4 deliverables + scope-in/out + 19 gates + build-order + consumer-rules.</span>
+        <div class="gate-row">
+          <span class="gate-pill contract">5 token gates</span>
+          <span class="gate-pill visual">6 visual gates</span>
+          <span class="gate-pill ux">3 component gates</span>
+          <span class="gate-pill resp">3 resp gates</span>
+          <span class="gate-pill state">2 docs gates</span>
+        </div>
+      </a>
+      <a class="tile tile-dark" href="builder-guide/phases/PHASE_0_DESIGN_SYSTEM/TOKENS.xml">
+        <span class="tile-tag">★ Single source</span>
+        <span class="tile-title">TOKENS.xml</span>
+        <span class="tile-desc">12 grupos: brand-raw · ink-scale · terracotta-scale · olive-scale · semáforo · surface · text · brand · triangle-of-value · type · space · radius · shadow · motion · layout · z-index.</span>
+        <span class="tile-meta">~100 tokens · generará tokens.css</span>
+      </a>
+      <a class="tile" href="builder-guide/phases/PHASE_0_DESIGN_SYSTEM/CONTRACT.xml">
+        <span class="tile-tag">Contract map</span>
+        <span class="tile-title">CONTRACT.xml</span>
+        <span class="tile-desc">Índice de los 12 componentes · 6 invariantes globales · reglas de consumo · cómo proponer componente nuevo.</span>
+        <div class="gate-row"><span class="gate-pill contract">I-DS-1..6</span></div>
+      </a>
+      <a class="tile" href="builder-guide/memory/DESIGN_DECISIONS.xml">
+        <span class="tile-tag">Memory · DS</span>
+        <span class="tile-title">DS-011..DS-020 — Paleta v2</span>
+        <span class="tile-desc">10 decisiones nuevas. Supersedes DS-001/DS-002/DS-007. Paleta warm-earth + escalas derivadas + semáforo + surfaces + radius + shadow.</span>
+        <span class="tile-meta">10 nuevas · 3 superseded</span>
+      </a>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head"><span class="section-num">02.1</span><h2 class="section-title">12 componentes especificados</h2></div>
+    <p class="section-desc">Cada componente con variantes, sizes, estados, estructura HTML, partes con tokens, accessibility, do/don't.</p>
+    <div class="grid grid-3">
+      <a class="tile" href="builder-guide/phases/PHASE_0_DESIGN_SYSTEM/components/C01_BUTTON.xml"><span class="tile-tag">C01</span><span class="tile-title">Button</span><span class="tile-desc">primary · secondary · ghost · danger · 3 sizes · loading state.</span></a>
+      <a class="tile" href="builder-guide/phases/PHASE_0_DESIGN_SYSTEM/components/C02_INPUT.xml"><span class="tile-tag">C02</span><span class="tile-title">Input</span><span class="tile-desc">text · number · date · search · textarea · prefix/suffix · mono.</span></a>
+      <a class="tile" href="builder-guide/phases/PHASE_0_DESIGN_SYSTEM/components/C03_SELECT.xml"><span class="tile-tag">C03</span><span class="tile-title">Select</span><span class="tile-desc">native · custom · searchable.</span></a>
+      <a class="tile" href="builder-guide/phases/PHASE_0_DESIGN_SYSTEM/components/C04_FORM_GROUP.xml"><span class="tile-tag">C04</span><span class="tile-title">FormGroup</span><span class="tile-desc">label + input + hint + error. On-blur, no on-keystroke.</span></a>
+      <a class="tile" href="builder-guide/phases/PHASE_0_DESIGN_SYSTEM/components/C05_CARD.xml"><span class="tile-tag">C05</span><span class="tile-title">Card</span><span class="tile-desc">flat · bordered · elevated · warm · dark.</span></a>
+      <a class="tile" href="builder-guide/phases/PHASE_0_DESIGN_SYSTEM/components/C06_KPI_CARD.xml"><span class="tile-tag">C06</span><span class="tile-title">KpiCard</span><span class="tile-desc">Número mono grande + label + delta. Triángulo de Valor.</span></a>
+      <a class="tile" href="builder-guide/phases/PHASE_0_DESIGN_SYSTEM/components/C07_TABLE.xml"><span class="tile-tag">C07</span><span class="tile-title">Table</span><span class="tile-desc">Desktop tabla · mobile reflow a list-card · sortable · loading · empty.</span></a>
+      <a class="tile" href="builder-guide/phases/PHASE_0_DESIGN_SYSTEM/components/C08_BADGE.xml"><span class="tile-tag">C08</span><span class="tile-title">Badge</span><span class="tile-desc">ok · caution · critical · info · neutral · dark.</span></a>
+      <a class="tile" href="builder-guide/phases/PHASE_0_DESIGN_SYSTEM/components/C09_ALERT.xml"><span class="tile-tag">C09</span><span class="tile-title">Alert</span><span class="tile-desc">info · success · warning · danger · dismiss opcional.</span></a>
+      <a class="tile" href="builder-guide/phases/PHASE_0_DESIGN_SYSTEM/components/C10_MODAL.xml"><span class="tile-tag">C10</span><span class="tile-title">Modal</span><span class="tile-desc">sm/md/lg/xl · focus trap · ESC · backdrop · sin saltos de scroll.</span></a>
+      <a class="tile" href="builder-guide/phases/PHASE_0_DESIGN_SYSTEM/components/C11_SIDEBAR_NAV.xml"><span class="tile-tag">C11</span><span class="tile-title">Sidebar + Topbar</span><span class="tile-desc">Chrome del app. Carbon sidebar · sticky topbar · drawer en mobile.</span></a>
+      <a class="tile" href="builder-guide/phases/PHASE_0_DESIGN_SYSTEM/components/C12_EMPTY_STATE.xml"><span class="tile-tag">C12</span><span class="tile-title">EmptyState</span><span class="tile-desc">first-use · no-results · error. Icon + título + body + 1-2 CTAs.</span></a>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ── 2.5 TECH STACK + 12 AGENTES EVALUADORES ── -->
+  <section class="section">
+    <div class="section-head"><span class="section-num">02.5</span><h2 class="section-title">Tech Stack &amp; 12 Agentes Evaluadores</h2></div>
+    <p class="section-desc">Stack tecnológico congelado (DS-021..DS-028) y 12 agentes en <code>builder-guide/evaluators/</code> que actúan como <strong>gate unánime</strong>: una sola falla bloquea el cierre de cualquier fase.</p>
+
+    <div class="grid grid-2" style="margin-bottom: 24px;">
+      <a class="tile tile-dark" href="builder-guide/phases/PHASE_0_DESIGN_SYSTEM/TECH_STACK.xml">
+        <span class="tile-tag">★ Stack</span>
+        <span class="tile-title">TECH_STACK.xml</span>
+        <span class="tile-desc">Tailwind 3 + cn() + cva · Radix headless · ThemeProvider + CSS vars · DDD (domain/application/infrastructure/ui) · Storybook 8 · RHF + zod · TypeScript strict · Vitest · ESLint + Prettier + commitlint + husky.</span>
+        <span class="tile-meta">DS-021..DS-028 · 13 layers</span>
+      </a>
+      <a class="tile tile-contract" href="builder-guide/evaluators/README.md">
+        <span class="tile-tag">★ Agents index</span>
+        <span class="tile-title">builder-guide/evaluators/README.md</span>
+        <span class="tile-desc">Protocolo de invocación + tabla maestra de los 12 agentes. Gate G-DS-AG-UNANIMOUS: un solo FAIL bloquea la fase.</span>
+        <div class="gate-row"><span class="gate-pill">G-DS-AG-UNANIMOUS</span></div>
+      </a>
+    </div>
+
+    <p class="section-desc" style="margin-top:0;">Cada agente especialista valida un eje del código:</p>
+    <div class="grid grid-3">
+      <a class="tile" href="builder-guide/evaluators/01-react-patterns.md"><span class="tile-tag">A01</span><span class="tile-title">react-patterns</span><span class="tile-desc">Funcional · hooks rules · keys · memo criterioso · forwardRef · sin effects para derived state.</span></a>
+      <a class="tile" href="builder-guide/evaluators/02-composition.md"><span class="tile-tag">A02</span><span class="tile-title">composition</span><span class="tile-desc">Slot pattern · compound · asChild · sin kitchen-sink props · headless/visual split.</span></a>
+      <a class="tile" href="builder-guide/evaluators/03-pure-functions.md"><span class="tile-tag">A03</span><span class="tile-title">pure-functions</span><span class="tile-desc">Determinismo · sin mutación · sin Date.now/random · selectores memoizados.</span></a>
+      <a class="tile" href="builder-guide/evaluators/04-solid.md"><span class="tile-tag">A04</span><span class="tile-title">solid</span><span class="tile-desc">SRP · OCP via cva · LSP en asChild · ISP discriminated unions · DIP por inyección.</span></a>
+      <a class="tile" href="builder-guide/evaluators/05-design-patterns.md"><span class="tile-tag">A05</span><span class="tile-title">design-patterns</span><span class="tile-desc">Factory (cva) · Adapter (Repository) · Strategy · Provider · Compound · bloquea god-objects.</span></a>
+      <a class="tile" href="builder-guide/evaluators/06-big-o.md"><span class="tile-tag">A06</span><span class="tile-title">big-o</span><span class="tile-desc">@complexity en JSDoc · bloquea find dentro de map · Map/Set sobre includes · virtualización &gt;50.</span></a>
+      <a class="tile" href="builder-guide/evaluators/07-tailwind.md"><span class="tile-tag">A07</span><span class="tile-title">tailwind</span><span class="tile-desc">Cero arbitrary values · cero hex en JSX · cn() siempre · cva variantes · sin @apply · dark via class.</span></a>
+      <a class="tile" href="builder-guide/evaluators/08-storybook.md"><span class="tile-tag">A08</span><span class="tile-title">storybook</span><span class="tile-desc">CSF 3 · autodocs · Default + variantes + sizes + estados + Playground + AllVariants + A11y AA.</span></a>
+      <a class="tile" href="builder-guide/evaluators/09-ddd.md"><span class="tile-tag">A09</span><span class="tile-title">ddd</span><span class="tile-desc">domain puro TS · application orquesta · infrastructure adapters · ui jamás toca storage.</span></a>
+      <a class="tile" href="builder-guide/evaluators/10-overriding.md"><span class="tile-tag">A10</span><span class="tile-title">overriding</span><span class="tile-desc">className via cn() · asChild · slots · variant enum · prohíbe style{} con tokens y !important.</span></a>
+      <a class="tile" href="builder-guide/evaluators/11-theme-provider.md"><span class="tile-tag">A11</span><span class="tile-title">theme-provider</span><span class="tile-desc">tokens.ts as const · CSS vars · useTheme · dark via .dark · SSR-safe · sin re-render cascade.</span></a>
+      <a class="tile" href="builder-guide/evaluators/12-ci-formatting.md"><span class="tile-tag">A12</span><span class="tile-title">ci-formatting</span><span class="tile-desc">TS strict · ESLint · Prettier · commitlint · husky · vitest 80% · test-storybook · GH Actions.</span></a>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ── 3. FASE 1 ── -->
+  <section class="section">
+    <div class="section-head"><span class="section-num">03</span><h2 class="section-title">Fase 1 — Control de Productos <span style="font-size:12px;font-family:'JetBrains Mono',monospace;color:#A86250;font-weight:600;padding:4px 8px;background:#FBF2EE;border-radius:999px;margin-left:8px;">BLOQUEADA POR FASE 0</span></h2></div>
+    <p class="section-desc">El catálogo maestro. Sin productos, ningún otro módulo puede operar. Cubre los 4 sub-módulos del mindmap: Información Básica, Costos, Unidades y Proveedores. <strong>Arrancable solo cuando Fase 0 esté completa.</strong></p>
+
+    <!-- Flujo de construcción -->
+    <div class="flow">
+      <div class="flow-step"><span class="flow-step-num">Paso 1</span><span class="flow-step-name">CONTRACT.xml</span></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step"><span class="flow-step-num">Paso 2</span><span class="flow-step-name">README + Gates</span></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step"><span class="flow-step-num">Paso 3</span><span class="flow-step-name">M1_1 Info</span></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step"><span class="flow-step-num">Paso 4</span><span class="flow-step-name">M1_2 Costos</span></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step"><span class="flow-step-num">Paso 5</span><span class="flow-step-name">M1_3 Unidades</span></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step"><span class="flow-step-num">Paso 6</span><span class="flow-step-name">M1_4 Proveedores</span></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step"><span class="flow-step-num">Paso 7</span><span class="flow-step-name">Gates de Fase</span></div>
+    </div>
+
+    <div class="grid grid-2">
+
+      <!-- CONTRACT -->
+      <a class="tile tile-contract" href="builder-guide/phases/PHASE_1_PRODUCTOS/CONTRACT.xml">
+        <span class="tile-tag">★ Contract First</span>
+        <span class="tile-title">CONTRACT.xml — Fase 1</span>
+        <span class="tile-desc">Define las 4 entidades, todos los campos con tipos y validaciones, relaciones, invariantes del sistema y seed data realista (6 productos peruanos + 5 proveedores + 7 categorías).</span>
+        <div class="gate-row">
+          <span class="gate-pill contract">4 entidades</span>
+          <span class="gate-pill contract">5 invariantes</span>
+          <span class="gate-pill contract">Seed data</span>
+        </div>
+      </a>
+
+      <!-- README -->
+      <a class="tile" href="builder-guide/phases/PHASE_1_PRODUCTOS/README.xml">
+        <span class="tile-tag">Fase Spec</span>
+        <span class="tile-title">README.xml — Fase 1</span>
+        <span class="tile-desc">8 user stories · arquitectura de 5 vistas · flujo de navegación · reglas del design system · 15 gates de fase (contract, visual, UX, state, responsive).</span>
+        <div class="gate-row">
+          <span class="gate-pill contract">4 contract gates</span>
+          <span class="gate-pill visual">4 visual gates</span>
+          <span class="gate-pill ux">6 UX gates</span>
+          <span class="gate-pill state">3 state gates</span>
+          <span class="gate-pill resp">3 resp gates</span>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- Sub-módulos -->
+  <section class="section">
+    <div class="section-head"><span class="section-num">03.1</span><h2 class="section-title">Sub-módulos de Fase 1</h2></div>
+    <p class="section-desc">Cada sub-módulo tiene spec de UI (vistas, campos, copy oficial), checklist del design system, y sus propios gates de aceptación.</p>
+    <div class="grid grid-2">
+
+      <a class="tile" href="builder-guide/phases/PHASE_1_PRODUCTOS/modules/M1_1_INFO_BASICA.xml">
+        <span class="tile-tag">M1.1 · Depende de: CONTRACT</span>
+        <span class="tile-title">Información Básica</span>
+        <span class="tile-desc">Vista de lista (desktop table + mobile cards) · formulario de creación · empty states (vacío + sin resultados) · validación de SKU único en blur · transform a mayúsculas automático.</span>
+        <div class="gate-row">
+          <span class="gate-pill contract">SKU único on-blur</span>
+          <span class="gate-pill visual">font-mono para SKU</span>
+          <span class="gate-pill ux">Estado oculto en creación</span>
+          <span class="gate-pill state">created_at auto</span>
+        </div>
+      </a>
+
+      <a class="tile" href="builder-guide/phases/PHASE_1_PRODUCTOS/modules/M1_2_COSTOS_PRECIOS.xml">
+        <span class="tile-tag">M1.2 · Depende de: M1.1</span>
+        <span class="tile-title">Costos y Precios</span>
+        <span class="tile-desc">MarginPanel en tiempo real · semáforo de margen (rojo/amarillo/verde) · validación precio>costo · KPI cards en detalle · margen NUNCA guardado en localStorage.</span>
+        <div class="gate-row">
+          <span class="gate-pill contract">Margen display-only</span>
+          <span class="gate-pill visual">Semáforo 3 estados</span>
+          <span class="gate-pill ux">Botón disabled si precio≤costo</span>
+          <span class="gate-pill state">Sin margen en storage</span>
+        </div>
+      </a>
+
+      <a class="tile" href="builder-guide/phases/PHASE_1_PRODUCTOS/modules/M1_3_UNIDADES.xml">
+        <span class="tile-tag">M1.3 · Depende de: M1.1</span>
+        <span class="tile-title">Unidades y Medidas</span>
+        <span class="tile-desc">ConversionPreview en tiempo real · hint dinámico del factor · factor=1 automático si misma unidad · campo factor se oculta cuando no aplica · IDs en storage (no nombres).</span>
+        <div class="gate-row">
+          <span class="gate-pill contract">Factor auto=1</span>
+          <span class="gate-pill visual">Preview display-only</span>
+          <span class="gate-pill ux">Hint dinámico</span>
+          <span class="gate-pill state">IDs no nombres</span>
+        </div>
+      </a>
+
+      <a class="tile" href="builder-guide/phases/PHASE_1_PRODUCTOS/modules/M1_4_PROVEEDORES.xml">
+        <span class="tile-tag">M1.4 · Depende de: M1.1</span>
+        <span class="tile-title">Proveedores</span>
+        <span class="tile-desc">Lista independiente /proveedores · formulario completo con 4 field-groups · mini-card en selector de producto · modal "+ Nuevo proveedor" sin salir del form · validación RUC 11 dígitos.</span>
+        <div class="gate-row">
+          <span class="gate-pill contract">RUC 11 dígitos</span>
+          <span class="gate-pill visual">Badges condición pago</span>
+          <span class="gate-pill ux">Modal sin perder form</span>
+          <span class="gate-pill state">No eliminar con productos</span>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ── 3. BUILDER GUIDE ── -->
+  <section class="section">
+    <div class="section-head"><span class="section-num">04</span><h2 class="section-title">Builder Guide — Agentes y Memoria</h2></div>
+    <p class="section-desc">El orchestrator + sub-agentes que coordinan la construcción. La memoria append-only preserva decisiones entre sesiones. Los evaluators corren los gates.</p>
+    <div class="grid grid-3">
+
+      <a class="tile tile-brand" href="builder-guide/ORCHESTRATOR.xml">
+        <span class="tile-tag">★ Entrypoint</span>
+        <span class="tile-title">Orchestrator</span>
+        <span class="tile-desc">Lee PLAN + memoria → resuelve orden de módulos → invoca agentes → corre gates → bloquea si falla.</span>
+      </a>
+
+      <a class="tile" href="builder-guide/agents/SPEC_AGENT.xml">
+        <span class="tile-tag">Agent</span>
+        <span class="tile-title">Spec Agent</span>
+        <span class="tile-desc">Parsea el XML de cada módulo y emite parsed-spec estructurado para el contractor.</span>
+      </a>
+
+      <a class="tile" href="builder-guide/agents/MEMORY_AGENT.xml">
+        <span class="tile-tag">Agent</span>
+        <span class="tile-title">Memory Agent</span>
+        <span class="tile-desc">Append-only. Lee decisiones previas, escribe nuevas. Nunca borra, solo versiona.</span>
+      </a>
+
+      <a class="tile" href="builder-guide/agents/STATE_AGENT.xml">
+        <span class="tile-tag">Agent</span>
+        <span class="tile-title">State Agent</span>
+        <span class="tile-desc">Genera state.js con seed data desde el CONTRACT.xml. Gestiona localStorage.</span>
+      </a>
+
+      <a class="tile" href="builder-guide/agents/GRAPH_AGENT.xml">
+        <span class="tile-tag">Agent</span>
+        <span class="tile-title">Graph Agent</span>
+        <span class="tile-desc">Resuelve el DAG de dependencias entre módulos. Emite orden topológico de construcción.</span>
+      </a>
+
+      <a class="tile" href="builder-guide/agents/EVALUATOR_AGENT.xml">
+        <span class="tile-tag">Agent</span>
+        <span class="tile-title">Evaluator Agent</span>
+        <span class="tile-desc">Corre todos los gates: contract, visual, UX, state, responsive, perf. Bloquea si alguno falla.</span>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- ── 4. MEMORY ── -->
+  <section class="section">
+    <div class="section-head"><span class="section-num">05</span><h2 class="section-title">Memoria — Decisiones Inmutables</h2></div>
+    <p class="section-desc">Decisiones que no cambian entre sesiones. Append-only: si algo cambia, se versiona. Nunca se borra.</p>
+    <div class="grid grid-3">
+      <a class="tile" href="builder-guide/memory/DESIGN_DECISIONS.xml">
+        <span class="tile-tag">Memory · DS</span>
+        <span class="tile-title">Design Decisions</span>
+        <span class="tile-desc">DS-001..DS-010: colores, tipografía, spacing, hit targets, iconografía, componentes, motion, empty states, forms.</span>
+        <span class="tile-meta">10 decisiones · inmutables</span>
+      </a>
+      <a class="tile" href="builder-guide/memory/PRODUCT_DECISIONS.xml">
+        <span class="tile-tag">Memory · PM</span>
+        <span class="tile-title">Product Decisions</span>
+        <span class="tile-desc">PD-001..PD-016: ICP, wedge, plataforma, monetización, multi-almacén, stock mínimo, motivos de salida.</span>
+        <span class="tile-meta">16 decisiones · actualizables</span>
+      </a>
+      <a class="tile" href="builder-guide/memory/CHANGELOG.xml">
+        <span class="tile-tag">Memory · Log</span>
+        <span class="tile-title">Changelog</span>
+        <span class="tile-desc">Registro append-only de todos los cambios al builder guide y al producto.</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ── 5. EVALUATORS ── -->
+  <section class="section">
+    <div class="section-head"><span class="section-num">06</span><h2 class="section-title">Evaluators — Gates Reutilizables</h2></div>
+    <p class="section-desc">Cada evaluator define checks que se aplican a TODOS los módulos. Son la definición de "hecho" aplicada de forma consistente.</p>
+    <div class="grid grid-4">
+      <a class="tile" href="builder-guide/evaluators/visual.xml">
+        <span class="tile-tag">Evaluator</span>
+        <span class="tile-title">Visual</span>
+        <span class="tile-desc">Colores DS · font-mono · contraste WCAG AA · iconos Lucide.</span>
+        <div class="gate-row"><span class="gate-pill visual">6 checks</span></div>
+      </a>
+      <a class="tile" href="builder-guide/evaluators/ux-flow.xml">
+        <span class="tile-tag">Evaluator</span>
+        <span class="tile-title">UX Flow</span>
+        <span class="tile-desc">Feedback &lt;100ms · sin dead-ends · confirmaciones destructivas · empty states con CTA.</span>
+        <div class="gate-row"><span class="gate-pill ux">6 checks</span></div>
+      </a>
+      <a class="tile" href="builder-guide/evaluators/state.xml">
+        <span class="tile-tag">Evaluator</span>
+        <span class="tile-title">State</span>
+        <span class="tile-desc">localStorage persiste · stock nunca negativo · KPIs derivados · determinismo.</span>
+        <div class="gate-row"><span class="gate-pill state">6 checks</span></div>
+      </a>
+      <a class="tile" href="builder-guide/evaluators/responsive.xml">
+        <span class="tile-tag">Evaluator</span>
+        <span class="tile-title">Responsive</span>
+        <span class="tile-desc">5 viewports: 375px / 414px / 768px / 1440px / 1920px · sin overflow · hit targets.</span>
+        <div class="gate-row"><span class="gate-pill resp">5 viewports</span></div>
+      </a>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ── 6. STRATEGY ── -->
+  <section class="section">
+    <div class="section-head"><span class="section-num">07</span><h2 class="section-title">Strategy — Discovery</h2></div>
+    <p class="section-desc">Completa. Entrevistas, critiques y north star que sustentan las decisiones del producto.</p>
+    <div class="grid grid-3">
+      <a class="tile tile-brand" href="strategy/04_NORTH_STAR_AND_MOAT.md">
+        <span class="tile-tag">★ North Star</span>
+        <span class="tile-title">North Star &amp; Moat</span>
+        <span class="tile-desc">Tesis · ICP v1 · modelo de negocio · targets 12 meses · moat del marketplace.</span>
+      </a>
+      <a class="tile" href="strategy/00_INSIGHTS_FROM_INTERVIEWS.md">
+        <span class="tile-tag">Discovery</span>
+        <span class="tile-title">Insights de Entrevistas</span>
+        <span class="tile-desc">6 entrevistas · 5 pain points · JTBD · anti-patterns detectados.</span>
+      </a>
+      <a class="tile" href="strategy/05_PARTNER_REFERENCE_MINDMAP.md">
+        <span class="tile-tag">Referencia</span>
+        <span class="tile-title">Mindmap del Socio</span>
+        <span class="tile-desc">Los 7 pilares de inventario mapeados a nuestras fases. Scope total del producto.</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ── 7. PRÓXIMO PASO ── -->
+  <section class="section">
+    <div class="section-head"><span class="section-num">08</span><h2 class="section-title">Próximo paso</h2></div>
+    <div class="card" style="padding: var(--space-6);">
+      <p style="font-size: 15px; line-height: 1.7; color: var(--color-ink-600); margin-bottom: 12px;">
+        Spec de <strong>Fase 0 — Design System</strong> completa: TOKENS · CONTRACT · 12 component specs · 19 gates. <strong>Falta construirlo.</strong> Para construir di:
+      </p>
+      <p style="font-family: var(--font-mono); font-size: 13px; background: #FBF2EE; padding: 12px 16px; border-radius: 8px; color: #6F3B30; border: 1px solid #F4DDD3;">
+        "construir design system" → El orchestrator lee TOKENS + CONTRACT + C01..C12 → genera tokens.css + components.css + DESIGN_SYSTEM.html → corre 19 gates → entrega si pasan todos.
+      </p>
+      <p style="font-size: 13px; color: var(--color-ink-400); margin-top: 12px;">
+        También puedes decir: <em>"revisar paleta v2"</em> · <em>"añadir componente Toast"</em> · <em>"ajustar TOKENS"</em> · <em>"saltar al showcase"</em>
+      </p>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

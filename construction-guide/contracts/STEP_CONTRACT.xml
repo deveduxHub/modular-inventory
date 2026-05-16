@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="contract" id="STEP_CONTRACT" version="2">
+  <meta>
+    <title>Step Contract v2 — Route + Guards + ViewBinding + Transitions (SRP split)</title>
+    <supersedes>STEP_CONTRACT v1 (monolithic Step aggregate)</supersedes>
+    <enforced-by>STEP_AGENT</enforced-by>
+    <decision-refs>R-1 · DS-082, DS-083</decision-refs>
+    <signed-by>W1-SOLID, W4-CC</signed-by>
+  </meta>
+
+  <rationale>
+    <why>The v1 Step aggregate violated SRP by mixing routing, authorization, rendering and
+    navigation concerns into a single object. v2 splits it into 4 independent concepts that
+    compose. Each concept is testable in isolation; changing one does not impact the others.</why>
+  </rationale>
+
+  <schema lang="typescript"><![CDATA[
+import type { ViewDefinition } from './view';
+
+// ─── ROUTE — URL → step matching ────────────────────────────────────
+export interface Route {
+  readonly id:      string;             // 'products.list'
+  readonly path:    PathPattern;        // '/productos' | '/productos/:id'
+  readonly _match:  (url: string) => RouteMatch | null;  // computed by Trie at build
+}
+
+export function defineRoute(spec: {
+  id:   string;
+  path: PathPattern;
+}): Route;
+
+// ─── GUARD — precondition that can replace the step ─────────────────
+export interface Guard {
+  readonly id: string;
+  readonly run: (ctx: GuardContext) => GuardResult | Promise<GuardResult>;
+}
+
+export type GuardResult =
+  | { decision: 'allow' }
+  | { decision: 'replace';  withStep: string; preserveIntent?: boolean }
+  | { decision: 'redirect'; url: string }
+  | { decision: 'deny';     reason: string };
+
+export function defineGuard(spec: {
+  id: string;
+  run: Guard['run'];
+}): Guard;
+
+// ─── TRANSITIONS — declarative navigation ───────────────────────────
+export interface Transitions {
+  readonly [eventName: string]: TransitionTarget;
+}
+
+export type TransitionTarget =
+  | { stepId: string;  params?: ReadonlyArray<string> }
+  | { url: string }
+  | { complete: true;  output?: unknown }
+  | { fail: true;      error: string };
+
+export function defineTransitions(t: Transitions): Transitions;
+
+// ─── STEP — composition of the above ────────────────────────────────
+export interface StepDefinition {
+  readonly route:       Route;
+  readonly guards:      ReadonlyArray<Guard>;
+  readonly view:        ViewDefinition;
+  readonly transitions: Transitions;
+  readonly title?:      string | ((ctx: { params: Record<string,string> }) => string);
+  readonly breadcrumbs?: BreadcrumbsFn;
+}
+
+export function defineStep(spec: {
+  route:       Route;
+  guards?:     ReadonlyArray<Guard>;
+  view:        ViewDefinition;
+  transitions?: Transitions;
+  title?:       StepDefinition['title'];
+  breadcrumbs?: BreadcrumbsFn;
+}): StepDefinition;
+  ]]></schema>
+
+  <routing-implementation>
+    <note>StepRouter uses a Trie for O(log N) path matching, NOT O(N) linear scan.</note>
+    <data-structure>Compressed Radix Trie built at registration time from all step routes.</data-structure>
+    <performance>500 steps → ~7 trie hops vs 500 linear comparisons.</performance>
+  </routing-implementation>
+
+  <example><![CDATA[
+import { defineStep, defineRoute, defineTransitions } from '@surte/core';
+import { authGuard, productsReadGuard } from '@surte/guards';
+import { ProductListView, ProductCreateView, ProductDetailView } from '../views';
+
+export const productListStep = defineStep({
+  route:       defineRoute({ id: 'products.list', path: '/productos' }),
+  guards:      [authGuard, productsReadGuard],
+  view:        ProductListView,
+  transitions: defineTransitions({
+    create: { stepId: 'products.create' },
+    open:   { stepId: 'products.detail', params: ['id'] },
+  }),
+  title:        'Productos',
+  breadcrumbs:  () => [{ label: 'Productos' }],
+});
+
+export const productCreateStep = defineStep({
+  route:       defineRoute({ id: 'products.create', path: '/productos/nuevo' }),
+  guards:      [authGuard, productsWriteGuard],
+  view:        ProductCreateView,
+  transitions: defineTransitions({
+    next:   { stepId: 'products.detail', params: ['id'] },
+    cancel: { stepId: 'products.list' },
+  }),
+});
+
+export const productDetailStep = defineStep({
+  route:       defineRoute({ id: 'products.detail', path: '/productos/:id' }),
+  guards:      [authGuard, productsReadGuard],
+  view:        ProductDetailView,
+  title:       ({ params }) => `Producto · ${params.id}`,
+});
+  ]]></example>
+
+  <gates>
+    <gate id="S-G1">Every Step is defined via defineStep (no plain object literals).</gate>
+    <gate id="S-G2">Route paths are unique across all registered steps.</gate>
+    <gate id="S-G3">Guards return GuardResult (never throw to skip).</gate>
+    <gate id="S-G4">Transitions target stepIds that exist OR external URLs.</gate>
+    <gate id="S-G5">Step has *.step.test.tsx covering route match + guards.</gate>
+  </gates>
+</artifact>

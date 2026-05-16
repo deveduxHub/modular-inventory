@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="component-spec" id="C02_INPUT" version="1">
+  <meta name="Input" decision-ref="DS-010, DS-017"/>
+  <class>.input</class>
+
+  <variants>
+    <variant name="text"     type="text"/>
+    <variant name="number"   type="number" inputmode="decimal"/>
+    <variant name="integer"  type="text"   inputmode="numeric" pattern="[0-9]*"/>
+    <variant name="tel"      type="tel"    inputmode="tel"/>
+    <variant name="email"    type="email"  inputmode="email"/>
+    <variant name="date"     type="date"/>
+    <variant name="search"   type="search" modifier=".input--search" note="con icono lupa prefix"/>
+    <variant name="textarea" tag="textarea" modifier=".input--textarea"/>
+  </variants>
+
+  <sizes>
+    <size name="md" default="true"><h>44px</h><px>--space-4</px><font>--text-base</font></size>
+    <size name="lg" modifier=".input--lg"><h>52px</h><px>--space-5</px><font>--text-md</font></size>
+  </sizes>
+
+  <base-style>
+    <bg>--surface</bg>
+    <text>--text-primary</text>
+    <placeholder>--text-muted</placeholder>
+    <border>1px solid var(--border-default)</border>
+    <radius>--radius-md</radius>
+    <font>--font-body</font>
+  </base-style>
+
+  <states>
+    <state name="hover" trigger=":hover"><border>--border-strong</border></state>
+    <state name="focus" trigger=":focus-visible"><border>--terracotta-500</border><shadow>--shadow-focus</shadow></state>
+    <state name="error" attr="aria-invalid=true"><border>--status-critical</border></state>
+    <state name="disabled" attr="disabled"><bg>--surface-warm</bg><text>--text-disabled</text></state>
+    <state name="readonly" attr="readonly"><bg>--surface-warm</bg><cursor>default</cursor></state>
+  </states>
+
+  <special>
+    <feature name="prefix-icon" modifier=".input--with-prefix" note="padding-left: var(--space-10)"/>
+    <feature name="suffix-unit" modifier=".input--with-suffix" note="ej: S/. , kg, %"/>
+    <feature name="mono-numbers" modifier=".input--mono" note="font-family: var(--font-mono) para SKU, precio"/>
+  </special>
+
+  <structure html='<input class="input" type="text" placeholder="Arroz Costeño Premium" />'/>
+  <structure html='<input class="input input--mono" type="text" placeholder="ARR-COS-50KG" />'/>
+  <structure html='<div class="input--with-suffix"><input class="input" type="number" inputmode="decimal"/><span class="suffix">kg</span></div>'/>
+
+  <accessibility>
+    <rule>Inputs numéricos: inputmode obligatorio.</rule>
+    <rule>aria-invalid + aria-describedby="error-id" si error visible.</rule>
+    <rule>autocomplete="off" en SKU, montos.</rule>
+  </accessibility>
+</artifact>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phase id="phase-4-inteligencia" duration-weeks="ongoing" status="pending">
+  <purpose>Convertir datos cruzados en producto: predicciones, recomendaciones, expansión geográfica.</purpose>
+  <modules>
+    <module id="M16_REPOSICION_SMART">Sugerencias de qué reponer basadas en histórico + estacionalidad.</module>
+    <module id="M17_DEMAND_FORECAST">Predicción de demanda por SKU + alerta de compras óptimas.</module>
+    <module id="M18_NEW_MARKET">Playbook + tooling de expansión a un 2do mercado.</module>
+    <module id="M19_API">API pública para integraciones (POS, contabilidad, SUNAT vía 3ros).</module>
+    <module id="M20_MULTI_SUCURSAL">Gestión multi-almacén + transferencias entre sucursales.</module>
+  </modules>
+  <success-metric>3 mercados activos · MRR S/. 50K+ · señal para ronda seed.</success-metric>
+</phase>

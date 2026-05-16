@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="component-spec" id="C10_MODAL" version="1">
+  <meta name="Modal" decision-ref="DS-008, DS-017, DS-019, DS-020"/>
+  <class>.modal</class>
+  <intent>Diálogo modal con backdrop, focus trap, ESC para cerrar. Cero saltos de layout al abrir (compensa scrollbar).</intent>
+
+  <sizes>
+    <size name="sm" modifier=".modal--sm" ><max-w>440px</max-w></size>
+    <size name="md" default="true"        ><max-w>560px</max-w></size>
+    <size name="lg" modifier=".modal--lg" ><max-w>720px</max-w></size>
+    <size name="xl" modifier=".modal--xl" ><max-w>960px</max-w></size>
+  </sizes>
+
+  <structure html='<div class="modal-backdrop" data-open="true">
+  <div class="modal modal--md" role="dialog" aria-modal="true" aria-labelledby="m-title">
+    <header class="modal__head">
+      <h2 id="m-title" class="modal__title">Nuevo proveedor</h2>
+      <button class="modal__close" aria-label="Cerrar"></button>
+    </header>
+    <div class="modal__body">…form-groups…</div>
+    <footer class="modal__foot">
+      <button class="btn btn--ghost">Cancelar</button>
+      <button class="btn btn--primary">Guardar proveedor</button>
+    </footer>
+  </div>
+</div>'/>
+
+  <parts>
+    <part class=".modal-backdrop">fixed inset-0 · bg: rgba(31,37,40,0.55) · z: var(--z-modal) · grid place-items: center · animate fade in dur-base</part>
+    <part class=".modal">bg: var(--surface) · radius: var(--radius-xl) · shadow: var(--shadow-xl) · width: 100% · max-h: 90vh · display: flex · flex-direction: column · animate slide-up dur-base ease-out</part>
+    <part class=".modal__head">px: var(--space-6) · py: var(--space-5) · border-bottom: 1px solid var(--divider) · flex · justify-between</part>
+    <part class=".modal__title">font: var(--text-xl) / var(--fw-bold) · letter-spacing: var(--ls-snug)</part>
+    <part class=".modal__close">btn-ghost icon · 40×40</part>
+    <part class=".modal__body">px: var(--space-6) · py: var(--space-6) · overflow-y: auto · flex: 1</part>
+    <part class=".modal__foot">px: var(--space-6) · py: var(--space-5) · border-top: 1px solid var(--divider) · flex · gap: var(--space-3) · justify-content: flex-end</part>
+  </parts>
+
+  <interactions>
+    <action>open: data-open="true" + body.style.overflow="hidden" + compensar scrollbar con padding-right</action>
+    <action>close: ESC, backdrop click (configurable), X button, Cancelar button</action>
+    <action>focus-trap: primer y último focusable conectados con tab/shift-tab</action>
+    <action>return-focus: al elemento que abrió el modal</action>
+  </interactions>
+
+  <accessibility>
+    <rule>aria-modal="true" + role="dialog" obligatorios.</rule>
+    <rule>aria-labelledby apunta al título; aria-describedby al body si hay descripción crítica.</rule>
+    <rule>Inert en el resto del documento mientras está abierto.</rule>
+  </accessibility>
+
+  <do-and-dont>
+    <do>Foot SIEMPRE con Cancelar (ghost) + acción primaria (alineados a la derecha).</do>
+    <dont>NO modales anidados.</dont>
+    <dont>NO cerrar modal de formulario al click backdrop si hay cambios sin guardar — confirmar.</dont>
+  </do-and-dont>
+</artifact>

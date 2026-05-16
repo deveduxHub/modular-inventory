@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="contract" id="MODULE_CONTRACT" version="1">
+  <meta>
+    <title>Module Contract — Schema canónico del ModuleManifest</title>
+    <enforced-by>MODULE_AGENT, BOUNDARY_AGENT</enforced-by>
+    <decision-refs>D8, DS-031, DS-032, DS-057, DS-059</decision-refs>
+  </meta>
+
+  <schema lang="typescript"><![CDATA[
+import type { ComponentType, ReactNode } from 'react';
+import type { Step } from './step';
+import type { TOKENS } from './container';
+
+export interface ModuleManifest<TConfig extends object = {}> {
+  // Identidad
+  readonly id: ModuleId;                              // 'products'
+  readonly version: SemVer;                           // '1.0.0'
+  readonly displayName: string;                       // 'Productos'
+  readonly description?: string;
+
+  // Dependencias declarativas (D8 — no se importan directo)
+  readonly dependsOn?: readonly ModuleId[];           // ['auth']
+  readonly conflictsWith?: readonly ModuleId[];
+
+  // Capacidades que provee
+  readonly steps?: readonly Step[];                   // steps que registra
+  readonly slots?: readonly SlotContribution[];       // slots que llena (sidebar.nav, dashboard.widgets)
+  readonly providers?: readonly ComponentType<{ children: ReactNode }>[];  // contexts a stackear
+
+  // Patterns exportados (D57)
+  readonly patterns?: Record<string, PatternMetadata>;
+
+  // DI bindings
+  readonly bindings?: readonly DependencyBinding[];
+
+  // Lifecycle
+  readonly lifecycle?: {
+    readonly onBootstrap?: (ctx: ModuleContext) => void | Promise<void>;
+    readonly onActivate?: (ctx: ModuleContext) => void | Promise<void>;
+    readonly onDeactivate?: (ctx: ModuleContext) => void | Promise<void>;
+    readonly onUninstall?: (ctx: ModuleContext) => void | Promise<void>;
+    readonly migrations?: readonly Migration[];        // schema versioning (DS-059)
+  };
+
+  // Capabilities requeridas
+  readonly requires?: readonly Capability[];           // ['storage', 'auth']
+
+  // Configuración del módulo (la app pasa esto en surte.config.ts)
+  readonly configSchema?: ZodSchema<TConfig>;
+}
+
+export interface SlotContribution {
+  readonly slot: SlotName;                            // 'sidebar.nav' | 'dashboard.widgets' | etc.
+  readonly id: string;                                // único por contribución
+  readonly priority?: number;
+  readonly component?: ComponentType<any>;             // si renderiza UI
+  readonly item?: NavItem;                             // si es nav item
+  readonly condition?: (ctx: AppContext) => boolean;
+}
+
+export interface NavItem {
+  readonly label: string;
+  readonly icon: IconName;
+  readonly path: string;
+  readonly order?: number;
+}
+
+export interface PatternMetadata {
+  readonly name: string;                              // 'CreateProductFlow'
+  readonly contracts: { L0: string; L1: string; L2: string };  // referencias a contracts
+  readonly stability: 'stable' | 'beta' | 'experimental';
+}
+
+export interface DependencyBinding {
+  readonly token: symbol;                             // TOKENS.ProductRepository
+  readonly factory: (ctx: ModuleContext) => unknown;
+}
+
+export interface Migration {
+  readonly fromVersion: number;
+  readonly toVersion: number;
+  readonly run: (data: unknown) => unknown;
+}
+
+export type ModuleId = string;
+export type SemVer = `${number}.${number}.${number}`;
+export type Capability = 'storage' | 'auth' | 'http' | 'realtime' | string;
+export type SlotName = string;
+export type IconName = string;
+  ]]></schema>
+
+  <module-factory><![CDATA[
+// Cada módulo exporta default una factory:
+// packages/modules/module-products/src/index.ts
+
+import { productsManifest } from './manifest';
+import type { ProductsConfig } from './manifest';
+
+export default function productsModule(opts?: Partial<ProductsConfig>) {
+  return {
+    ...productsManifest,
+    config: { ...productsManifest.configSchema?.parse({}), ...opts },
+  };
+}
+
+// Re-exports de patterns públicos
+export { CreateProductFlow } from './patterns/CreateProductFlow';
+export { EditProductFlow } from './patterns/EditProductFlow';
+export { ProductListView } from './views/ProductListView';
+export { useProducts } from './hooks/useProducts';
+  ]]></module-factory>
+
+  <validation-rules>
+    <rule>id debe ser único en el monorepo y matchear el package name (sin @surte/ prefix).</rule>
+    <rule>version debe ser SemVer válido y matchear package.json.</rule>
+    <rule>dependsOn solo puede referenciar módulos existentes en packages/modules/.</rule>
+    <rule>Steps declarados deben pasar STEP_CONTRACT validación.</rule>
+    <rule>SlotContribution.slot debe estar en la lista canónica de slots o ser custom con prefix 'slot.'.</rule>
+    <rule>bindings.token debe estar en TOKENS canónicos del @surte/core.</rule>
+    <rule>migrations deben ser monotónicas (fromVersion siempre crece).</rule>
+    <rule>Si el módulo persiste data, debe declarar AL MENOS migrations[0] = { fromVersion: 0, toVersion: 1 }.</rule>
+  </validation-rules>
+
+  <forbidden>
+    <item>Importar otro module-* directamente (D8). Usar EventBus o dependsOn.</item>
+    <item>Importar @surte/infrastructure directamente. Usar DI Container.</item>
+    <item>Mutar el manifest después de bootstrap.</item>
+    <item>Definir steps fuera de steps/index.ts (debe ser estáticamente analizable).</item>
+  </forbidden>
+</artifact>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="component-spec" id="C01_BUTTON" version="1">
+  <meta name="Button" decision-ref="DS-017"/>
+  <class>.btn</class>
+
+  <variants>
+    <variant name="primary"   modifier=".btn--primary"   default="true">
+      <bg>--brand-primary</bg><text>--text-inverse</text><hover>--brand-primary-hover</hover><active>--brand-primary-active</active>
+    </variant>
+    <variant name="secondary" modifier=".btn--secondary">
+      <bg>--surface</bg><text>--text-primary</text><border>--border-default</border><hover-bg>--surface-warm</hover-bg>
+    </variant>
+    <variant name="ghost"     modifier=".btn--ghost">
+      <bg>transparent</bg><text>--text-primary</text><hover-bg>--ink-50</hover-bg>
+    </variant>
+    <variant name="danger"    modifier=".btn--danger">
+      <bg>--status-critical</bg><text>--text-inverse</text><hover>--terracotta-800</hover>
+    </variant>
+  </variants>
+
+  <sizes>
+    <size name="sm" modifier=".btn--sm"><h>36px</h><px>--space-3</px><font>--text-sm</font></size>
+    <size name="md" default="true">     <h>44px</h><px>--space-4</px><font>--text-base</font></size>
+    <size name="lg" modifier=".btn--lg"><h>52px</h><px>--space-5</px><font>--text-md</font></size>
+  </sizes>
+
+  <states>
+    <state name="default"/>
+    <state name="hover" trigger=":hover"/>
+    <state name="focus" trigger=":focus-visible"><shadow>--shadow-focus</shadow></state>
+    <state name="active" trigger=":active"/>
+    <state name="disabled" attr="disabled"><opacity>0.5</opacity><cursor>not-allowed</cursor></state>
+    <state name="loading" data-attr="data-loading=true"><spinner>true</spinner><disabled>true</disabled></state>
+  </states>
+
+  <structure html='<button class="btn btn--primary">Guardar</button>'/>
+  <structure html='<button class="btn btn--secondary btn--sm"><svg class="i" />Cancelar</button>' note="con icono prefix"/>
+  <structure html='<button class="btn btn--primary" data-loading="true">Guardando…</button>'/>
+
+  <accessibility>
+    <rule>aria-busy="true" cuando data-loading.</rule>
+    <rule>Si solo icono → requiere aria-label.</rule>
+    <rule>Nunca disabled puro sin explicación visible (tooltip o helper text).</rule>
+  </accessibility>
+
+  <do-and-dont>
+    <do>Usar .btn--primary como CTA único por vista (escasez).</do>
+    <do>Pares primary + ghost en formularios (Guardar + Cancelar).</do>
+    <dont>NO usar .btn--danger en flujos no destructivos.</dont>
+    <dont>NO encadenar 3+ primary en una misma vista.</dont>
+  </do-and-dont>
+</artifact>

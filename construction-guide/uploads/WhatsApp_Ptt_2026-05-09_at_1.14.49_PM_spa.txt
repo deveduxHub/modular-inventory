@@ -1,0 +1,101 @@
+[Speaker 0]
+Ya. 
+
+[Speaker 1]
+Es un sistema que está en la nube, que tengo acceso a nivel de cualquier parte del mundo. 
+
+[Speaker 0]
+Ya. 
+
+[Speaker 1]
+Tengo un dominio y dentro del dominio, dentro de mi sistema, tengo el kardex completo, separado por productos. 
+
+[Speaker 0]
+Ajá. 
+
+[Speaker 1]
+El ca-- el sistema me avisa cuando tengo un stock de cien cajas o cien unidades, por cada una me avisa para reponerlo. 
+
+[Speaker 0]
+Ya. 
+
+[Speaker 1]
+Tengo una lista de clientes. Eh, los clientes tengo con dirección, teléfono, frecuencia de compra, cada cuánto me compran, cada cuánto renuevan su compra, su cobranza también, cada cuánto, cuánto tiempo me demora, me bota morosidad del cliente. 
+
+[Speaker 0]
+Ya. 
+
+[Speaker 1]
+Eh, cuánto me está comprando al mes, reporte de vendedores también, cada vendedor cuánto me ha vendido cada mes, cada semana, para ver sus, sus, este, 
+
+[Speaker 1]
+sus utilidades que ellos tienen. 
+
+[Speaker 0]
+Claro. 
+
+[Speaker 1]
+De ahí agarra y me bota, este, puedo facturar: boletas, facturas, guías de remisión. Puedo emitir, este, notas de crédito, anular las notas de crédito, todo el sist-- la facturación completa de la empresa. Completa. 
+
+[Speaker 0]
+Ahora, ¿qué, qué cree usted que le falta a su sistema para que usted pueda decir: «Es ideal o está completamente bien hecho o es lo que yo necesito»? 
+
+[Speaker 1]
+A que, este, quizá que me dé un poco más especificado el tema de mis clientes, porque el sistema no me bota qué clientes no me compran, solo me bota qué clientes me compran con frecuencia. Pero por ejemplo, si usted me deja de comprar o un cliente me deja de comprar un mes, ya no me, ya no aparece en el siguiente reporte, solo me aparece los que me están comprando. Entonces, eso me gustaría para saber yo qué clientes visitarlos frecuentemente, ¿no? 
+
+[Speaker 0]
+¿Usted cree que usted es un experto usando a-actualmente su sistema o...? 
+
+[Speaker 1]
+No, me falta capacitación, evidentemente. 
+
+[Speaker 0]
+Ya. Y la capacitación, eh, ¿tiene un cobro adicional? ¿O usted, eh, solo llama al ingeniero que le instaló el software y lo capacita gratis? 
+
+[Speaker 1]
+Inicialmente, se quedó en que la capacitación era de por vida, por así decirlo, cuando había una actualización a lo, ¿no? Sin embargo, eh, mi empresa todavía no se ha comunicado con el ingeniero, entonces no podría precisar si es que me va a cobrar o no, pero al momento de hacer el contrato se quedó de que, eh, no me iban a cobrar ni un sol. La capacitación era cada vez que se actualizaba algo del sistema o había una actualización que requeríamos, él nos tenía que, eh, instruir para poder manejar el sistema. 
+
+[Speaker 0]
+Ya. Y actualmente, ¿usted cree que si, digamos, usted recomienda o le enseña a otra persona el uso de su sistema, usted cree que ella aprenda rápido o va a demorar en aprender cómo funciona cada cosa o cada pantalla, cada imagen o cada selección de productos, qué sé yo? 
+
+[Speaker 1]
+Ah, ya, el manejo. Yo creo que está en un nivel del uno al diez, un... Eh, la dificultad más fácil es el-- lo más, lo más difícil es el uno, lo más fácil el cinco, creo que en un cuatro. O sea, está casi fácil para cualquier persona lo pueda- 
+
+[Speaker 0]
+Utilizar. 
+
+[Speaker 1]
+Ajá. 
+
+[Speaker 0]
+Ya. Eh, ahora, en cuanto a los comprobantes de pago, ¿cómo realiza eso su sistema? La tu-- la facturación. 
+
+[Speaker 1]
+Eh, actualmente hay clientes que sí nos piden, este, comprobantes de pago, se les emite al momento de hacer la venta, y, pero el ochenta, el setenta por ciento de nuestras ventas son sin comprobantes de pago por el tema de nuestros clientes. Entonces, el movimiento de mercadería se hace en base a las notas de pedido, se boletea, este, a clientes varios, ¿no? Mediante ya contabilidad. 
+
+[Speaker 0]
+¿Usted registra eso manualmente? 
+
+[Speaker 1]
+Eh... 
+
+[Speaker 0]
+¿En el sistema? 
+
+[Speaker 1]
+Sí. 
+
+[Speaker 0]
+Ya. Eh, ahora, si digamos, hay una propuesta de que usted pueda ampliar más su mercado o tenga más ventas entrando a una plataforma en la cual usted aumente sus ventas, ¿no? Eh, y ya no tenga que, digamos, estar mandando vendedores, sino simplemente la comunicación sea a través de una red sistemática. ¿Usted estaría dispuesto a entrar siempre y cuando aumente sus ventas? 
+
+[Speaker 1]
+Sí, claro, por supuesto. Mientras haya utilidades para la empresa y, eh, ocupar una porción más del mercado con el producto, la empresa está apta a poder participar, ¿no? 
+
+[Speaker 0]
+¿Y usted estaría dispuesto a pagar, digamos, una suscripción al mes? Claramente, siempre y cuando usted aumente sus ventas y sea rentable para usted. 
+
+[Speaker 1]
+Claro, ajá. Evidentemente, viendo la, la rentabilidad que nos pueda dar, el costo-beneficio que nos pueda dar esa aplicación, este, yo creo que sí podríamos ingresar a eso. 
+
+[Speaker 0]
+Ya, listo.

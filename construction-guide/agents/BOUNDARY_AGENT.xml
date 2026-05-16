@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="agent" id="BOUNDARY_AGENT" version="1">
+  <meta>
+    <title>BOUNDARY_AGENT — Enforce ESLint boundaries entre capas y módulos</title>
+    <owner>orchestrator</owner>
+    <runnable-by>Claude Code (autónomo)</runnable-by>
+    <decision-refs>D7, D8, DS-037</decision-refs>
+  </meta>
+
+  <responsibility>
+    Verifica que ningún archivo del monorepo cruce los límites de las capas DDD ni de los
+    módulos. Genera reporte por categoría de violación.
+  </responsibility>
+
+  <enforcement-matrix>
+    <rule from="packages/core"           denies="packages/!core"/>
+    <rule from="packages/domain"         denies="packages/infrastructure, packages/ui, packages/shells, packages/shell-runtime, packages/modules, apps"/>
+    <rule from="packages/application"    denies="packages/infrastructure, packages/ui, packages/shells, packages/shell-runtime"/>
+    <rule from="packages/ui"             denies="packages/infrastructure, packages/modules, apps"/>
+    <rule from="packages/shells"         denies="packages/infrastructure, packages/modules, apps"/>
+    <rule from="packages/shell-runtime"  denies="packages/infrastructure, packages/modules, apps"/>
+    <rule from="packages/modules/X"      denies="packages/modules/!X"/>
+    <rule from="packages/modules/X"      denies="packages/infrastructure (direct), apps"/>
+    <rule from="apps/X"                  denies="apps/!X"/>
+  </enforcement-matrix>
+
+  <checks>
+    <check id="B1">No hay imports estáticos cross-module (packages/modules/A → packages/modules/B).</check>
+    <check id="B2">No hay imports de packages/infrastructure desde packages/ui o packages/modules.</check>
+    <check id="B3">packages/domain no importa de NINGÚN otro package interno.</check>
+    <check id="B4">apps/X solo importa packages/* (nunca apps/Y).</check>
+    <check id="B5">Path aliases (@surte/*) usados consistentemente — no relative paths cross-package.</check>
+  </checks>
+
+  <output-format>
+    <example><![CDATA[
+{
+  "agent": "BOUNDARY_AGENT",
+  "violations": [
+    {
+      "check": "B1",
+      "file": "packages/modules/module-sales/src/views/POSView.tsx",
+      "imports": ["@surte/module-products/views/ProductListView"],
+      "fix": "Use EventBus or declare dependsOn in module-sales manifest"
+    }
+  ],
+  "verdict": "BLOCK"
+}
+    ]]></example>
+  </output-format>
+</artifact>

@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="contract" id="phase-1-productos-contract" version="1">
+  <meta>
+    <phase>PHASE_1_PRODUCTOS</phase>
+    <principle>Contract-first. Nadie construye UI sin este contrato aprobado.</principle>
+    <created>2026-05-11</created>
+  </meta>
+
+  <!--
+    ═══════════════════════════════════════════════════════
+    ENTIDADES
+    Cada entidad define sus campos, tipos, restricciones.
+    ═══════════════════════════════════════════════════════
+  -->
+
+  <entities>
+
+    <!-- ─────────────────────────────────────────────── -->
+    <entity id="Producto">
+      <description>Unidad base del catálogo. Todo lo demás gira alrededor de esta entidad.</description>
+      <fields>
+        <!-- INFORMACIÓN BÁSICA (M1_1) -->
+        <field name="id"                  type="uuid"     required="true"   system="true"  example="prod_01JVKG..."    notes="Generado automáticamente. Formato: prod_[nanoid]"/>
+        <field name="nombre"              type="string"   required="true"   max="120"      example="Arroz Costeño Extra"  notes="Nombre comercial completo"/>
+        <field name="sku"                 type="string"   required="true"   unique="true"  example="ARR-COST-001"      notes="Único en el sistema. Alfanumérico + guiones. Max 20 chars."/>
+        <field name="categoria_id"        type="uuid"     required="true"                  example="cat_granos"        notes="FK → Categoria.id"/>
+        <field name="marca"               type="string"   required="false"  max="80"       example="Costeño"           notes="Opcional. Si no tiene marca, dejar vacío."/>
+        <field name="presentacion"        type="string"   required="false"  max="100"      example="Saco 50kg"         notes="Descripción de la presentación comercial"/>
+        <field name="descripcion"         type="string"   required="false"  max="500"      example="Arroz extra calidad superior" notes="Descripción interna. No visible a clientes."/>
+        <field name="es_perecedero"       type="boolean"  required="true"   default="false" example="true"             notes="Si true, fecha_vencimiento es obligatoria en entradas."/>
+        <field name="estado"              type="enum"     required="true"   default="activo" values="activo|inactivo|descontinuado" notes="Productos inactivos no aparecen en listas de venta/entrada pero conservan histórico."/>
+        <field name="imagen_url"          type="string"   required="false"                 example="/assets/prod_01.jpg" notes="Path relativo. Si vacío, mostrar placeholder del DS."/>
+
+        <!-- COSTOS Y PRECIOS (M1_2) -->
+        <field name="costo_adquisicion"   type="decimal"  required="true"   min="0.01"     example="95.00"             notes="Precio de compra al proveedor. En soles (S/.). 2 decimales."/>
+        <field name="precio_venta"        type="decimal"  required="true"   min="0.01"     example="125.00"            notes="Precio de venta al cliente. Debe ser mayor que costo_adquisicion."/>
+        <field name="margen_ganancia"     type="decimal"  required="false"  system="true"  example="31.58"             notes="DERIVADO. Se calcula: ((precio_venta - costo_adquisicion) / precio_venta) * 100. No editarle directamente."/>
+        <field name="afecto_igv"          type="boolean"  required="true"   default="true" example="true"             notes="Si aplica IGV (18%). Por ahora solo informativo, no calcula impuesto."/>
+
+        <!-- UNIDADES Y MEDIDAS (M1_3) -->
+        <field name="unidad_compra_id"    type="uuid"     required="true"                  example="und_caja"          notes="FK → UnidadMedida.id. Cómo se compra (ej: caja, saco, paquete)."/>
+        <field name="unidad_venta_id"     type="uuid"     required="true"                  example="und_unidad"        notes="FK → UnidadMedida.id. Cómo se vende (ej: unidad, kg, litro)."/>
+        <field name="factor_conversion"   type="decimal"  required="true"   min="0.0001"   example="24"                notes="Cuántas unidades_venta hay en una unidad_compra. Ej: 1 caja = 24 unidades."/>
+        <field name="peso_kg"             type="decimal"  required="false"  min="0"        example="50"                notes="Peso en kg de la unidad de compra. Opcional."/>
+
+        <!-- PROVEEDORES (M1_4) -->
+        <field name="proveedor_preferido_id" type="uuid" required="false"                 example="prov_001"          notes="FK → Proveedor.id. El proveedor principal de este producto."/>
+
+        <!-- CONTROL -->
+        <field name="stock_minimo"        type="integer"  required="false"  default="0"    example="10"                notes="En unidades de venta. Si stock disponible ≤ stock_minimo, emitir alerta."/>
+        <field name="stock_optimo"        type="integer"  required="false"  default="0"    example="50"                notes="Nivel de reposición sugerido. Informativo."/>
+        <field name="created_at"          type="datetime" required="true"   system="true"  example="2026-05-11T10:00:00Z"/>
+        <field name="updated_at"          type="datetime" required="true"   system="true"  example="2026-05-11T10:00:00Z"/>
+      </fields>
+
+      <computed-fields>
+        <computed name="margen_ganancia"  formula="((precio_venta - costo_adquisicion) / precio_venta) * 100"  display="X.XX%"/>
+        <computed name="stock_disponible" source="Control de Existencias (Phase 2)"  notes="No disponible en Phase 1. Placeholder: 0."/>
+      </computed-fields>
+
+      <validations>
+        <rule>precio_venta DEBE ser mayor que costo_adquisicion. Error: "El precio de venta debe ser mayor al costo."</rule>
+        <rule>sku DEBE ser único. Error: "Este SKU ya existe. Usa otro código."</rule>
+        <rule>sku DEBE coincidir con patrón: /^[A-Z0-9][A-Z0-9\-]{1,18}[A-Z0-9]$/ (mayúsculas, números, guiones, min 3 chars, max 20). Error: "SKU inválido. Usa solo letras mayúsculas, números y guiones."</rule>
+        <rule>factor_conversion DEBE ser mayor que 0. Error: "El factor de conversión debe ser positivo."</rule>
+        <rule>Si es_perecedero=true y unidad_compra=unidad_venta, factor_conversion DEBE ser 1.</rule>
+      </validations>
+
+      <invariants>
+        <invariant>Un producto no puede eliminarse si tiene entradas, salidas u órdenes de compra asociadas. Solo se puede "descontinuar".</invariant>
+        <invariant>margen_ganancia es siempre derivado. Nunca se guarda directamente.</invariant>
+      </invariants>
+    </entity>
+
+    <!-- ─────────────────────────────────────────────── -->
+    <entity id="Categoria">
+      <description>Clasificación de productos. Permite filtrar y agrupar.</description>
+      <fields>
+        <field name="id"       type="uuid"    required="true"  system="true"  example="cat_granos"/>
+        <field name="nombre"   type="string"  required="true"  max="60"       example="Granos y Cereales"/>
+        <field name="color"    type="string"  required="false"                example="#0693e3"  notes="Color hex del badge de categoría. Si vacío, usar --color-brand-500 del DS."/>
+        <field name="icono"    type="string"  required="false"                example="wheat"    notes="Nombre de icono Lucide. Si vacío, usar 'tag'."/>
+        <field name="orden"    type="integer" required="false" default="0"    example="1"        notes="Para ordenar en sidebar/filtros."/>
+      </fields>
+      <validations>
+        <rule>nombre DEBE ser único. Error: "Ya existe una categoría con ese nombre."</rule>
+        <rule>No se puede eliminar si tiene productos asociados. Error: "Esta categoría tiene X productos. Reasígnalos antes de eliminarla."</rule>
+      </validations>
+      <seed-data>
+        <item id="cat_granos"     nombre="Granos y Cereales"    icono="wheat"       orden="1"/>
+        <item id="cat_aceites"    nombre="Aceites y Grasas"     icono="droplets"    orden="2"/>
+        <item id="cat_azucares"   nombre="Azúcares y Endulzantes" icono="candy"     orden="3"/>
+        <item id="cat_lacteos"    nombre="Lácteos"              icono="milk"        orden="4"/>
+        <item id="cat_bebidas"    nombre="Bebidas"              icono="cup-soda"    orden="5"/>
+        <item id="cat_limpieza"   nombre="Limpieza"             icono="sparkles"    orden="6"/>
+        <item id="cat_otros"      nombre="Otros"                icono="package"     orden="7"/>
+      </seed-data>
+    </entity>
+
+    <!-- ─────────────────────────────────────────────── -->
+    <entity id="UnidadMedida">
+      <description>Unidades de compra y venta. Permite conversión automática.</description>
+      <fields>
+        <field name="id"           type="uuid"    required="true"  system="true"  example="und_saco"/>
+        <field name="nombre"       type="string"  required="true"  max="40"       example="Saco"     notes="Nombre singular"/>
+        <field name="abreviatura"  type="string"  required="true"  max="10"       example="sco"      notes="Abreviatura para columnas y badges compactos"/>
+        <field name="tipo"         type="enum"    required="true"  values="peso|volumen|unidad|area|longitud" example="unidad"/>
+      </fields>
+      <seed-data>
+        <item id="und_unidad"   nombre="Unidad"    abreviatura="und"  tipo="unidad"/>
+        <item id="und_caja"     nombre="Caja"      abreviatura="cja"  tipo="unidad"/>
+        <item id="und_saco"     nombre="Saco"      abreviatura="sco"  tipo="peso"/>
+        <item id="und_paquete"  nombre="Paquete"   abreviatura="pqt"  tipo="unidad"/>
+        <item id="und_galon"    nombre="Galón"     abreviatura="gal"  tipo="volumen"/>
+        <item id="und_litro"    nombre="Litro"     abreviatura="lt"   tipo="volumen"/>
+        <item id="und_kg"       nombre="Kilogramo" abreviatura="kg"   tipo="peso"/>
+        <item id="und_docena"   nombre="Docena"    abreviatura="doc"  tipo="unidad"/>
+      </seed-data>
+    </entity>
+
+    <!-- ─────────────────────────────────────────────── -->
+    <entity id="Proveedor">
+      <description>Empresas o personas que venden mercadería al mayorista.</description>
+      <fields>
+        <field name="id"                   type="uuid"    required="true"  system="true"  example="prov_001"/>
+        <field name="nombre"               type="string"  required="true"  max="120"      example="Distribuidora El Sol SAC"/>
+        <field name="ruc"                  type="string"  required="false" length="11"    example="20512345678"  notes="RUC peruano. 11 dígitos. Validación de formato pero no de existencia en SUNAT."/>
+        <field name="contacto_nombre"      type="string"  required="false" max="80"       example="Juan Pérez"/>
+        <field name="contacto_telefono"    type="string"  required="false" max="15"       example="999888777"    notes="inputmode=tel en el formulario."/>
+        <field name="contacto_email"       type="string"  required="false" max="100"      example="juan@elsol.com"/>
+        <field name="direccion"            type="string"  required="false" max="200"      example="Av. Grau 245, Lima"/>
+        <field name="condicion_pago"       type="enum"    required="false" values="contado|credito_7d|credito_15d|credito_30d|credito_60d" default="contado" example="credito_30d"/>
+        <field name="dias_entrega"         type="integer" required="false" min="0"        example="3"            notes="Días hábiles de entrega desde el pedido."/>
+        <field name="notas"                type="string"  required="false" max="500"      example="Descuento 5% por volumen > 100 sacos"/>
+        <field name="estado"               type="enum"    required="true"  default="activo" values="activo|inactivo"/>
+        <field name="created_at"           type="datetime" required="true" system="true"/>
+      </fields>
+      <validations>
+        <rule>Si ruc está presente, DEBE tener exactamente 11 dígitos numéricos. Error: "El RUC debe tener 11 dígitos."</rule>
+        <rule>contacto_email, si presente, debe tener formato válido. Error: "Email inválido."</rule>
+      </validations>
+      <invariants>
+        <invariant>No se puede eliminar un proveedor con productos o compras asociadas. Solo se puede "inactivar".</invariant>
+      </invariants>
+      <seed-data>
+        <item id="prov_001" nombre="Distribuidora Costeño SAC"     ruc="20100123456" contacto_nombre="Carlos Ríos"     contacto_telefono="01-234-5678" condicion_pago="credito_30d" dias_entrega="2"/>
+        <item id="prov_002" nombre="Aceites Primor Distribuciones"  ruc="20200234567" contacto_nombre="Ana Torres"      contacto_telefono="999-111-222"  condicion_pago="credito_15d" dias_entrega="3"/>
+        <item id="prov_003" nombre="Azucarera del Norte SAC"        ruc="20300345678" contacto_nombre="Luis Mendoza"    contacto_telefono="998-222-333"  condicion_pago="contado"     dias_entrega="1"/>
+        <item id="prov_004" nombre="Industrias Lácteas Laive"       ruc="20400456789" contacto_nombre="Rosa Huamán"     contacto_telefono="997-333-444"  condicion_pago="credito_7d"  dias_entrega="1"/>
+        <item id="prov_005" nombre="Distribuidora General Lima"     ruc="20500567890" contacto_nombre="Pedro Salas"     contacto_telefono="996-444-555"  condicion_pago="credito_30d" dias_entrega="5"/>
+      </seed-data>
+    </entity>
+
+  </entities>
+
+  <!--
+    ═══════════════════════════════════════════════════════
+    RELACIONES
+    ═══════════════════════════════════════════════════════
+  -->
+  <relationships>
+    <rel from="Producto" to="Categoria"    type="many-to-one"  field="categoria_id"          note="Un producto pertenece a una categoría."/>
+    <rel from="Producto" to="UnidadMedida" type="many-to-one"  field="unidad_compra_id"       note="Un producto tiene una unidad de compra."/>
+    <rel from="Producto" to="UnidadMedida" type="many-to-one"  field="unidad_venta_id"        note="Un producto tiene una unidad de venta."/>
+    <rel from="Producto" to="Proveedor"    type="many-to-one"  field="proveedor_preferido_id" note="Un producto tiene un proveedor preferido (opcional)."/>
+  </relationships>
+
+  <!--
+    ═══════════════════════════════════════════════════════
+    SEED DATA — Productos iniciales realistas
+    (Para que el prototipo tenga datos visibles desde el día 1)
+    ═══════════════════════════════════════════════════════
+  -->
+  <seed-products>
+    <product
+      id="prod_001" nombre="Arroz Costeño Extra" sku="ARR-COST-001" categoria_id="cat_granos"
+      marca="Costeño" presentacion="Saco 50kg" es_perecedero="false"
+      costo_adquisicion="95.00" precio_venta="125.00" afecto_igv="true"
+      unidad_compra_id="und_saco" unidad_venta_id="und_kg" factor_conversion="50"
+      proveedor_preferido_id="prov_001" stock_minimo="10" stock_optimo="50"/>
+
+    <product
+      id="prod_002" nombre="Aceite Primor 1L" sku="ACE-PRIM-1L" categoria_id="cat_aceites"
+      marca="Primor" presentacion="Caja 12 unidades" es_perecedero="true"
+      costo_adquisicion="65.00" precio_venta="88.00" afecto_igv="true"
+      unidad_compra_id="und_caja" unidad_venta_id="und_unidad" factor_conversion="12"
+      proveedor_preferido_id="prov_002" stock_minimo="24" stock_optimo="96"/>
+
+    <product
+      id="prod_003" nombre="Azúcar Rubia Cartavio" sku="AZU-CART-001" categoria_id="cat_azucares"
+      marca="Cartavio" presentacion="Saco 50kg" es_perecedero="false"
+      costo_adquisicion="115.00" precio_venta="145.00" afecto_igv="true"
+      unidad_compra_id="und_saco" unidad_venta_id="und_kg" factor_conversion="50"
+      proveedor_preferido_id="prov_003" stock_minimo="5" stock_optimo="30"/>
+
+    <product
+      id="prod_004" nombre="Leche Gloria Entera 1L" sku="LEC-GLOR-1L" categoria_id="cat_lacteos"
+      marca="Gloria" presentacion="Caja 12 unidades" es_perecedero="true"
+      costo_adquisicion="58.00" precio_venta="78.00" afecto_igv="true"
+      unidad_compra_id="und_caja" unidad_venta_id="und_unidad" factor_conversion="12"
+      proveedor_preferido_id="prov_004" stock_minimo="36" stock_optimo="120"/>
+
+    <product
+      id="prod_005" nombre="Fideos Don Vittorio Spaghetti" sku="FID-DVIT-SPG" categoria_id="cat_granos"
+      marca="Don Vittorio" presentacion="Caja 20 paquetes" es_perecedero="true"
+      costo_adquisicion="42.00" precio_venta="58.00" afecto_igv="true"
+      unidad_compra_id="und_caja" unidad_venta_id="und_paquete" factor_conversion="20"
+      proveedor_preferido_id="prov_005" stock_minimo="40" stock_optimo="200"/>
+
+    <product
+      id="prod_006" nombre="Sal Marina Emsal" sku="SAL-EMSAL-001" categoria_id="cat_otros"
+      marca="Emsal" presentacion="Saco 25kg" es_perecedero="false"
+      costo_adquisicion="18.00" precio_venta="28.00" afecto_igv="true"
+      unidad_compra_id="und_saco" unidad_venta_id="und_kg" factor_conversion="25"
+      proveedor_preferido_id="prov_005" stock_minimo="5" stock_optimo="20"/>
+  </seed-products>
+
+  <!--
+    ═══════════════════════════════════════════════════════
+    INVARIANTES DEL SISTEMA (para Phase 1)
+    ═══════════════════════════════════════════════════════
+  -->
+  <invariants>
+    <invariant id="INV-001">Todo producto debe tener al menos: nombre, sku, categoria_id, costo_adquisicion, precio_venta, unidad_compra_id, unidad_venta_id, factor_conversion.</invariant>
+    <invariant id="INV-002">precio_venta SIEMPRE mayor que costo_adquisicion. Sin excepción.</invariant>
+    <invariant id="INV-003">SKU SIEMPRE único en el sistema. Verificar antes de guardar.</invariant>
+    <invariant id="INV-004">margen_ganancia SIEMPRE derivado, nunca guardado directamente.</invariant>
+    <invariant id="INV-005">Productos eliminados NO se borran. Se marcan como estado="descontinuado".</invariant>
+  </invariants>
+
+</artifact>

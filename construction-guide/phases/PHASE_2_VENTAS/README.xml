@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phase id="phase-2-ventas" duration-weeks="4" status="pending">
+  <purpose>Cerrar el ciclo económico: vender + cobrar + entender ganancia real.</purpose>
+  <modules>
+    <module id="M7_VENTA">Registro rápido de venta (audio o tap en producto + cantidad).</module>
+    <module id="M8_GANANCIA">Cálculo automático de margen por producto. Tabla "qué te deja plata".</module>
+    <module id="M9_DEUDAS">CxC: clientes con saldo pendiente + recordatorios por WhatsApp.</module>
+    <module id="M10_WHATSAPP_DIGEST">Resumen semanal por WhatsApp Business.</module>
+  </modules>
+  <success-metric>30 mayoristas registrando ventas. 5 dicen "te pago".</success-metric>
+</phase>

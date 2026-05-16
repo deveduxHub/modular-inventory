@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="contract" id="INVENTORY_API" version="1">
+  <meta>
+    <title>Inventory API — composition root component</title>
+    <enforced-by>INVENTORY_AGENT</enforced-by>
+    <decision-refs>R-9, R-13, R-15 · DS-089, DS-090, DS-091, DS-092</decision-refs>
+    <signed-by>W3-BigO, W5-CI, W1-SOLID</signed-by>
+  </meta>
+
+  <rationale>
+    <why>The Inventory component is the SINGLE public entry point for an app. It receives
+    providers + steps + layout config, composes the runtime, and renders the shell.
+    Apps NEVER compose providers manually or import StepRouter/SlotSystem directly.</why>
+  </rationale>
+
+  <schema lang="typescript"><![CDATA[
+export interface InventoryProps {
+  // Required
+  readonly providers: ProviderInstance[];
+  readonly steps:     StepDefinition[];
+
+  // Optional
+  readonly layout?:   LayoutConfig;
+  readonly i18n?:     I18nConfig;
+  readonly theme?:    ThemeConfig;
+
+  // Observability
+  readonly onReady?:  () => void;
+  readonly onError?:  (err: InventoryError) => void;
+  readonly onEvent?:  (event: TypedEvent) => void;
+
+  // Customization (escape hatch — prefer extensions when possible)
+  readonly overridePatterns?: Partial<Record<PatternId, ComponentType>>;
+  readonly customStyle?:       CustomStyleMap;
+
+  // Experimental (React 19+)
+  readonly experimental?: {
+    signals?:   boolean;     // use signals for high-freq providers
+    streaming?: boolean;     // SSR streaming with use(promise)
+    activity?:  boolean;     // preserve state across step changes via <Activity>
+  };
+
+  readonly children?: ReactNode;   // global slots (modals, toasts)
+}
+
+export function Inventory(props: InventoryProps): JSX.Element;
+  ]]></schema>
+
+  <composition-order>
+    <step n="1">Validate providers (no duplicate IDs, version compatibility)</step>
+    <step n="2">Validate steps (unique route paths, registered guards)</step>
+    <step n="3">Build Trie from step routes (O(P log P) once at mount)</step>
+    <step n="4">Wrap providers via composeProviders (reduceRight, O(N))</step>
+    <step n="5">Mount Shell from layout config (sidebar/topbar/fullscreen/modal)</step>
+    <step n="6">Mount StepRouter with the Trie</step>
+    <step n="7">Mount global slots from children (modals, toasts)</step>
+    <step n="8">Call onReady() once all providers initialized</step>
+  </composition-order>
+
+  <error-isolation>
+    <rule>Each Pattern wrapped in its own ErrorBoundary (via withErrorBoundary extension).</rule>
+    <rule>Each View wrapped in its own ErrorBoundary (declared in defineLayoutView/defineRenderView).</rule>
+    <rule>StepRouter wrapped in outer ErrorBoundary that calls onError().</rule>
+    <rule>Inventory wrapped in fatal ErrorBoundary that renders a static recovery page.</rule>
+    <rationale>A single pattern crash does not bring down the View. A View crash does not bring down the app.</rationale>
+  </error-isolation>
+
+  <example><![CDATA[
+// apps/panaderia/app/layout.tsx
+import { Inventory } from '@surte/shell-runtime';
+import { providers, steps } from '../inventory/config';
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="es-PE">
+      <body>
+        <Inventory
+          providers={providers}
+          steps={steps}
+          layout={{ shell: 'sidebar-topbar', sidebar: { collapsible: true } }}
+          experimental={{ signals: true, streaming: true }}
+          onReady={() => console.log('Panadería lista')}
+          onError={(err) => Sentry.captureException(err)}
+        >
+          {children}
+        </Inventory>
+      </body>
+    </html>
+  );
+}
+  ]]></example>
+
+  <gates>
+    <gate id="I-G1">Apps never import composeProviders, ModuleRegistry, StepRouter directly.</gate>
+    <gate id="I-G2">Inventory props are validated against schemas at mount time.</gate>
+    <gate id="I-G3">Provider IDs are unique within an Inventory instance.</gate>
+    <gate id="I-G4">Step routes are unique within an Inventory instance.</gate>
+    <gate id="I-G5">Inventory shell has a *.inventory.test.tsx covering composition + error isolation.</gate>
+    <gate id="I-G6">Initial bundle of Inventory ≤ 180kb gzip (measured via size-limit).</gate>
+    <gate id="I-G7">Lighthouse Performance ≥ 90 on the default app shell.</gate>
+  </gates>
+</artifact>

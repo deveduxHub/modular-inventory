@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="agent" id="graph-agent" version="1">
+  <meta>
+    <owner>graph-agent</owner>
+    <role>Construye el DAG de dependencias entre módulos y devuelve orden topológico de ejecución.</role>
+  </meta>
+
+  <inputs>
+    <input>lista de módulos con campo depends-on</input>
+  </inputs>
+
+  <algorithm>
+    <step>parse every module's &lt;depends-on&gt;</step>
+    <step>build directed graph G</step>
+    <step>detect cycles → if any, halt with error</step>
+    <step>topological sort → ordered list</step>
+    <step>if a node has no upstream blockers AND no shared state with another → mark as parallel-eligible</step>
+  </algorithm>
+
+  <module-dependency-graph phase="1">
+    <node id="M1_ONBOARDING" depends-on=""/>
+    <node id="M2_CATALOGO" depends-on="M1_ONBOARDING"/>
+    <node id="M3_ENTRADA" depends-on="M2_CATALOGO"/>
+    <node id="M4_STOCK" depends-on="M3_ENTRADA"/>
+    <node id="M5_ALERTAS" depends-on="M3_ENTRADA, M4_STOCK"/>
+    <node id="M6_DASHBOARD" depends-on="M3_ENTRADA, M4_STOCK, M5_ALERTAS"/>
+  </module-dependency-graph>
+
+  <output-example>
+    <execution-order>
+      <item parallel-group="A">M1_ONBOARDING</item>
+      <item parallel-group="B">M2_CATALOGO</item>
+      <item parallel-group="C">M3_ENTRADA</item>
+      <item parallel-group="D">M4_STOCK</item>
+      <item parallel-group="E">M5_ALERTAS</item>
+      <item parallel-group="F">M6_DASHBOARD</item>
+    </execution-order>
+  </output-example>
+
+  <rules>
+    <rule>Si hay ciclo, abortar y reportar el ciclo exacto.</rule>
+    <rule>Si dos módulos comparten state-write keys, NO marcar como paralelos.</rule>
+  </rules>
+</artifact>

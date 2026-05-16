@@ -1,0 +1,416 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="architecture" id="MONOREPO_ARCH" version="2">
+  <meta>
+    <title>Surte — Arquitectura del Monorepo (v2, panel de 5 arquitectos)</title>
+    <namespace>@surte/*</namespace>
+    <created>2026-05-14</created>
+    <supersedes>v1 (2026-05-12)</supersedes>
+    <signed-by>A1 (Fullstack), A2 (Next.js), A3 (React Patterns), A4 (Scalability/Perf), A5 (DDD/Architecture)</signed-by>
+    <decisions>DS-029..DS-070</decisions>
+  </meta>
+
+  <!-- ════════════════════════════════════════════════════════════════
+       LAS 12 DECISIONES INQUEBRANTABLES (D1..D12)
+       Cualquier desviación requiere nueva decisión DS-NNN en memory/.
+       ════════════════════════════════════════════════════════════════ -->
+  <inquebrantables>
+    <d id="D1"  owner="A2">Catch-all `app/[[...path]]/page.tsx` único en cada app. Sin árbol de rutas tradicional.</d>
+    <d id="D2"  owner="A5">Step = Aggregate con (id, moduleId, path, render, guards, transitions, contracts, title, breadcrumbs, permissions).</d>
+    <d id="D3"  owner="A3">SlotTree NOMBRADO, no arrays. Slots tienen identidad semántica ('header.right', 'main.actions').</d>
+    <d id="D4"  owner="A4">Lazy() OBLIGATORIO en todo slot que renderice un componente. Cero imports estáticos de views/sections desde steps/index.ts.</d>
+    <d id="D5"  owner="A1+A5">DI Container + Repository pattern. Cliente y server inyectan adapter, módulo no sabe cuál.</d>
+    <d id="D6"  owner="A1+A2">Server Actions co-locadas en module-*/src/server/actions/. Cero REST/GraphQL hasta justificarlo.</d>
+    <d id="D7"  owner="A5">DDD layers enforced por ESLint boundaries: domain ← application ← infrastructure ← ui ← shells ← modules ← apps. Sentido único.</d>
+    <d id="D8"  owner="A5">Módulos JAMÁS se importan entre sí. Comunicación SOLO via EventBus (typed) o dependsOn declarado en manifest.</d>
+    <d id="D9"  owner="A3+A5">EventBus tipado es el único canal cross-module. Eventos versionados (`product.created.v1`).</d>
+    <d id="D10" owner="A3">Contracts L0/L1/L2 declarados en cada Step. L0=config props, L1=slot injections, L2=event hooks. Lo no declarado, no se puede tocar.</d>
+    <d id="D11" owner="A4">Performance budget medido en CI: initial bundle ≤180kb gzip, slot lazy ≤80kb, LCP ≤2.5s, Lighthouse ≥90.</d>
+    <d id="D12" owner="A1">Backward-compat: SemVer + Changesets + deprecation 1 minor antes de remove. Tests contra API pública (index.ts).</d>
+  </inquebrantables>
+
+  <!-- ════════════════════════════════════════════════════════════════
+       STACK CONGELADO
+       ════════════════════════════════════════════════════════════════ -->
+  <stack>
+    <runtime>Node 20 LTS · pnpm 9.x · Turborepo 2.x</runtime>
+    <language>TypeScript 5.4 strict + noUncheckedIndexedAccess + exactOptionalPropertyTypes</language>
+    <framework>Next.js 14 App Router · React 18</framework>
+    <styling>Tailwind 3 + cva + cn() (tw-merge + clsx) + preset compartido</styling>
+    <ui-primitives>Radix UI headless (Slot, Dialog, Dropdown, Tabs, Tooltip)</ui-primitives>
+    <state>Zustand (stores) · TanStack Query (server cache) · Context (theme/auth/session)</state>
+    <forms>react-hook-form + zod</forms>
+    <state-machines>XState 5 (flows con guards/transitions complejas) | Zustand (lineal)</state-machines>
+    <testing>Vitest + @testing-library/react + Playwright (E2E)</testing>
+    <docs>Storybook 8 — apps/playground</docs>
+    <versioning>Changesets independiente por package</versioning>
+    <ci>GitHub Actions + Turborepo remote cache + size-limit + Lighthouse CI</ci>
+    <quality>ESLint + Prettier + commitlint + husky + lint-staged</quality>
+    <persistence-v1>localStorage + mocks (decisión user 2026-05-14). Adapter Supabase ready-to-swap (no implementado).</persistence-v1>
+  </stack>
+
+  <!-- ════════════════════════════════════════════════════════════════
+       ESTRUCTURA FINAL DEL MONOREPO
+       ════════════════════════════════════════════════════════════════ -->
+  <structure><![CDATA[
+inventory/                                  ← monorepo root
+├── package.json                            (workspaces, private:true)
+├── pnpm-workspace.yaml
+├── turbo.json
+├── tsconfig.base.json
+├── .changeset/
+├── .github/workflows/                      (ci.yml, release.yml)
+├── .husky/
+├── .editorconfig
+├── .gitignore
+│
+├── builder-guide/                          (orchestrator vive aquí)
+├── strategy/                               (insights, north star)
+│
+├── apps/
+│   ├── wholesale/                          ⭐ App ejemplo COMPLETA (validación canónica)
+│   │   ├── app/
+│   │   │   ├── layout.tsx                  → <SurteProvider config={surteConfig}>
+│   │   │   ├── [[...path]]/page.tsx        → <StepRouter />
+│   │   │   ├── api/[...slug]/route.ts      → <ApiRouter />
+│   │   │   ├── error.tsx · loading.tsx · not-found.tsx
+│   │   ├── middleware.ts                   (auth, tenant, locale)
+│   │   ├── surte.config.ts                 ⭐ ÚNICA configuración
+│   │   ├── mocks/                          (data mockeada para localStorage seed)
+│   │   ├── next.config.mjs
+│   │   └── package.json
+│   │
+│   ├── bodega-simple/                      ⭐ App ejemplo MÍNIMA (validación)
+│   │   └── (misma estructura, menos módulos)
+│   │
+│   └── playground/                         ⭐ Storybook + demos de patterns
+│
+└── packages/
+    ├── core/                               @surte/core              kernel puro TS
+    │   └── src/
+    │       ├── result.ts · id.ts · money.ts · errors.ts
+    │       ├── events.ts                   (EventBus typed)
+    │       ├── container.ts                (DI Container)
+    │       ├── clock.ts                    (inyectable)
+    │       ├── capability.ts               (RBAC tipos)
+    │       ├── module/                     (ModuleManifest, ModuleId types)
+    │       ├── step/                       (Step, StepDecision, StepGuard types)
+    │       └── slot/                       (SlotTree, SlotContent types)
+    │
+    ├── shell-runtime/                      @surte/shell-runtime     runtime React del kernel
+    │   └── src/
+    │       ├── SurteProvider.tsx           (composer de 5 contexts)
+    │       ├── contexts/                   (App, Module, Step, Session, Event)
+    │       ├── ModuleRegistry.tsx
+    │       ├── StepRouter.tsx              (catch-all resolver)
+    │       ├── StepRenderer.tsx
+    │       ├── SlotSystem.tsx              (Slot, useSlots)
+    │       ├── guards/                     (runGuards, helpers)
+    │       └── ApiRouter.ts                (para apps/.../api/[...slug])
+    │
+    ├── shells/                             @surte/shells            layouts disponibles
+    │   └── src/
+    │       ├── SidebarTopbarShell.tsx
+    │       ├── TopbarOnlyShell.tsx
+    │       ├── FullscreenShell.tsx
+    │       ├── ModalShell.tsx
+    │       └── index.ts
+    │
+    ├── ui/                                 @surte/ui                Design System
+    │   └── src/
+    │       ├── tokens/                     (re-exporta @surte/tokens)
+    │       ├── primitives/                 (Button, Input, Select, Card, ...)
+    │       ├── patterns/                   (DataTable, Wizard, KpiGrid, ...)
+    │       ├── ThemeProvider.tsx
+    │       └── cn.ts
+    │
+    ├── tokens/                             @surte/tokens            design tokens
+    ├── icons/                              @surte/icons             lucide curado
+    ├── utils/                              @surte/utils             helpers puros
+    │
+    ├── domain/                             @surte/domain            entidades puras
+    │   └── src/
+    │       ├── product/  ├── supplier/  ├── stock/
+    │       ├── expiry/   ├── purchase/  ├── sale/
+    │       └── shared/   (Money, Sku, EntityId, etc.)
+    │
+    ├── application/                        @surte/application       use cases
+    │   └── src/
+    │       ├── commands/                   (CreateProduct, RecordSale, ...)
+    │       ├── queries/                    (ListProducts, GetKardex, ...)
+    │       └── event-handlers/             (react a domain events)
+    │
+    ├── infrastructure/                     @surte/infrastructure    adapters
+    │   └── src/
+    │       ├── local-storage/              (default v1)
+    │       ├── http/                       (cliente HTTP cuando llegue API)
+    │       └── supabase/                   (stub para futuro)
+    │
+    ├── test-utils/                         @surte/test-utils
+    ├── eslint-config/                      @surte/eslint-config
+    ├── tsconfig/                           @surte/tsconfig
+    ├── tailwind-config/                    @surte/tailwind-config
+    ├── tsup-config/                        @surte/tsup-config
+    │
+    └── modules/                            ⭐ PLUGGABLE MODULES
+        ├── module-auth/                    @surte/module-auth
+        ├── module-products/                @surte/module-products
+        ├── module-suppliers/               @surte/module-suppliers
+        ├── module-stock/                   @surte/module-stock
+        ├── module-expiration/              @surte/module-expiration
+        ├── module-purchases/               @surte/module-purchases
+        ├── module-sales/                   @surte/module-sales
+        └── module-reports/                 @surte/module-reports
+
+    Cada module-* tiene esta estructura interna canónica:
+    module-X/src/
+      ├── manifest.ts                       (ModuleManifest export)
+      ├── index.ts                          (factory: export default function xModule(opts))
+      ├── steps/                            (StepDefinition[] — declarados estáticamente)
+      │   └── index.ts
+      ├── patterns/                         (Flows cerrados exportados: CreateProductFlow, etc)
+      │   └── CreateProductFlow/
+      │       ├── CreateProductFlow.tsx
+      │       ├── CreateProductFlow.contract.ts (L0/L1/L2)
+      │       ├── steps/ (steps internos del wizard, privados)
+      │       └── index.ts
+      ├── views/                            (Vistas completas: ProductListView, ProductDetailView)
+      ├── sections/                         (Slots fillers: ListActions, ListFilters, DetailTabs)
+      ├── headers/                          (Headers custom para steps)
+      ├── footers/                          (Footers custom)
+      ├── server/
+      │   ├── actions/                      (Server Actions — co-locadas)
+      │   └── handlers/                     (Route handlers para webhooks)
+      ├── guards/                           (StepGuards — AuthGuard, RoleGuard)
+      ├── domain-bindings.ts                (qué del @surte/domain consume)
+      ├── repository-bindings.ts            (cómo se bindea el repo en DI)
+      ├── primitives/                       (componentes atómicos exportados)
+      ├── hooks/                            (hooks útiles para consumidores)
+      ├── migrations/                       (schema versions para persistencia)
+      └── module.test.ts                    (registry add/remove smoke test)
+  ]]></structure>
+
+  <!-- ════════════════════════════════════════════════════════════════
+       STEP — AGGREGATE CANÓNICO (D2)
+       ════════════════════════════════════════════════════════════════ -->
+  <step-aggregate>
+    <interface><![CDATA[
+interface Step<TParams = {}, TConfig = {}> {
+  // Identidad
+  id: string;                              // 'products.create'
+  moduleId: ModuleId;                      // 'products'
+  path: PathPattern;                       // '/productos/nuevo' | '/productos/:id'
+
+  // RenderStrategy
+  render: {
+    shell: ShellId | 'inherit';            // 'sidebar-topbar' | 'fullscreen' | etc.
+    mode?: 'server' | 'client' | 'edge';   // Next.js render mode (default: 'client')
+    slots: SlotTree;                       // ⭐ NOMBRADO, no array
+  };
+
+  // Metadatos
+  title: string | TitleFn<TParams>;
+  breadcrumbs?: BreadcrumbItem[] | BreadcrumbsFn<TParams>;
+  permissions?: Permission[];
+
+  // Lifecycle
+  guards: Guard[];                         // preconditions (Auth, Role, FeatureFlag)
+  transitions: {
+    next?:    TransitionDecision;          // push | replace | redirect | complete | fail
+    cancel?:  TransitionDecision;
+    back?:    TransitionDecision;
+    [custom: string]: TransitionDecision;  // ej: onCompleted, onError
+  };
+
+  // Contratos (D10 — L0/L1/L2 declarados)
+  contracts: {
+    config: ConfigContract<TConfig>;       // L0 — props configurables por la app
+    slots: SlotContract;                   // L1 — slots inyectables externos
+    events: EventContract;                 // L2 — eventos del step
+  };
+}
+
+type SlotTree = {
+  // Layout slots (override del shell)
+  'header'?:        SlotContent;
+  'header.left'?:   SlotContent;
+  'header.center'?: SlotContent;
+  'header.right'?:  SlotContent;
+  'sidebar'?:       SlotContent | 'hidden';
+  'sidebar.nav'?:   SlotContent;
+  'footer'?:        SlotContent;
+  'right-panel'?:   SlotContent;
+
+  // Content slots
+  'main':           SlotContent;            // OBLIGATORIO (la view principal)
+  'main.actions'?:  SlotContent;
+  'main.filters'?:  SlotContent;
+  'main.tabs'?:     SlotContent;
+  'main.empty'?:    SlotContent;
+
+  // Custom slots del módulo
+  [custom: `slot.${string}`]?: SlotContent;
+};
+
+type SlotContent =
+  | LazyComponent                                                         // dinámico, code-split
+  | { component: LazyComponent; props?: object; when?: Predicate };       // con props o condicional
+
+type TransitionDecision =
+  | { type: 'push';     stepId: string;  params?: object }                // apila
+  | { type: 'replace';  stepId: string;  params?: object }                // reemplaza (no historia)
+  | { type: 'redirect'; url: string }                                      // navega fuera
+  | { type: 'complete'; output?: unknown }                                 // termina flow
+  | { type: 'fail';     error: StepError };                                // falla con error
+    ]]></interface>
+  </step-aggregate>
+
+  <!-- ════════════════════════════════════════════════════════════════
+       LOS 5 CONTEXTS (A3 — Composer Pattern)
+       ════════════════════════════════════════════════════════════════ -->
+  <contexts>
+    <ctx name="AppContext"      provides="config, theme, locale, featureFlags"/>
+    <ctx name="ModuleContext"   provides="registry, manifest queries"/>
+    <ctx name="StepContext"     provides="currentStep, params, transition()"/>
+    <ctx name="SessionContext"  provides="user, permissions, tenant"/>
+    <ctx name="EventContext"    provides="eventBus, emit, subscribe"/>
+    <composer><![CDATA[
+// packages/shell-runtime/src/SurteProvider.tsx
+export function SurteProvider({ config, children }) {
+  const session = useSessionInit(config);
+  const registry = useModuleRegistry(config.modules);
+  const eventBus = useMemo(() => createEventBus(), []);
+  const stepState = useStepState();
+
+  return composeProviders(
+    [
+      [AppContext.Provider,     { value: config }],
+      [SessionContext.Provider, { value: session }],
+      [ModuleContext.Provider,  { value: registry }],
+      [EventContext.Provider,   { value: eventBus }],
+      [StepContext.Provider,    { value: stepState }],
+    ],
+    children
+  );
+}
+    ]]></composer>
+  </contexts>
+
+  <!-- ════════════════════════════════════════════════════════════════
+       DI CONTAINER (D5)
+       ════════════════════════════════════════════════════════════════ -->
+  <di-container>
+    <tokens-canonical><![CDATA[
+// packages/core/src/container.ts
+export const TOKENS = {
+  Clock:                  Symbol('Clock'),
+  Logger:                 Symbol('Logger'),
+  EventBus:               Symbol('EventBus'),
+  ProductRepository:      Symbol('ProductRepository'),
+  SupplierRepository:     Symbol('SupplierRepository'),
+  StockRepository:        Symbol('StockRepository'),
+  ExpiryRepository:       Symbol('ExpiryRepository'),
+  PurchaseRepository:     Symbol('PurchaseRepository'),
+  SaleRepository:         Symbol('SaleRepository'),
+  AuthService:            Symbol('AuthService'),
+} as const;
+
+// Cada módulo bindea SUS tokens en su lifecycle.onBootstrap
+// La app NO conoce qué implementación usa cada módulo.
+    ]]></tokens-canonical>
+  </di-container>
+
+  <!-- ════════════════════════════════════════════════════════════════
+       PERFORMANCE BUDGET (D11)
+       ════════════════════════════════════════════════════════════════ -->
+  <performance-budget>
+    <bundle metric="initial app" max="180kb gzip"/>
+    <bundle metric="slot lazy chunk" max="80kb gzip"/>
+    <bundle metric="module-* manifest only" max="5kb gzip"/>
+    <lighthouse metric="Performance" min="90"/>
+    <lighthouse metric="Accessibility" min="95"/>
+    <vitals metric="LCP" max="2.5s"/>
+    <vitals metric="FCP" max="1.5s"/>
+    <vitals metric="TTI" max="3.0s"/>
+    <vitals metric="CLS" max="0.1"/>
+    <enforce>size-limit + Lighthouse CI corren en GitHub Actions. PR falla si supera budget.</enforce>
+  </performance-budget>
+
+  <!-- ════════════════════════════════════════════════════════════════
+       ESLINT BOUNDARIES (D7, D8)
+       ════════════════════════════════════════════════════════════════ -->
+  <eslint-boundaries><![CDATA[
+{
+  "rules": {
+    "import/no-restricted-paths": ["error", {
+      "zones": [
+        { "target": "packages/core",           "from": ["packages/!core"] },
+        { "target": "packages/domain",         "from": ["packages/infrastructure", "packages/ui", "packages/shells", "packages/shell-runtime", "packages/modules"] },
+        { "target": "packages/application",    "from": ["packages/infrastructure", "packages/ui", "packages/shells", "packages/shell-runtime"] },
+        { "target": "packages/ui",             "from": ["packages/infrastructure", "packages/modules", "apps"] },
+        { "target": "packages/shells",         "from": ["packages/infrastructure", "packages/modules", "apps"] },
+        { "target": "packages/modules/!*",     "from": ["packages/modules/*"] }
+      ]
+    }]
+  }
+}
+  ]]></eslint-boundaries>
+
+  <!-- ════════════════════════════════════════════════════════════════
+       PERSISTENCIA v1 (decisión user 2026-05-14)
+       ════════════════════════════════════════════════════════════════ -->
+  <persistence-v1>
+    <decision>localStorage + mocks. Sin backend real en Fase -1..7.</decision>
+    <implementation>
+      packages/infrastructure/local-storage/ implementa Repository&lt;T&gt; genéricos.
+      apps/wholesale/mocks/ contiene seed data realista (productos peruanos, proveedores, ventas).
+      Al primer load, si localStorage vacío → inyecta mocks.
+      Schema versionado: cada módulo declara migrations en manifest.lifecycle.
+    </implementation>
+    <swap-ready>
+      packages/infrastructure/supabase/ existe como STUB tipado.
+      Cambio futuro: 1 línea en surte.config.ts (infrastructure: 'local' → 'supabase').
+    </swap-ready>
+  </persistence-v1>
+
+  <!-- ════════════════════════════════════════════════════════════════
+       DECISIONES EMITIDAS (a memory/DESIGN_DECISIONS.xml)
+       ════════════════════════════════════════════════════════════════ -->
+  <decisions-emitted>
+    <decision id="DS-046">Step = Aggregate con (id, moduleId, path, render, guards, transitions, contracts).</decision>
+    <decision id="DS-047">SlotTree nombrado (no arrays). Slots tienen identidad semántica.</decision>
+    <decision id="DS-048">Catch-all `app/[[...path]]/page.tsx` único. StepRouter resuelve todo.</decision>
+    <decision id="DS-049">Lazy() obligatorio en todo slot. ESLint rule custom enforces.</decision>
+    <decision id="DS-050">Contracts L0/L1/L2 declarados por step. No declarado = no permitido.</decision>
+    <decision id="DS-051">5 Contexts compuestos: App, Module, Step, Session, Event.</decision>
+    <decision id="DS-052">Composer pattern para evitar pyramid of doom de providers.</decision>
+    <decision id="DS-053">DI Container con symbol tokens. Módulos bindean en onBootstrap.</decision>
+    <decision id="DS-054">Server Actions co-locadas en module-*/src/server/actions/. Sin REST/GraphQL v1.</decision>
+    <decision id="DS-055">EventBus tipado con eventos versionados ('product.created.v1').</decision>
+    <decision id="DS-056">Performance budget enforced en CI con size-limit + Lighthouse CI.</decision>
+    <decision id="DS-057">Cada módulo exporta patterns/ (flows cerrados) — la app NO arma flows.</decision>
+    <decision id="DS-058">Persistencia v1: localStorage + mocks. Supabase como stub ready-to-swap.</decision>
+    <decision id="DS-059">Cada módulo declara migrations en manifest.lifecycle (schema versioning).</decision>
+    <decision id="DS-060">2 apps de validación en monorepo: apps/wholesale (full) + apps/bodega-simple (minimal).</decision>
+    <decision id="DS-061">apps/playground = Storybook para visualizar patterns/components.</decision>
+    <decision id="DS-062">@surte/shell-runtime separado de @surte/core. core es puro TS; shell-runtime es React.</decision>
+    <decision id="DS-063">@surte/shells exporta SidebarTopbar, TopbarOnly, Fullscreen, Modal shells.</decision>
+    <decision id="DS-064">@surte/domain es 1 package monolítico con subpaths (product, supplier, stock). NO 1 package por dominio.</decision>
+    <decision id="DS-065">@surte/application igual: 1 package con subpaths por bounded context.</decision>
+    <decision id="DS-066">SemVer + Changesets + tests contra index.ts en cada package.</decision>
+    <decision id="DS-067">Steps declarados estáticamente en steps/index.ts (analizable por bundler).</decision>
+    <decision id="DS-068">Mocks viven en apps/&lt;app&gt;/mocks/. NO en packages.</decision>
+    <decision id="DS-069">middleware.ts en cada app maneja auth, tenant, locale antes del StepRouter.</decision>
+    <decision id="DS-070">Validación de arquitectura: tests E2E en apps/wholesale (full) + apps/bodega-simple (minimal) cubren add/remove de módulos.</decision>
+  </decisions-emitted>
+
+  <!-- ════════════════════════════════════════════════════════════════
+       APROBACIÓN DEL PANEL
+       ════════════════════════════════════════════════════════════════ -->
+  <panel-approval>
+    <vote arch="A1 Fullstack" status="approved" notes="Backend boundary claro con Server Actions co-locadas."/>
+    <vote arch="A2 NextJS" status="approved" notes="Catch-all + parallel routes para modals (intercepting). RSC opt-in por step."/>
+    <vote arch="A3 React Patterns" status="approved" notes="5 contexts via composer + SlotTree nombrado + render strategy desacoplada."/>
+    <vote arch="A4 Scalability/Perf" status="approved-with-watch" notes="Vigilar caché de Next.js con catch-all. Usar revalidatePath por step. Budget enforced en CI."/>
+    <vote arch="A5 DDD" status="approved" notes="DDD layers enforced por ESLint. Domain puro. Repos como puertos. Anti-corruption en adapter."/>
+  </panel-approval>
+</artifact>

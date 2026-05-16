@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="agent" id="spec-agent" version="1">
+  <meta>
+    <owner>spec-agent</owner>
+    <role>Lee un archivo de SPEC de módulo (XML), valida su estructura y devuelve un objeto parseado para que el Contractor construya.</role>
+  </meta>
+
+  <inputs>
+    <input name="module-id" type="string"/>
+    <input name="spec-path" type="path">phases/{phase}/modules/{module-id}.xml</input>
+  </inputs>
+
+  <protocol>
+    <step n="1">read(spec-path)</step>
+    <step n="2">validate-schema(content, schema=module-schema)</step>
+    <step n="3">resolve-references(design-system tokens, components)</step>
+    <step n="4">emit-parsed-spec</step>
+  </protocol>
+
+  <module-schema>
+    <required-fields>
+      <field>id</field>
+      <field>name</field>
+      <field>phase</field>
+      <field>purpose</field>
+      <field>data-needs</field>
+      <field>ui-spec</field>
+      <field>interactions</field>
+      <field>gates</field>
+    </required-fields>
+  </module-schema>
+
+  <errors>
+    <error code="SPEC_NOT_FOUND">El archivo XML del módulo no existe.</error>
+    <error code="SCHEMA_INVALID">Falta uno de los required-fields.</error>
+    <error code="UNDEFINED_TOKEN">Referencia a un token CSS que no existe en design-system.</error>
+  </errors>
+</artifact>

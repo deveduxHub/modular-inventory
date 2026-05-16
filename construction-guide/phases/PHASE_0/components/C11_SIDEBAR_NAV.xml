@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="component-spec" id="C11_SIDEBAR_NAV" version="1">
+  <meta name="SidebarNav + Topbar" decision-ref="DS-017, DS-018"/>
+  <class>.sidebar / .topbar</class>
+  <intent>Chrome principal del app. Sidebar dark (Carbon) izquierda fijo en desktop ≥1024px; topbar arriba con context + acciones globales.</intent>
+
+  <layout>
+    <region name="sidebar"  pos="left"  width="var(--sidebar-w) · 272px"/>
+    <region name="topbar"   pos="top"   height="var(--topbar-h) · 64px"  offset-from-sidebar="true"/>
+    <region name="content"  pos="rest"  bg="var(--canvas)"/>
+  </layout>
+
+  <sidebar-structure html='<aside class="sidebar">
+  <div class="sidebar__brand"><span class="sidebar__logo">∎</span><span>Inventario</span></div>
+  <nav class="sidebar__nav">
+    <a class="sidebar__item is-active"><svg/>Dashboard</a>
+    <a class="sidebar__item"><svg/>Productos</a>
+    <a class="sidebar__item"><svg/>Existencias</a>
+    <a class="sidebar__item"><svg/>Compras</a>
+    <a class="sidebar__item"><svg/>Ventas</a>
+    <a class="sidebar__item"><svg/>Reportes</a>
+  </nav>
+  <div class="sidebar__foot">
+    <a class="sidebar__item"><svg/>Configuración</a>
+    <div class="sidebar__user"><div class="avatar">A</div><span>Admin</span></div>
+  </div>
+</aside>'/>
+
+  <sidebar-parts>
+    <part class=".sidebar">bg: var(--surface-dark) · color: var(--text-inverse) · padding: var(--space-5) · flex-direction: column · h: 100vh · position: sticky · top: 0</part>
+    <part class=".sidebar__brand">font: var(--text-md) / var(--fw-bold) · gap: var(--space-3) · mb: var(--space-8)</part>
+    <part class=".sidebar__item">px: var(--space-4) · h: 44px · radius: var(--radius-md) · color: rgba(255,255,255,0.7) · gap: var(--space-3) · transition: dur-fast</part>
+    <part class=".sidebar__item:hover">bg: rgba(255,255,255,0.06) · color: var(--text-inverse)</part>
+    <part class=".sidebar__item.is-active">bg: var(--terracotta-500) · color: var(--text-inverse) · font-weight: var(--fw-semibold)</part>
+    <part class=".sidebar__foot">margin-top: auto · border-top: 1px solid rgba(255,255,255,0.08) · pt: var(--space-4)</part>
+  </sidebar-parts>
+
+  <topbar-structure html='<header class="topbar">
+  <div class="topbar__crumbs">
+    <a>Inicio</a><span>›</span><strong>Productos</strong>
+  </div>
+  <div class="topbar__actions">
+    <button class="btn btn--ghost btn--sm"><svg/>Buscar</button>
+    <button class="btn btn--primary btn--sm"><svg/>Nuevo producto</button>
+  </div>
+</header>'/>
+
+  <topbar-parts>
+    <part class=".topbar">h: var(--topbar-h) · bg: var(--surface) · border-bottom: 1px solid var(--divider) · px: var(--space-8) · position: sticky · top: 0 · z: var(--z-sticky)</part>
+    <part class=".topbar__crumbs">font: var(--text-sm) · color: var(--text-muted) · gap: var(--space-2)</part>
+    <part class=".topbar__actions">gap: var(--space-3) · margin-left: auto</part>
+  </topbar-parts>
+
+  <responsive>
+    <bp lte="1023px">Sidebar colapsa a drawer trigger en topbar (icon hamburger). Drawer slide-in desde left.</bp>
+    <bp lte="767px">Topbar oculta breadcrumbs; muestra solo botón menú + título de página + acción primaria.</bp>
+  </responsive>
+
+  <do-and-dont>
+    <do>SOLO 1 sidebar__item con is-active a la vez.</do>
+    <do>Items con badge de notificación opcional: <span class="sidebar__count">3</span></do>
+    <dont>NO más de 8 items de primer nivel (regla cognitiva).</dont>
+  </do-and-dont>
+</artifact>

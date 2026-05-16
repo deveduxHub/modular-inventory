@@ -1,0 +1,182 @@
+/*
+ * @surte/design-system — globals.css
+ *
+ * Import order in consuming app:
+ *   1. @surte/design-system/styles   ← this file (tokens + base reset)
+ *   2. app's own globals.css          (overrides if needed)
+ *
+ * CSS variable naming: --surte-{token-key}
+ *   e.g. --surte-color-primary, --surte-spacing-4
+ *
+ * :root block = light-theme SSR fallback (prevents FOUC).
+ * ThemeProvider rewrites these at runtime via element.style.setProperty().
+ * .dark block = dark overrides activated when ThemeProvider adds .dark to <html>.
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── SSR Fallback: light theme tokens ──────────────────────────────────────
+   ThemeProvider overwrites these at hydration. Prevents flash of unstyled content. */
+:root {
+  /* Brand — indigo */
+  --surte-color-primary:        #4F46E5;
+  --surte-color-primary-hover:  #4338CA;
+  --surte-color-primary-active: #3730A3;
+  --surte-color-primary-subtle: #EEF2FF;
+
+  /* Feedback */
+  --surte-color-success:        #16A34A;
+  --surte-color-success-subtle: #F0FDF4;
+  --surte-color-warning:        #F59E0B;
+  --surte-color-warning-subtle: #FFFBEB;
+  --surte-color-error:          #DC2626;
+  --surte-color-error-subtle:   #FEF2F2;
+  --surte-color-info:           #0284C7;
+  --surte-color-info-subtle:    #F0F9FF;
+
+  /* Surface / Background */
+  --surte-color-bg-base:    #FFFFFF;
+  --surte-color-bg-subtle:  #F9FAFB;
+  --surte-color-bg-muted:   #FFFFFF;
+  --surte-color-bg-overlay: #00000066;
+
+  /* Text */
+  --surte-color-text-primary:    #111827;
+  --surte-color-text-secondary:  #4B5563;
+  --surte-color-text-disabled:   #9CA3AF;
+  --surte-color-text-inverse:    #FFFFFF;
+  --surte-color-text-on-primary: #FFFFFF;
+
+  /* Border */
+  --surte-color-border-default: #E5E7EB;
+  --surte-color-border-strong:  #9CA3AF;
+  --surte-color-border-focus:   #4F46E5;
+
+  /* Spacing */
+  --surte-spacing-0:  0px;
+  --surte-spacing-1:  0.25rem;
+  --surte-spacing-2:  0.5rem;
+  --surte-spacing-3:  0.75rem;
+  --surte-spacing-4:  1rem;
+  --surte-spacing-5:  1.25rem;
+  --surte-spacing-6:  1.5rem;
+  --surte-spacing-8:  2rem;
+  --surte-spacing-10: 2.5rem;
+  --surte-spacing-12: 3rem;
+  --surte-spacing-16: 4rem;
+
+  /* Typography */
+  --surte-font-family-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --surte-font-family-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  --surte-font-size-xs:   0.75rem;
+  --surte-font-size-sm:   0.875rem;
+  --surte-font-size-base: 1rem;
+  --surte-font-size-lg:   1.125rem;
+  --surte-font-size-xl:   1.25rem;
+  --surte-font-size-2xl:  1.5rem;
+  --surte-font-size-3xl:  1.875rem;
+  --surte-font-size-4xl:  2.25rem;
+
+  --surte-font-weight-normal:   400;
+  --surte-font-weight-medium:   500;
+  --surte-font-weight-semibold: 600;
+  --surte-font-weight-bold:     700;
+
+  --surte-line-height-tight:   1.25;
+  --surte-line-height-snug:    1.375;
+  --surte-line-height-normal:  1.5;
+  --surte-line-height-relaxed: 1.75;
+
+  /* Radius */
+  --surte-radius-none: 0px;
+  --surte-radius-sm:   4px;
+  --surte-radius-md:   6px;
+  --surte-radius-lg:   8px;
+  --surte-radius-xl:   0.75rem;
+  --surte-radius-2xl:  1rem;
+  --surte-radius-full: 9999px;
+
+  /* Shadows */
+  --surte-shadow-none: none;
+  --surte-shadow-sm:   0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --surte-shadow-md:   0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --surte-shadow-lg:   0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+  /* Z-index */
+  --surte-z-base:     0;
+  --surte-z-dropdown: 1000;
+  --surte-z-sticky:   1100;
+  --surte-z-modal:    1300;
+  --surte-z-toast:    1400;
+  --surte-z-tooltip:  1500;
+}
+
+/* ─── Dark theme — activated by ThemeProvider adding .dark to <html> ─────── */
+.dark,
+[data-theme="dark"] {
+  /* Brand — indigo-400 (lighter for dark bg) */
+  --surte-color-primary:        #818CF8;
+  --surte-color-primary-hover:  #A5B4FC;
+  --surte-color-primary-active: #C7D2FE;
+  --surte-color-primary-subtle: #1E1B4B;
+
+  /* Feedback */
+  --surte-color-success:        #4ADE80;
+  --surte-color-success-subtle: #052E16;
+  --surte-color-warning:        #FCD34D;
+  --surte-color-warning-subtle: #1C1400;
+  --surte-color-error:          #F87171;
+  --surte-color-error-subtle:   #1F0707;
+  --surte-color-info:           #38BDF8;
+  --surte-color-info-subtle:    #012030;
+
+  /* Surface / Background */
+  --surte-color-bg-base:    #030712;
+  --surte-color-bg-subtle:  #111827;
+  --surte-color-bg-muted:   #1F2937;
+  --surte-color-bg-overlay: #00000099;
+
+  /* Text */
+  --surte-color-text-primary:    #F9FAFB;
+  --surte-color-text-secondary:  #9CA3AF;
+  --surte-color-text-disabled:   #4B5563;
+  --surte-color-text-inverse:    #030712;
+  --surte-color-text-on-primary: #FFFFFF;
+
+  /* Border */
+  --surte-color-border-default: #374151;
+  --surte-color-border-strong:  #6B7280;
+  --surte-color-border-focus:   #818CF8;
+
+  /* Shadows */
+  --surte-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --surte-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+  --surte-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+}
+
+/* ─── Base reset using tokens ────────────────────────────────────────────────*/
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: var(--surte-font-family-sans);
+    font-size: var(--surte-font-size-base);
+    line-height: var(--surte-line-height-normal);
+    color: var(--surte-color-text-primary);
+    background-color: var(--surte-color-bg-base);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--surte-color-border-focus);
+    outline-offset: 2px;
+  }
+}

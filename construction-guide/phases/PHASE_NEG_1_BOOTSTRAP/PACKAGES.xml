@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="package-manifest" id="PACKAGES" version="1">
+  <meta>
+    <title>Lista canónica de packages del monorepo @surte/*</title>
+    <consumed-by>SCAFFOLD_AGENT, Claude Code en Fase -1.</consumed-by>
+  </meta>
+
+  <!-- Notación: deps usa nombres de @surte/* o paquetes npm. exports = símbolos públicos esperados en src/index.ts -->
+
+  <packages>
+
+    <!-- ── CONFIGS ── -->
+    <package name="@surte/config-typescript" path="packages/configs/typescript" private="true">
+      <files>tsconfig.base.json · tsconfig.library.json · tsconfig.nextjs.json · tsconfig.react.json</files>
+      <deps/>
+      <peer>typescript@5.4</peer>
+    </package>
+
+    <package name="@surte/config-eslint" path="packages/configs/eslint" private="true">
+      <files>index.cjs (flat config) · boundaries.cjs (matriz de capas)</files>
+      <deps>eslint · @typescript-eslint/* · eslint-plugin-react · eslint-plugin-react-hooks · eslint-plugin-jsx-a11y · eslint-plugin-tailwindcss · eslint-plugin-import · eslint-plugin-boundaries</deps>
+    </package>
+
+    <package name="@surte/config-tailwind" path="packages/configs/tailwind" private="true">
+      <exports>preset (Config)</exports>
+      <deps>@surte/design-tokens · tailwindcss · tailwindcss-animate · @tailwindcss/forms</deps>
+    </package>
+
+    <package name="@surte/config-tsup" path="packages/configs/tsup" private="true">
+      <exports>createTsupConfig</exports>
+      <deps>tsup</deps>
+    </package>
+
+    <!-- ── KERNEL ── -->
+    <package name="@surte/core" path="packages/core" version="0.1.0">
+      <exports>
+        Result · ok · err · isOk · isErr ·
+        Id · createId · UUID brand ·
+        Money · Currency ·
+        DomainError · ValidationError · NotFoundError · ConflictError ·
+        EventBus · DomainEvent · createEventBus ·
+        Container · TOKENS · inject ·
+        Capability · Permission ·
+        ModuleManifest (interface) · ModuleId · ModuleRoute · NavItem · SlotContribution · StepDefinition · StepDecision · StepGuard ·
+        Clock · SystemClock · TestClock
+      </exports>
+      <deps/>
+      <devDeps>vitest</devDeps>
+      <rule>ZERO React. ZERO DOM. ZERO storage. Puro TS.</rule>
+    </package>
+
+    <!-- ── SHELL ── -->
+    <package name="@surte/shell" path="packages/shell" version="0.1.0">
+      <exports>
+        ModuleRegistry · ModuleProvider · useModuleRegistry ·
+        AppShell · Header · Sidebar · Footer · Main ·
+        SlotRegistry · Slot · useSlots ·
+        StepRunner · useStepRunner · createFlow ·
+        runGuards · AuthGuardFactory ·
+        defineConfig · SurteConfig (type) ·
+        ModuleRouter · matchRoute
+      </exports>
+      <deps>@surte/core · react@18 · react-dom@18</deps>
+      <devDeps>vitest · @testing-library/react · @types/react</devDeps>
+    </package>
+
+    <!-- ── DESIGN ── -->
+    <package name="@surte/design-tokens" path="packages/design-tokens" version="0.1.0">
+      <exports>tokens (const object as const) · colors · typography · spacing · radius · shadow · motion · zIndex · tailwindPreset</exports>
+      <deps/>
+      <fase>0 — Fase -1 deja stub vacío</fase>
+    </package>
+
+    <package name="@surte/icons" path="packages/icons" version="0.1.0">
+      <exports>Icons object (curado de lucide) · IconName type · createIcon</exports>
+      <deps>lucide-react · react@18</deps>
+      <fase>0</fase>
+    </package>
+
+    <package name="@surte/ui" path="packages/ui" version="0.1.0">
+      <exports>Button · Input · Select · FormGroup · Card · KpiCard · Table · Badge · Alert · Modal · SidebarNav · EmptyState · ThemeProvider · useTheme · cn</exports>
+      <deps>@surte/core · @surte/design-tokens · @surte/icons · react@18 · class-variance-authority · clsx · tailwind-merge · @radix-ui/react-slot · @radix-ui/react-dialog · @radix-ui/react-dropdown-menu · @radix-ui/react-tooltip</deps>
+      <devDeps>vitest · @testing-library/react · @storybook/react</devDeps>
+      <fase>0 — Fase -1 deja stub vacío</fase>
+    </package>
+
+    <package name="@surte/utils" path="packages/utils" version="0.1.0">
+      <exports>formatDate · formatCurrency · formatNumber · pluralize · debounce · throttle · pipe · flow</exports>
+      <deps/>
+    </package>
+
+    <!-- ── DOMAIN ── (stubs en Fase -1, contenido real desde Fase 1) -->
+    <package name="@surte/domain-product" path="packages/domain/product" version="0.1.0">
+      <exports>Product · Sku · Category · productInvariants · productSchema (zod) · ProductRepository (interface)</exports>
+      <deps>@surte/core · zod</deps>
+      <fase>1</fase>
+    </package>
+    <package name="@surte/domain-supplier" path="packages/domain/supplier" version="0.1.0">
+      <deps>@surte/core · zod</deps><fase>1</fase>
+    </package>
+    <package name="@surte/domain-stock" path="packages/domain/stock" version="0.1.0">
+      <deps>@surte/core · zod</deps><fase>2</fase>
+    </package>
+    <package name="@surte/domain-expiry" path="packages/domain/expiry" version="0.1.0">
+      <deps>@surte/core · zod</deps><fase>3</fase>
+    </package>
+    <package name="@surte/domain-purchase" path="packages/domain/purchase" version="0.1.0">
+      <deps>@surte/core · zod</deps><fase>4</fase>
+    </package>
+    <package name="@surte/domain-sale" path="packages/domain/sale" version="0.1.0">
+      <deps>@surte/core · zod</deps><fase>5</fase>
+    </package>
+
+    <!-- ── APPLICATION ── -->
+    <package name="@surte/application" path="packages/application" version="0.1.0">
+      <exports>use cases agrupados por dominio (createProduct, listProducts, recordSale, etc.)</exports>
+      <deps>@surte/core · @surte/domain-*</deps>
+      <fase>1+</fase>
+    </package>
+
+    <!-- ── INFRASTRUCTURE ── -->
+    <package name="@surte/infra-storage-local" path="packages/infrastructure/storage-local" version="0.1.0">
+      <exports>LocalStorageRepository (generic) · createLocalStorageBindings</exports>
+      <deps>@surte/core</deps>
+    </package>
+    <package name="@surte/infra-storage-indexed" path="packages/infrastructure/storage-indexed" version="0.1.0">
+      <deps>@surte/core · dexie</deps><fase>7 (stub en -1)</fase>
+    </package>
+    <package name="@surte/infra-storage-supabase" path="packages/infrastructure/storage-supabase" version="0.1.0">
+      <deps>@surte/core · @supabase/supabase-js</deps><fase>futuro (stub en -1)</fase>
+    </package>
+
+    <!-- ── MODULES ── (pluggable) -->
+    <package name="@surte/module-auth" path="packages/modules/auth" version="0.1.0">
+      <exports>authModule (factory) · AuthGuard · useAuth · LoginStep · LogoutStep</exports>
+      <deps>@surte/core · @surte/shell · @surte/ui</deps>
+      <fase>0.5</fase>
+    </package>
+    <package name="@surte/module-productos" path="packages/modules/productos" version="0.1.0">
+      <exports>productosModule (factory)</exports>
+      <deps>@surte/core · @surte/shell · @surte/ui · @surte/domain-product · @surte/application</deps>
+      <fase>1</fase>
+    </package>
+    <package name="@surte/module-existencias" path="packages/modules/existencias" version="0.1.0"><fase>2</fase></package>
+    <package name="@surte/module-vencimientos" path="packages/modules/vencimientos" version="0.1.0"><fase>3</fase></package>
+    <package name="@surte/module-compras" path="packages/modules/compras" version="0.1.0"><fase>4</fase></package>
+    <package name="@surte/module-ventas" path="packages/modules/ventas" version="0.1.0"><fase>5</fase></package>
+    <package name="@surte/module-reportes" path="packages/modules/reportes" version="0.1.0"><fase>6</fase></package>
+
+    <!-- ── APPS ── -->
+    <package name="@surte/web" path="apps/web" private="true">
+      <description>Next.js 14 App Router. Shell que monta módulos según surte.config.ts.</description>
+      <deps>next@14 · react@18 · react-dom@18 · @surte/shell · @surte/ui · @surte/design-tokens · @surte/infra-storage-local · zustand · @tanstack/react-query</deps>
+    </package>
+
+    <package name="@surte/storybook" path="apps/storybook" private="true">
+      <description>Storybook 8 standalone. Consume @surte/ui y stories de cada módulo.</description>
+      <deps>@storybook/react · @storybook/nextjs · @storybook/addon-essentials · @storybook/addon-a11y · @surte/ui</deps>
+    </package>
+
+  </packages>
+
+  <ts-project-references>
+    <note>Cada package con TS project references al de sus deps internas, para incremental builds y go-to-definition.</note>
+    <example>@surte/shell/tsconfig.json: { "references": [{ "path": "../core" }] }</example>
+  </ts-project-references>
+
+  <eslint-boundaries-matrix>
+    <note>Reglas que activa @surte/config-eslint via plugin-boundaries.</note>
+    <rule from="core" allow="(nothing)"/>
+    <rule from="design-tokens" allow="(nothing)"/>
+    <rule from="utils" allow="(nothing)"/>
+    <rule from="domain-*" allow="core, zod"/>
+    <rule from="application" allow="core, domain-*"/>
+    <rule from="infrastructure-*" allow="core, domain-*, application"/>
+    <rule from="ui" allow="core, design-tokens, icons, utils, react, radix-ui, cva, clsx, tailwind-merge"/>
+    <rule from="shell" allow="core, ui, react, react-dom"/>
+    <rule from="module-*" allow="core, shell, ui, design-tokens, icons, application, domain-*, react"/>
+    <rule from="module-*" deny="otros module-*"/>
+    <rule from="apps/web" allow="shell, ui, design-tokens, infrastructure-*, module-*"/>
+  </eslint-boundaries-matrix>
+</artifact>

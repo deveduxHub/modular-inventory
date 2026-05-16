@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="contract" id="EXTENSIONS_CONTRACT" version="1">
+  <meta>
+    <title>Extensions Contract — OCP-compliant pattern plugins</title>
+    <enforced-by>PATTERN_AGENT</enforced-by>
+    <decision-refs>R-3 · DS-087, DS-088</decision-refs>
+    <signed-by>W1-SOLID, W2-CleanCode</signed-by>
+  </meta>
+
+  <rationale>
+    <why>Adding cross-cutting behavior (telemetry, feature flags, error boundaries, custom styles)
+    SHOULD NOT require modifying the Pattern core. Extensions are plugins that decorate a
+    PatternDefinition with new capabilities, applied at definition time.</why>
+  </rationale>
+
+  <schema lang="typescript"><![CDATA[
+export interface PatternExtension<TOptions = unknown, TConfig = unknown> {
+  readonly id:    string;
+  readonly apply: (
+    def: PatternDefinition<TConfig>,
+    options: TOptions,
+  ) => PatternDefinition<TConfig>;
+}
+
+export function defineExtension<TOptions, TConfig = unknown>(
+  spec: { id: string; apply: PatternExtension<TOptions, TConfig>['apply'] }
+): (options: TOptions) => PatternExtension<TOptions, TConfig>;
+  ]]></schema>
+
+  <built-in-extensions>
+    <ext id="withTelemetry"><![CDATA[
+withTelemetry({ events: ['rowSelected', 'sortChanged'] })
+// Wraps `on` handlers to also emit to telemetry bus before calling user handler.
+    ]]></ext>
+
+    <ext id="withFeatureFlag"><![CDATA[
+withFeatureFlag('products.table.v2')
+// Adds a skip-check step: if flag is off, pattern is omitted.
+    ]]></ext>
+
+    <ext id="withErrorBoundary"><![CDATA[
+withErrorBoundary({ fallbackId: 'product-table-error' })
+// Wraps Component in an error boundary that renders a fallback pattern on crash.
+// Isolates failures so one pattern crash does not blank the whole view.
+    ]]></ext>
+
+    <ext id="withCustomStyle"><![CDATA[
+withCustomStyle({ slot: 'product-table' })
+// Reads inventory.customStyle[slot] from context and deep-merges into Component props.
+    ]]></ext>
+
+    <ext id="withA11y"><![CDATA[
+withA11y({ landmarkRole: 'region', labelKey: 'a11y.products.table' })
+// Wraps Component in semantic landmark with translated label.
+    ]]></ext>
+
+    <ext id="withPermission"><![CDATA[
+withPermission('products.read')
+// Adds permission to skip-chain; pattern omitted if session lacks permission.
+    ]]></ext>
+
+    <ext id="withSuspenseFallback"><![CDATA[
+withSuspenseFallback({ skeleton: ProductTableSkeleton })
+// Wraps lazy boundary with custom skeleton.
+    ]]></ext>
+  </built-in-extensions>
+
+  <custom-extension-example><![CDATA[
+// packages/extensions/with-analytics/src/index.ts
+import { defineExtension } from '@surte/core';
+
+export const withAnalytics = defineExtension<{ stream: string }>({
+  id: 'extension.analytics',
+  apply: (def, options) => ({
+    ...def,
+    extensions: [...def.extensions],  // preserve chain
+    selector: (ctx, config) => {
+      const props = def.selector(ctx, config);
+      return {
+        ...props,
+        onMount:   () => ctx['analytics:write'].track(`${options.stream}.mounted`),
+        onUnmount: () => ctx['analytics:write'].track(`${options.stream}.unmounted`),
+      };
+    },
+  }),
+});
+
+// usage:
+const ProductTablePattern = definePattern({
+  // ...
+  extensions: [
+    withTelemetry({ events: ['rowSelected'] }),
+    withAnalytics({ stream: 'products.table' }),
+    withErrorBoundary({ fallbackId: 'product-table-error' }),
+  ],
+});
+  ]]></custom-extension-example>
+
+  <invariants>
+    <invariant id="E-I1">Extensions are applied in declaration order at definePattern() time.</invariant>
+    <invariant id="E-I2">An extension MUST be pure (no side effects at apply time).</invariant>
+    <invariant id="E-I3">Extensions cannot replace `Component`; they can only wrap or augment.</invariant>
+    <invariant id="E-I4">An extension MAY add to `requires` (additional capabilities), but NOT remove.</invariant>
+  </invariants>
+
+  <gates>
+    <gate id="E-G1">Each extension has a *.extension.test.ts demonstrating apply() result.</gate>
+    <gate id="E-G2">Extensions are documented in apps/playground/extensions/.</gate>
+    <gate id="E-G3">Extension chain is detectable in DevTools (named wrapper in component tree).</gate>
+  </gates>
+</artifact>

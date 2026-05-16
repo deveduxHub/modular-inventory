@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="agent" id="STEP_AGENT" version="1">
+  <meta>
+    <title>STEP_AGENT — Valida Steps bien formados</title>
+    <owner>orchestrator</owner>
+    <runnable-by>Claude Code (autónomo)</runnable-by>
+  </meta>
+
+  <responsibility>
+    Verifica que cada Step declarado en packages/modules/&lt;X&gt;/src/steps/index.ts cumpla
+    STEP_CONTRACT.xml y SLOT_CONTRACT.xml. Bloquea merge si encuentra violaciones.
+  </responsibility>
+
+  <inputs>
+    <input>builder-guide/contracts/STEP_CONTRACT.xml</input>
+    <input>builder-guide/contracts/SLOT_CONTRACT.xml</input>
+    <input>packages/modules/&lt;X&gt;/src/steps/*.ts</input>
+  </inputs>
+
+  <checks>
+    <check id="S1">Cada step tiene id único en el monorepo (formato 'moduleId.verb').</check>
+    <check id="S2">step.moduleId matchea el ModuleManifest.id del módulo que lo declara.</check>
+    <check id="S3">step.path es PathPattern válido (empieza con '/').</check>
+    <check id="S4">step.render.slots tiene 'main' (slot obligatorio).</check>
+    <check id="S5">Todo SlotContent que sea componente está wrappeado en lazy() — bundler analysis.</check>
+    <check id="S6">step.guards es array (puede ser vacío, pero no undefined).</check>
+    <check id="S7">step.transitions.next definido si el step tiene CTA semántico.</check>
+    <check id="S8">step.contracts.config.schema es ZodSchema válido.</check>
+    <check id="S9">step.contracts.events.emits[].name es camelCase válido.</check>
+    <check id="S10">step.contracts.events.emits[].version es entero ≥ 1.</check>
+    <check id="S11">Slot names usados son los canónicos o tienen prefix 'slot.'.</check>
+    <check id="S12">No hay imports directos de @surte/modules/* (módulo no importa otro módulo).</check>
+    <check id="S13">No hay imports directos de @surte/infrastructure/* (debe ir via DI).</check>
+  </checks>
+
+  <output-format>
+    <example><![CDATA[
+{
+  "agent": "STEP_AGENT",
+  "module": "products",
+  "passed": ["S1", "S2", "S3", "S4", "S6", "S7", "S8", "S9", "S10", "S11", "S12", "S13"],
+  "failed": [
+    {
+      "check": "S5",
+      "step": "products.list",
+      "evidence": "import ProductListView from '../views/ProductListView' — NOT lazy",
+      "fix": "Wrap: const ProductListView = lazy(() => import('../views/ProductListView'))"
+    }
+  ],
+  "verdict": "BLOCK"
+}
+    ]]></example>
+  </output-format>
+</artifact>

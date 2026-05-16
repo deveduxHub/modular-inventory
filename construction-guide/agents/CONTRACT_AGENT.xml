@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="agent" id="CONTRACT_AGENT" version="1">
+  <meta>
+    <title>CONTRACT_AGENT — Valida Contracts L0/L1/L2 por step y por pattern</title>
+    <owner>orchestrator</owner>
+    <runnable-by>Claude Code (autónomo)</runnable-by>
+  </meta>
+
+  <responsibility>
+    Verifica que cada Step y cada Pattern exportado por un módulo declare contracts L0/L1/L2
+    completos y consistentes. Detecta props/slots/eventos no documentados y bloquea.
+  </responsibility>
+
+  <inputs>
+    <input>builder-guide/contracts/STEP_CONTRACT.xml</input>
+    <input>builder-guide/contracts/MODULE_CONTRACT.xml</input>
+    <input>packages/modules/&lt;X&gt;/src/steps/*.ts</input>
+    <input>packages/modules/&lt;X&gt;/src/patterns/&lt;Y&gt;/&lt;Y&gt;.contract.ts</input>
+  </inputs>
+
+  <checks>
+    <check id="C1">Cada Pattern público tiene archivo &lt;Pattern&gt;.contract.ts.</check>
+    <check id="C2">Contract.L0 (config): schema zod + defaults + description.</check>
+    <check id="C3">Contract.L1 (slots): cada slot inyectable declarado con required/maxItems.</check>
+    <check id="C4">Contract.L2 (events): cada evento emitido con name + version + payloadSchema.</check>
+    <check id="C5">Toda prop del componente que NO esté en L0 debe ser interna (no exportada como tipo público).</check>
+    <check id="C6">Toda variante (cva) está reflejada en L0.config.variant enum.</check>
+    <check id="C7">El componente NO acepta children libre si declara slots — debe usar slots.</check>
+    <check id="C8">Eventos versionados ('product.created.v1') — name no contiene puntos sin versión.</check>
+  </checks>
+
+  <output-format>
+    <example><![CDATA[
+{
+  "agent": "CONTRACT_AGENT",
+  "module": "products",
+  "patterns-validated": ["CreateProductFlow", "EditProductFlow", "BulkImportFlow"],
+  "violations": [
+    {
+      "pattern": "CreateProductFlow",
+      "check": "C4",
+      "evidence": "Component emits 'onSupplierLinked' but not declared in events contract",
+      "fix": "Add to CreateProductFlow.contract.ts: events.emits.push({ name: 'supplierLinked', version: 1, payloadSchema: ... })"
+    }
+  ],
+  "verdict": "BLOCK"
+}
+    ]]></example>
+  </output-format>
+</artifact>

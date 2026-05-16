@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design System — Sistema de Inventario</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="components.css">
+<style>
+  .page { max-width: 1200px; margin: 0 auto; padding: 48px 24px 120px; }
+  .doc-header { margin-bottom: 48px; }
+  .doc-title { font-family: var(--font-display); font-weight: 800; font-size: 48px; letter-spacing: -0.03em; margin: 0 0 8px; }
+  .doc-sub { color: var(--color-ink-500); font-size: 18px; max-width: 640px; margin: 0; }
+  .nav-pills { display: flex; gap: 8px; flex-wrap: wrap; margin: 32px 0 48px; }
+  .nav-pills a { padding: 8px 16px; border-radius: 999px; background: var(--color-ink-100); color: var(--color-ink-700); text-decoration: none; font-size: 14px; font-weight: 600; transition: background 120ms; }
+  .nav-pills a:hover { background: var(--color-ink-200); }
+  .section { margin-bottom: 80px; }
+  .section-head { display: flex; align-items: baseline; gap: 16px; margin-bottom: 24px; padding-bottom: 12px; border-bottom: 1px solid var(--color-ink-200); }
+  .section-num { font-family: var(--font-mono); color: var(--color-ink-400); font-size: 14px; }
+  .section-title { font-family: var(--font-display); font-weight: 700; font-size: 28px; letter-spacing: -0.02em; margin: 0; }
+  .section-desc { color: var(--color-ink-500); margin: 8px 0 24px; max-width: 720px; }
+  .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+  .swatch { border-radius: 12px; overflow: hidden; border: 1px solid var(--color-ink-100); background: var(--color-ink-0); }
+  .swatch-color { height: 80px; }
+  .swatch-meta { padding: 10px 12px; font-size: 12px; }
+  .swatch-name { font-weight: 600; }
+  .swatch-val { font-family: var(--font-mono); color: var(--color-ink-500); font-size: 11px; }
+  .type-row { display: grid; grid-template-columns: 180px 1fr; gap: 24px; padding: 20px 0; border-bottom: 1px solid var(--color-ink-100); align-items: baseline; }
+  .type-row:last-child { border-bottom: none; }
+  .type-label { font-family: var(--font-mono); font-size: 12px; color: var(--color-ink-500); }
+  .type-label .px { display: block; color: var(--color-ink-800); font-weight: 600; }
+  .space-row { display: flex; align-items: center; gap: 16px; padding: 8px 0; font-family: var(--font-mono); font-size: 13px; }
+  .space-bar { height: 12px; background: var(--color-brand-500); border-radius: 2px; }
+  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .grid-auto { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .demo { background: var(--color-ink-50); padding: 24px; border-radius: 16px; border: 1px solid var(--color-ink-100); }
+  .demo-label { font-family: var(--font-mono); font-size: 11px; color: var(--color-ink-500); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 16px; }
+  .demo-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  @media (max-width: 720px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .doc-title { font-size: 32px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="doc-header">
+    <div class="t-overline" style="color: var(--color-brand-600); margin-bottom: 8px;">Design System v0.1</div>
+    <h1 class="doc-title">Sistema de Inventario para Mayoristas</h1>
+    <p class="doc-sub">Showcase de tokens y componentes reutilizables. Toda construcción a partir de Fase 1 debe consumir desde aquí — no inventar nuevos valores.</p>
+    <nav class="nav-pills">
+      <a href="#colors">Colores</a>
+      <a href="#type">Tipografía</a>
+      <a href="#spacing">Espaciado</a>
+      <a href="#shadows">Sombras</a>
+      <a href="#buttons">Buttons</a>
+      <a href="#inputs">Inputs</a>
+      <a href="#cards">Cards</a>
+      <a href="#badges">Badges</a>
+      <a href="#alerts">Alerts</a>
+      <a href="#kpi">KPI Cards</a>
+      <a href="#list">List Items</a>
+      <a href="#table">Data Table</a>
+      <a href="#empty">Empty State</a>
+      <a href="#mic">Audio Mic</a>
+      <a href="#sheet">Bottom Sheet</a>
+    </nav>
+  </header>
+
+  <!-- COLORS -->
+  <section id="colors" class="section">
+    <div class="section-head">
+      <span class="section-num">01</span>
+      <h2 class="section-title">Colores</h2>
+    </div>
+    <p class="section-desc">Brand cyan para acción. Indigo / Cyan / Ámbar para el Triángulo de Valor (Inversión / Movimiento / Ganancia). Estados semánticos para alertas.</p>
+
+    <h3 class="t-h3" style="margin: 24px 0 12px;">Brand</h3>
+    <div class="swatches">
+      <div class="swatch"><div class="swatch-color" style="background: var(--color-brand-50)"></div><div class="swatch-meta"><div class="swatch-name">brand-50</div><div class="swatch-val">#f0f7ff</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background: var(--color-brand-100)"></div><div class="swatch-meta"><div class="swatch-name">brand-100</div><div class="swatch-val">#dceefe</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background: var(--color-brand-300)"></div><div class="swatch-meta"><div class="swatch-name">brand-300</div><div class="swatch-val">#84c4fb</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background: var(--color-brand-500)"></div><div class="swatch-meta"><div class="swatch-name">brand-500 ★</div><div class="swatch-val">#0693e3</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background: var(--color-brand-700)"></div><div class="swatch-meta"><div class="swatch-name">brand-700</div><div class="swatch-val">#035c93</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background: var(--color-brand-900)"></div><div class="swatch-meta"><div class="swatch-name">brand-900</div><div class="swatch-val">#073d62</div></div></div>
+    </div>
+
+    <h3 class="t-h3" style="margin: 32px 0 12px;">KPI semánticos</h3>
+    <div class="swatches">
+      <div class="swatch"><div class="swatch-color" style="background: var(--color-inversion)"></div><div class="swatch-meta"><div class="swatch-name">inversion</div><div class="swatch-val">#1a1b4b</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background: var(--color-movimiento)"></div><div class="swatch-meta"><div class="swatch-name">movimiento</div><div class="swatch-val">#0693e3</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background: var(--color-ganancia)"></div><div class="swatch-meta"><div class="swatch-name">ganancia</div><div class="swatch-val">#f5a524</div></div></div>
+    </div>
+
+    <h3 class="t-h3" style="margin: 32px 0 12px;">Estados</h3>
+    <div class="swatches">
+      <div class="swatch"><div class="swatch-color" style="background: var(--color-success-500)"></div><div class="swatch-meta"><div class="swatch-name">success</div><div class="swatch-val">#10b981</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background: var(--color-warning-500)"></div><div class="swatch-meta"><div class="swatch-name">warning</div><div class="swatch-val">#f59e0b</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background: var(--color-error-500)"></div><div class="swatch-meta"><div class="swatch-name">error</div><div class="swatch-val">#ef4444</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background: var(--color-info-500)"></div><div class="swatch-meta"><div class="swatch-name">info</div><div class="swatch-val">#3b82f6</div></div></div>
+    </div>
+
+    <h3 class="t-h3" style="margin: 32px 0 12px;">Neutrales (warm)</h3>
+    <div class="swatches">
+      <div class="swatch"><div class="swatch-color" style="background: var(--color-ink-25); border: 1px solid var(--color-ink-100);"></div><div class="swatch-meta"><div class="swatch-name">ink-25</div><div class="swatch-val">#fbfbfa</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background: var(--color-ink-100)"></div><div class="swatch-meta"><div class="swatch-name">ink-100</div><div class="swatch-val">#ecebe8</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background: var(--color-ink-300)"></div><div class="swatch-meta"><div class="swatch-name">ink-300</div><div class="swatch-val">#b8b5ad</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background: var(--color-ink-500)"></div><div class="swatch-meta"><div class="swatch-name">ink-500</div><div class="swatch-val">#6b6862</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background: var(--color-ink-700)"></div><div class="swatch-meta"><div class="swatch-name">ink-700</div><div class="swatch-val">#3a3833</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background: var(--color-ink-900)"></div><div class="swatch-meta"><div class="swatch-name">ink-900</div><div class="swatch-val">#16150f</div></div></div>
+    </div>
+  </section>
+
+  <!-- TYPE -->
+  <section id="type" class="section">
+    <div class="section-head"><span class="section-num">02</span><h2 class="section-title">Tipografía</h2></div>
+    <p class="section-desc">Manrope para todo el sistema. JetBrains Mono solo para números (KPI, precios, cantidades).</p>
+
+    <div class="type-row"><div class="type-label">display-3xl<span class="px">48px / 700</span></div><div class="t-display-3xl">S/. 12,840</div></div>
+    <div class="type-row"><div class="type-label">display-2xl<span class="px">36px / 700</span></div><div class="t-display-2xl">Stock de hoy</div></div>
+    <div class="type-row"><div class="type-label">display-xl<span class="px">28px / 700</span></div><div class="t-display-xl">Triángulo de Valor</div></div>
+    <div class="type-row"><div class="type-label">h2<span class="px">28px / 600</span></div><div class="t-h2">Productos por vencer</div></div>
+    <div class="type-row"><div class="type-label">h3<span class="px">22px / 600</span></div><div class="t-h3">Mis proveedores</div></div>
+    <div class="type-row"><div class="type-label">body<span class="px">16px / 400</span></div><div class="t-body">Arroz Costeño superior, saco 50 kg, 24 unidades en stock.</div></div>
+    <div class="type-row"><div class="type-label">caption<span class="px">14px / 400</span></div><div class="t-caption">Última entrada: hace 2 días</div></div>
+    <div class="type-row"><div class="type-label">overline<span class="px">12px / 600 / UC</span></div><div class="t-overline">Inversión del mes</div></div>
+    <div class="type-row"><div class="type-label">mono<span class="px">JetBrains Mono</span></div><div class="t-mono">SKU-AR-CST-50K</div></div>
+    <div class="type-row"><div class="type-label">num<span class="px">tabular</span></div><div class="t-num" style="font-size: 22px; font-weight: 700;">S/. 4,200.00</div></div>
+  </section>
+
+  <!-- SPACING -->
+  <section id="spacing" class="section">
+    <div class="section-head"><span class="section-num">03</span><h2 class="section-title">Espaciado</h2></div>
+    <p class="section-desc">Escala base 4. Reglas: padding interno de cards = 24px (space-6). Gap entre cards = 16-24px. Sin valores fuera de escala.</p>
+
+    <div class="space-row"><span style="width: 80px;">space-1</span><span style="width: 60px;">4px</span><div class="space-bar" style="width: 4px;"></div></div>
+    <div class="space-row"><span style="width: 80px;">space-2</span><span style="width: 60px;">8px</span><div class="space-bar" style="width: 8px;"></div></div>
+    <div class="space-row"><span style="width: 80px;">space-3</span><span style="width: 60px;">12px</span><div class="space-bar" style="width: 12px;"></div></div>
+    <div class="space-row"><span style="width: 80px;">space-4</span><span style="width: 60px;">16px</span><div class="space-bar" style="width: 16px;"></div></div>
+    <div class="space-row"><span style="width: 80px;">space-6</span><span style="width: 60px;">24px</span><div class="space-bar" style="width: 24px;"></div></div>
+    <div class="space-row"><span style="width: 80px;">space-8</span><span style="width: 60px;">32px</span><div class="space-bar" style="width: 32px;"></div></div>
+    <div class="space-row"><span style="width: 80px;">space-12</span><span style="width: 60px;">48px</span><div class="space-bar" style="width: 48px;"></div></div>
+    <div class="space-row"><span style="width: 80px;">space-16</span><span style="width: 60px;">64px</span><div class="space-bar" style="width: 64px;"></div></div>
+  </section>
+
+  <!-- SHADOWS -->
+  <section id="shadows" class="section">
+    <div class="section-head"><span class="section-num">04</span><h2 class="section-title">Sombras</h2></div>
+    <div class="grid-auto">
+      <div class="card" style="box-shadow: var(--shadow-xs);">shadow-xs</div>
+      <div class="card" style="box-shadow: var(--shadow-sm);">shadow-sm</div>
+      <div class="card" style="box-shadow: var(--shadow-md);">shadow-md</div>
+      <div class="card" style="box-shadow: var(--shadow-lg);">shadow-lg</div>
+      <div class="card" style="box-shadow: var(--shadow-xl);">shadow-xl</div>
+    </div>
+  </section>
+
+  <!-- BUTTONS -->
+  <section id="buttons" class="section">
+    <div class="section-head"><span class="section-num">05</span><h2 class="section-title">Buttons</h2></div>
+    <p class="section-desc">Hit target mínimo 44px. Primary para acción dominante por pantalla (solo 1). Confirmación destructiva con 2 pasos.</p>
+
+    <div class="demo">
+      <div class="demo-label">Variantes</div>
+      <div class="demo-row">
+        <button class="btn btn-primary">Registrar entrada</button>
+        <button class="btn btn-secondary">Cancelar</button>
+        <button class="btn btn-ghost">Ver detalle</button>
+        <button class="btn btn-danger">Eliminar</button>
+      </div>
+    </div>
+
+    <div class="demo" style="margin-top: 16px;">
+      <div class="demo-label">Tamaños</div>
+      <div class="demo-row">
+        <button class="btn btn-primary btn-sm">Small</button>
+        <button class="btn btn-primary">Default</button>
+        <button class="btn btn-primary btn-lg">Large</button>
+      </div>
+    </div>
+
+    <div class="demo" style="margin-top: 16px;">
+      <div class="demo-label">Block (mobile CTA)</div>
+      <button class="btn btn-primary btn-lg btn-block">Guardar y continuar</button>
+    </div>
+  </section>
+
+  <!-- INPUTS -->
+  <section id="inputs" class="section">
+    <div class="section-head"><span class="section-num">06</span><h2 class="section-title">Inputs</h2></div>
+
+    <div class="grid-2">
+      <div class="input-group">
+        <label class="input-label">Nombre del producto</label>
+        <input class="input" placeholder="Ej. Arroz Costeño superior">
+        <span class="input-help">Busca en el catálogo o crea uno nuevo</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label">Cantidad</label>
+        <input class="input" inputmode="numeric" placeholder="0">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Precio de compra (S/.)</label>
+        <input class="input" inputmode="decimal" placeholder="0.00">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Fecha de vencimiento</label>
+        <input class="input input-error" value="01/12/2025">
+        <span class="input-help error">La fecha debe ser posterior a hoy</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- CARDS -->
+  <section id="cards" class="section">
+    <div class="section-head"><span class="section-num">07</span><h2 class="section-title">Cards</h2></div>
+    <div class="grid-3">
+      <div class="card card-flat"><strong>Flat</strong><p class="t-caption" style="margin: 8px 0 0;">Sin elevación, solo borde.</p></div>
+      <div class="card"><strong>Default</strong><p class="t-caption" style="margin: 8px 0 0;">Sombra sutil para listados.</p></div>
+      <div class="card card-lifted"><strong>Lifted</strong><p class="t-caption" style="margin: 8px 0 0;">Elevada para modales y CTAs.</p></div>
+    </div>
+  </section>
+
+  <!-- BADGES -->
+  <section id="badges" class="section">
+    <div class="section-head"><span class="section-num">08</span><h2 class="section-title">Badges</h2></div>
+    <div class="demo">
+      <div class="demo-row">
+        <span class="badge badge-neutral">Neutral</span>
+        <span class="badge badge-brand">Nuevo</span>
+        <span class="badge badge-success">En stock</span>
+        <span class="badge badge-warning">Por vencer</span>
+        <span class="badge badge-error">Crítico</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ALERTS -->
+  <section id="alerts" class="section">
+    <div class="section-head"><span class="section-num">09</span><h2 class="section-title">Alerts</h2></div>
+    <p class="section-desc">El componente clave del producto. La alerta de vencimiento es el wedge — debe ser legible en 1 segundo.</p>
+
+    <div class="stack stack-3">
+      <div class="alert alert-error">
+        <div class="alert-icon">●</div>
+        <div class="alert-content">
+          <div class="alert-title">3 productos vencen en 48 horas</div>
+          <div class="alert-message">Aceite Primor (12 botellas), Leche Gloria (8 cajas), Yogurt Laive (4 packs)</div>
+        </div>
+      </div>
+      <div class="alert alert-warning">
+        <div class="alert-icon">●</div>
+        <div class="alert-content">
+          <div class="alert-title">Stock crítico: Arroz Costeño</div>
+          <div class="alert-message">Quedan 5 sacos. Promedio de venta: 12 sacos/semana.</div>
+        </div>
+      </div>
+      <div class="alert alert-info">
+        <div class="alert-icon">●</div>
+        <div class="alert-content">
+          <div class="alert-title">Resumen semanal listo</div>
+          <div class="alert-message">Vendiste S/. 12,400 — 8% más que la semana pasada.</div>
+        </div>
+      </div>
+      <div class="alert alert-success">
+        <div class="alert-icon">●</div>
+        <div class="alert-content">
+          <div class="alert-title">Entrada registrada</div>
+          <div class="alert-message">24 unidades de Azúcar Castillo añadidas al stock.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- KPI -->
+  <section id="kpi" class="section">
+    <div class="section-head"><span class="section-num">10</span><h2 class="section-title">KPI Cards — Triángulo de Valor</h2></div>
+    <div class="grid-3">
+      <div class="kpi-card" style="--kpi-color: var(--color-inversion);">
+        <div class="kpi-label">Inversión del mes</div>
+        <div class="kpi-value">S/. 4,200</div>
+        <div class="kpi-delta down">▼ 6%</div>
+      </div>
+      <div class="kpi-card" style="--kpi-color: var(--color-movimiento);">
+        <div class="kpi-label">Movimiento</div>
+        <div class="kpi-value">S/. 12,840</div>
+        <div class="kpi-delta up">▲ 12%</div>
+      </div>
+      <div class="kpi-card" style="--kpi-color: var(--color-ganancia);">
+        <div class="kpi-label">Ganancia</div>
+        <div class="kpi-value">S/. 2,640</div>
+        <div class="kpi-delta up">▲ 18%</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LIST ITEMS -->
+  <section id="list" class="section">
+    <div class="section-head"><span class="section-num">11</span><h2 class="section-title">List Items</h2></div>
+    <div class="stack stack-2">
+      <div class="list-item">
+        <div class="list-item-thumb">📦</div>
+        <div class="list-item-body">
+          <div class="list-item-title">Arroz Costeño superior · 50 kg</div>
+          <div class="list-item-meta">24 sacos · S/. 142 c/u</div>
+        </div>
+        <div class="list-item-end">
+          <span class="badge badge-success">En stock</span>
+        </div>
+      </div>
+      <div class="list-item">
+        <div class="list-item-thumb">🛢</div>
+        <div class="list-item-body">
+          <div class="list-item-title">Aceite Primor · 1 L</div>
+          <div class="list-item-meta">12 botellas · Vence en 2 días</div>
+        </div>
+        <div class="list-item-end">
+          <span class="badge badge-error">Crítico</span>
+        </div>
+      </div>
+      <div class="list-item">
+        <div class="list-item-thumb">🥛</div>
+        <div class="list-item-body">
+          <div class="list-item-title">Leche Gloria · caja 12 u</div>
+          <div class="list-item-meta">8 cajas · Vence en 5 días</div>
+        </div>
+        <div class="list-item-end">
+          <span class="badge badge-warning">Por vencer</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TABLE -->
+  <section id="table" class="section">
+    <div class="section-head"><span class="section-num">12</span><h2 class="section-title">Data Table</h2></div>
+    <div class="card card-flat" style="padding: 0; overflow: hidden;">
+      <table class="data-table">
+        <thead>
+          <tr><th>Producto</th><th>Vendido</th><th class="num">Inversión</th><th class="num">Ganancia</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Arroz Costeño</td><td>10 sacos</td><td class="num">S/. 1,400</td><td class="num">S/. 200</td></tr>
+          <tr><td>Azúcar Castillo</td><td>18 bolsas</td><td class="num">S/. 720</td><td class="num">S/. 162</td></tr>
+          <tr><td>Aceite Primor</td><td>24 botellas</td><td class="num">S/. 192</td><td class="num">S/. 48</td></tr>
+          <tr><td>Fideos Don Vittorio</td><td>40 paquetes</td><td class="num">S/. 320</td><td class="num">S/. 96</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- EMPTY -->
+  <section id="empty" class="section">
+    <div class="section-head"><span class="section-num">13</span><h2 class="section-title">Empty State</h2></div>
+    <div class="card">
+      <div class="empty">
+        <div class="empty-icon">📦</div>
+        <div class="empty-title">Aún no has registrado productos</div>
+        <div class="empty-msg">Toca el botón de abajo o usa el micrófono para registrar tu primera entrada de mercadería.</div>
+        <button class="btn btn-primary" style="margin-top: 16px;">Registrar entrada</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- MIC -->
+  <section id="mic" class="section">
+    <div class="section-head"><span class="section-num">14</span><h2 class="section-title">Audio Mic — Componente firma</h2></div>
+    <p class="section-desc">El differentiator del producto. Tap para grabar, tap para detener. Transcribe a productos en catálogo.</p>
+    <div class="demo" style="display: flex; gap: 32px; align-items: center; justify-content: center; padding: 48px;">
+      <div style="text-align: center;">
+        <button class="mic-button" onclick="this.classList.toggle('recording')">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+        </button>
+        <div class="t-caption" style="margin-top: 16px;">Tap para grabar</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SHEET -->
+  <section id="sheet" class="section">
+    <div class="section-head"><span class="section-num">15</span><h2 class="section-title">Bottom Sheet</h2></div>
+    <div class="card" style="padding: 0; max-width: 420px;">
+      <div class="bottom-sheet">
+        <div class="bottom-sheet-handle"></div>
+        <h3 class="t-h3" style="margin: 0 0 16px;">Confirmar entrada</h3>
+        <div class="stack stack-3" style="margin-bottom: 24px;">
+          <div class="row" style="justify-content: space-between;"><span>Producto</span><strong>Arroz Costeño</strong></div>
+          <div class="row" style="justify-content: space-between;"><span>Cantidad</span><strong class="t-num">24 sacos</strong></div>
+          <div class="row" style="justify-content: space-between;"><span>Inversión total</span><strong class="t-num">S/. 3,408</strong></div>
+        </div>
+        <div class="stack stack-3">
+          <button class="btn btn-primary btn-lg btn-block">Confirmar</button>
+          <button class="btn btn-ghost btn-block">Editar</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

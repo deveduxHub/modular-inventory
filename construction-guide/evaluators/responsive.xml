@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="evaluator" id="responsive" version="1">
+  <viewports>
+    <vp name="mobile-sm" width="375" height="812"/>
+    <vp name="mobile-lg" width="414" height="896"/>
+    <vp name="tablet" width="768" height="1024"/>
+    <vp name="desktop" width="1440" height="900"/>
+    <vp name="presentation" width="1920" height="1080"/>
+  </viewports>
+  <checks>
+    <check>Sin overflow horizontal en ninguna vp.</check>
+    <check>Texto nunca cortado.</check>
+    <check>Buttons clickeables (hit target ≥44px) en todas las vp.</check>
+    <check>KPIs principales visibles sin scroll en desktop+.</check>
+  </checks>
+</artifact>

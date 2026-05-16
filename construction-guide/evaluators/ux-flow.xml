@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="evaluator" id="ux-flow" version="1">
+  <checks>
+    <check id="UX1">Toda acción primaria genera feedback visual en &lt;100ms.</check>
+    <check id="UX2">Toda pantalla tiene back/close (no dead-ends).</check>
+    <check id="UX3">Acciones destructivas requieren 2 pasos (confirmación).</check>
+    <check id="UX4">Empty states tienen CTA primaria visible.</check>
+    <check id="UX5">Forms validan en blur + al submit, no silenciosamente.</check>
+    <check id="UX6">Errores son específicos ("Cantidad debe ser &gt;0") no genéricos ("Error").</check>
+  </checks>
+</artifact>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="agent" id="state-agent" version="1">
+  <meta>
+    <owner>state-agent</owner>
+    <role>Define la estructura de datos fake del prototipo + métodos puros para mutarla. Single source of truth.</role>
+  </meta>
+
+  <data-model>
+    <entity name="Producto">
+      <field>id: string (SKU)</field>
+      <field>nombre: string</field>
+      <field>marca: string</field>
+      <field>unidad: 'kg'|'lt'|'unidad'|'saco'|'caja'|'bolsa'</field>
+      <field>stock-actual: number</field>
+      <field>vida-util-dias: number</field>
+    </entity>
+    <entity name="Entrada">
+      <field>id: uuid</field>
+      <field>producto-id: ref(Producto)</field>
+      <field>cantidad: number</field>
+      <field>precio-unitario: number</field>
+      <field>fecha: ISO8601</field>
+      <field>vence: ISO8601 | null</field>
+      <field>proveedor-id: ref(Proveedor) | null</field>
+    </entity>
+    <entity name="Venta">
+      <field>id: uuid</field>
+      <field>producto-id: ref(Producto)</field>
+      <field>cantidad: number</field>
+      <field>precio-unitario: number</field>
+      <field>fecha: ISO8601</field>
+      <field>cliente-id: ref(Cliente) | null</field>
+    </entity>
+    <entity name="Proveedor">
+      <field>id: uuid</field>
+      <field>nombre: string</field>
+      <field>telefono: string</field>
+      <field>productos: ref(Producto)[]</field>
+    </entity>
+    <entity name="Cliente">
+      <field>id: uuid</field>
+      <field>nombre: string</field>
+      <field>telefono: string</field>
+      <field>frecuencia-compra-dias: number</field>
+    </entity>
+    <entity name="Alerta">
+      <field>id: uuid</field>
+      <field>tipo: 'vencimiento' | 'stock-critico' | 'cobranza'</field>
+      <field>producto-id?: ref(Producto)</field>
+      <field>cliente-id?: ref(Cliente)</field>
+      <field>severidad: 'info'|'warning'|'error'</field>
+      <field>fecha-resolucion: ISO8601 | null</field>
+    </entity>
+  </data-model>
+
+  <derived-state>
+    <kpi name="inversion">SUM(entradas.cantidad * entradas.precio-unitario) WHERE fecha IN period</kpi>
+    <kpi name="movimiento">SUM(ventas.cantidad * ventas.precio-unitario) WHERE fecha IN period</kpi>
+    <kpi name="ganancia">movimiento - inversion (proxy simplificado)</kpi>
+    <kpi name="stock-valorizado">SUM(producto.stock-actual * AVG(entrada.precio-unitario)) FOR all productos</kpi>
+  </derived-state>
+
+  <persistence>
+    <layer>memory (in-app store)</layer>
+    <layer>localStorage (offline-first)</layer>
+    <layer>future: Supabase sync (Fase 2+)</layer>
+  </persistence>
+
+  <seed-data>
+    <productos>Arroz Costeño, Aceite Primor, Azúcar Castillo, Leche Gloria, Fideos Don Vittorio, Yogurt Laive, Atún Florida, Café Altomayo</productos>
+    <proveedores>Distribuidora El Sol, Mayorista Lima Norte, Importadora Avelino</proveedores>
+    <clientes>Bodega La Esperanza, Minimarket Don José, Mercado El Triunfo</clientes>
+  </seed-data>
+
+  <rules>
+    <rule>Datos siempre realistas (nombres reales, números plausibles).</rule>
+    <rule>Mutaciones via funciones puras que devuelven nuevo estado.</rule>
+    <rule>Validar invariantes: stock nunca negativo, fecha vencimiento futura, etc.</rule>
+  </rules>
+</artifact>

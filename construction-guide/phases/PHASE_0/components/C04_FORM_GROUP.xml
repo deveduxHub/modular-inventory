@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="component-spec" id="C04_FORM_GROUP" version="1">
+  <meta name="FormGroup" decision-ref="DS-009, DS-017"/>
+  <class>.form-group</class>
+  <intent>Wrapper canónico: label + input + hint + error message. JAMÁS poner label suelto en formularios.</intent>
+
+  <structure html='<div class="form-group">
+  <label class="form-group__label" for="sku">SKU <span class="form-group__req">*</span></label>
+  <input id="sku" class="input input--mono" />
+  <p class="form-group__hint">3 letras + guion + número (ej: ARR-001).</p>
+  <p class="form-group__error" role="alert" hidden>Este SKU ya existe.</p>
+</div>'/>
+
+  <parts>
+    <part name="label">font: var(--text-sm) / var(--fw-semibold) · color: var(--text-primary) · mb: var(--space-2)</part>
+    <part name="req">color: var(--status-critical) · font-weight: 600 · ml: 2px</part>
+    <part name="hint">font: var(--text-sm) · color: var(--text-muted) · mt: var(--space-2)</part>
+    <part name="error">font: var(--text-sm) · color: var(--status-critical) · mt: var(--space-2) · with Lucide alert-circle icon</part>
+  </parts>
+
+  <states>
+    <state name="has-error"><show>.form-group__error</show><add-on-input>aria-invalid="true"</add-on-input></state>
+    <state name="has-hint"><show>.form-group__hint</show></state>
+    <state name="required"><show>.form-group__req</show></state>
+  </states>
+
+  <do-and-dont>
+    <do>Errores aparecen on-blur o on-submit, JAMÁS on-keystroke.</do>
+    <do>Hint reemplaza placeholder cuando la regla es estructural (formato esperado).</do>
+    <dont>NO esconder labels para "ahorrar espacio" (rompe accesibilidad y a11y).</dont>
+  </do-and-dont>
+</artifact>

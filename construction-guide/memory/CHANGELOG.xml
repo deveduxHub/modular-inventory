@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="memory" id="changelog" version="2" append-only="true">
+  <entry id="CHG-001" date="2026-05-11" author="orchestrator">
+    <summary>Bootstrap del builder guide. PLAN.md + memoria DS/PM/CHG. Phase 1 (PRODUCTOS) con CONTRACT + README + 4 sub-módulos.</summary>
+    <files-added count="14"/>
+  </entry>
+  <entry id="CHG-002" date="2026-05-12" author="orchestrator" trigger="user-input">
+    <summary>Paleta v2 (warm-earth 6 colores) adoptada por PL via imagen de referencia. Supersedes DS-001/DS-002/DS-007.</summary>
+    <decisions-added>DS-011..DS-020 (10 nuevas)</decisions-added>
+    <impact>
+      Toda referencia de color cyan/indigo previa queda obsoleta. design-system/tokens.css y components.css deben regenerarse desde TOKENS.xml v2.
+    </impact>
+  </entry>
+  <entry id="CHG-003" date="2026-05-12" author="orchestrator">
+    <summary>Fase 0 — Design System Foundation creada. Bloquea PHASE_1_PRODUCTOS hasta que tokens + componentes congelados.</summary>
+    <files-added>
+      phases/PHASE_0_DESIGN_SYSTEM/README.xml
+      phases/PHASE_0_DESIGN_SYSTEM/TOKENS.xml
+      phases/PHASE_0_DESIGN_SYSTEM/CONTRACT.xml
+      phases/PHASE_0_DESIGN_SYSTEM/components/C01..C12 (12 component specs)
+    </files-added>
+    <gates-added>G-DS-T1..T5 · V1..V6 · C1..C3 · R1..R3 · D1..D2 (19 gates)</gates-added>
+    <next-step>Construir design-system/tokens.css + components.css + DESIGN_SYSTEM.html showcase.</next-step>
+  </entry>
+  <entry id="CHG-004" date="2026-05-12" author="orchestrator">
+    <summary>Tech stack definido y 12 agentes evaluadores añadidos como gate unánime para Fase 0 y todas las siguientes.</summary>
+    <files-added>
+      builder-guide/evaluators/README.md (tabla maestra + protocolo de invocación)
+      builder-guide/evaluators/01-react-patterns.md
+      builder-guide/evaluators/02-composition.md
+      builder-guide/evaluators/03-pure-functions.md
+      builder-guide/evaluators/04-solid.md
+      builder-guide/evaluators/05-design-patterns.md
+      builder-guide/evaluators/06-big-o.md
+      builder-guide/evaluators/07-tailwind.md
+      builder-guide/evaluators/08-storybook.md
+      builder-guide/evaluators/09-ddd.md
+      builder-guide/evaluators/10-overriding.md
+      builder-guide/evaluators/11-theme-provider.md
+      builder-guide/evaluators/12-ci-formatting.md
+      builder-guide/phases/PHASE_0_DESIGN_SYSTEM/TECH_STACK.xml
+    </files-added>
+    <decisions-added>DS-021..DS-028 (8 nuevas: Tailwind, Radix, DDD, Storybook, ThemeProvider, AgentGate, Forms, Overriding)</decisions-added>
+    <gates-added>G-DS-AG-UNANIMOUS (categoría agents) — bloquea cierre de fase si cualquier agente devuelve FAIL.</gates-added>
+    <impact>
+      Toda fase posterior hereda el stack y el gate de agentes. Cambiar un layer requiere nueva decisión DS-NNN. Estructura DDD obligatoria desde Fase 1.
+    </impact>
+  </entry>
+<entry id="CHG-005" date="2026-05-12" author="orchestrator">
+    <summary>Arquitectura monorepo @surte/* + plugin system + Fase -1 (Bootstrap) creada. Bloquea Fase 0.</summary>
+    <files-added>
+      builder-guide/ARCHITECTURE.xml
+      builder-guide/phases/PHASE_NEG_1_BOOTSTRAP/README.xml
+      builder-guide/phases/PHASE_NEG_1_BOOTSTRAP/PACKAGES.xml
+      builder-guide/agents/SCAFFOLD_AGENT.xml
+      builder-guide/agents/MODULE_AGENT.xml
+    </files-added>
+    <decisions-added>DS-029..DS-045 (17 nuevas: monorepo, plugin system, slot pattern, step engine, DI, event bus, dep rules, perf budget, backward-compat).</decisions-added>
+    <gates-added>G-BS-I1..I2 · T1..T2 · L1..L2 · B1..B3 · TT1..TT3 · R1..R3 · CI1..CI3 · D1..D2 · AG-UNANIMOUS (19 gates Fase -1).</gates-added>
+    <next-step>Ejecutar Fase -1: SCAFFOLD_AGENT crea monorepo. Luego Fase 0 (DS) puede arrancar.</next-step>
+  </entry>
+<entry id="CHG-006" date="2026-05-14" author="orchestrator" trigger="panel-architects">
+    <summary>Panel de 5 arquitectos (Fullstack, NextJS, React Patterns, Scalability/Perf, DDD) firmó arquitectura v2. Step-as-Aggregate + SlotTree nombrado + Contracts L0/L1/L2 + 5 Contexts + DI Container + lazy obligatorio + DDD layers enforced.</summary>
+    <files-added>
+      builder-guide/ARCHITECTURE.xml (v2, supersede v1)
+      builder-guide/contracts/STEP_CONTRACT.xml
+      builder-guide/contracts/MODULE_CONTRACT.xml
+      builder-guide/contracts/SLOT_CONTRACT.xml
+      builder-guide/agents/STEP_AGENT.xml
+      builder-guide/agents/CONTRACT_AGENT.xml
+      builder-guide/agents/BOUNDARY_AGENT.xml
+      builder-guide/phases/PHASE_NEG_1_BOOTSTRAP/EXAMPLE_INTEGRATION.xml
+    </files-added>
+    <decisions-added>DS-046..DS-070 (25 nuevas: Step aggregate, SlotTree, catch-all, lazy, contracts, 5 contexts, DI, Server Actions, event bus, perf budget, patterns export, localStorage v1, mocks per app, 2 apps validation, monolithic domain).</decisions-added>
+    <decisions-superseded>DS-035 (1 package per domain) → DS-064 (1 monolithic domain con subpaths).</decisions-superseded>
+    <user-decisions>
+      D1: Persistencia v1 = localStorage + mocks (sin Supabase).
+      D2: Apps de validación DENTRO del monorepo (apps/wholesale, apps/bodega-simple).
+      D3: Solo registrar artefactos en builder-guide; usuario decide cuándo construir Fase -1.
+    </user-decisions>
+    <next-step>Builder guide tiene toda la información para que Claude Code construya el monorepo de forma autónoma. Esperando comando del usuario para arrancar Fase -1.</next-step>
+  </entry>
+<entry id="CHG-007" date="2026-05-15" author="orchestrator" trigger="panel-6-workers">
+    <summary>Panel of 6 workers (SOLID, CleanCode, BigO, CC, CI, ISP) converged after 4 rounds. Architecture v3: 4-layer model (Component → Pattern → View → Step), capability-based providers (ISP), Pattern extensions (OCP), Trie routing (O(log N)), 9-layer test pyramid.</summary>
+    <files-added>
+      builder-guide/contracts/PATTERN_CONTRACT.xml (v2 — definePattern + branded ids + extensions)
+      builder-guide/contracts/VIEW_CONTRACT.xml (defineLayoutView + defineRenderView split)
+      builder-guide/contracts/STEP_CONTRACT.xml (v2 — Route + Guards + ViewBinding + Transitions)
+      builder-guide/contracts/PROVIDER_CONTRACT.xml (v2 — capability tokens :read/:write/:stream)
+      builder-guide/contracts/EXTENSIONS_CONTRACT.xml (OCP plugin pattern)
+      builder-guide/contracts/INVENTORY_API.xml (&lt;Inventory&gt; composition root)
+      builder-guide/contracts/TESTING_CONTRACT.xml (9-layer pyramid + budget gates)
+    </files-added>
+    <decisions-added>DS-076..DS-095 (20 nuevas).</decisions-added>
+    <decisions-superseded>DS-077 supersede buildPatternsBy approach; STEP_CONTRACT v1 superseded by v2.</decisions-superseded>
+    <key-insights>
+      - SRP: Step split into Route + Guards + ViewBinding + Transitions
+      - ISP: Providers segregated by capability (:read / :write / :stream)
+      - OCP: Pattern extensions array enables cross-cutting concerns without core changes
+      - LSP: SlotKind contract makes patterns within same slot substitutable
+      - DIP: Selectors are pure; depend on capability interfaces, not implementations
+      - Big-O: Trie routing (O log N), reselect with structural sharing, signals for high-freq
+      - Testing: 9-layer pyramid with @surte/test-utils helpers per layer
+      - Resilience: Error boundary per-pattern + per-view + per-inventory (3-tier isolation)
+    </key-insights>
+    <next-step>Builder-guide is complete and self-contained for Claude Code autonomous build. User decides when to scaffold (Phase -1).</next-step>
+  </entry>
+</artifact>

@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="example" id="EXAMPLE_INTEGRATION" version="1">
+  <meta>
+    <title>Example Integration — Cómo se ven 2 apps usando los mismos módulos</title>
+    <purpose>Referencia canónica para validar que la arquitectura permite reuso real.</purpose>
+    <validates>D1, D2, D3, D10, DS-046..DS-070</validates>
+  </meta>
+
+  <!-- ════════════════════════════════════════════════════════════════
+       APP A — wholesale (sistema completo)
+       ════════════════════════════════════════════════════════════════ -->
+  <app id="wholesale" path="apps/wholesale">
+    <description>Mayorista completo: productos, proveedores, stock multi-almacén, vencimientos, compras, ventas con POS, reportes.</description>
+
+    <file path="apps/wholesale/surte.config.ts"><![CDATA[
+import { defineSurteApp } from '@surte/shell-runtime/config';
+import authModule from '@surte/module-auth';
+import productsModule from '@surte/module-products';
+import suppliersModule from '@surte/module-suppliers';
+import stockModule from '@surte/module-stock';
+import expirationModule from '@surte/module-expiration';
+import purchasesModule from '@surte/module-purchases';
+import salesModule from '@surte/module-sales';
+import reportsModule from '@surte/module-reports';
+
+export default defineSurteApp({
+  name: 'Surte Wholesale',
+  theme: 'warm-earth',
+  locale: 'es-PE',
+  infrastructure: { storage: 'local' },
+
+  modules: [
+    authModule({ providers: ['email', 'google'], requireAuth: true }),
+    productsModule({ variant: 'full', enableBulkImport: true, enableImages: true }),
+    suppliersModule({ enableMultiContact: true }),
+    stockModule({ multiWarehouse: true, requireApproval: true }),
+    expirationModule({ alertDaysBefore: [30, 15, 7] }),
+    purchasesModule({ enableOrderTracking: true }),
+    salesModule({ taxRules: 'PE', enablePOS: true, enableInvoicing: true }),
+    reportsModule({ reports: ['kardex', 'sales', 'inventory-value'] }),
+  ],
+
+  layout: {
+    shell: 'sidebar-topbar',
+    sidebar: { collapsible: true },
+  },
+});
+    ]]></file>
+
+    <file path="apps/wholesale/app/layout.tsx"><![CDATA[
+import { SurteProvider } from '@surte/shell-runtime';
+import surteConfig from '../surte.config';
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="es-PE">
+      <body>
+        <SurteProvider config={surteConfig}>
+          {children}
+        </SurteProvider>
+      </body>
+    </html>
+  );
+}
+    ]]></file>
+
+    <file path="apps/wholesale/app/[[...path]]/page.tsx"><![CDATA[
+import { StepRouter } from '@surte/shell-runtime';
+
+export default function CatchAll() {
+  return <StepRouter />;
+}
+    ]]></file>
+
+    <file path="apps/wholesale/mocks/seed.ts"><![CDATA[
+import type { Product, Supplier, StockMovement } from '@surte/domain';
+
+export const mockProducts: Product[] = [
+  { id: 'p-001', sku: 'ARR-COS-50', name: 'Arroz Costeño 50kg', category: 'granos', cost: 22.00, price: 28.00, stock: 147, unit: 'saco' },
+  { id: 'p-002', sku: 'ACE-PRI-1L', name: 'Aceite Primor 1L', category: 'aceites', cost: 6.50, price: 8.50, stock: 89, unit: 'botella' },
+  // ... 50 productos más
+];
+
+export const mockSuppliers: Supplier[] = [
+  { id: 's-001', name: 'Distribuidora Costeño', contact: '999-111-222', terms: 'net-30' },
+  // ...
+];
+
+// Cargado en SurteProvider si localStorage vacío
+    ]]></file>
+  </app>
+
+  <!-- ════════════════════════════════════════════════════════════════
+       APP B — bodega-simple (sistema mínimo)
+       ════════════════════════════════════════════════════════════════ -->
+  <app id="bodega-simple" path="apps/bodega-simple">
+    <description>Bodega de barrio: solo productos y stock básico, sin proveedores, sin POS, sin reportes.</description>
+
+    <file path="apps/bodega-simple/surte.config.ts"><![CDATA[
+import { defineSurteApp } from '@surte/shell-runtime/config';
+import authModule from '@surte/module-auth';
+import productsModule from '@surte/module-products';
+import stockModule from '@surte/module-stock';
+
+export default defineSurteApp({
+  name: 'Bodega Simple',
+  theme: 'warm-earth',
+  locale: 'es-PE',
+  infrastructure: { storage: 'local' },
+
+  modules: [
+    authModule({ providers: ['email'], requireAuth: true }),
+    productsModule({ variant: 'minimal' }),
+    stockModule({ multiWarehouse: false }),
+  ],
+
+  layout: {
+    shell: 'topbar-only',  // ⭐ sin sidebar
+  },
+});
+    ]]></file>
+
+    <file path="apps/bodega-simple/app/[[...path]]/page.tsx"><![CDATA[
+// EXACTAMENTE EL MISMO ARCHIVO QUE wholesale
+import { StepRouter } from '@surte/shell-runtime';
+export default function CatchAll() { return <StepRouter />; }
+    ]]></file>
+  </app>
+
+  <!-- ════════════════════════════════════════════════════════════════
+       MODULE-PRODUCTS — Declara sus steps (mismo módulo para ambas apps)
+       ════════════════════════════════════════════════════════════════ -->
+  <module id="module-products" path="packages/modules/module-products">
+    <file path="packages/modules/module-products/src/manifest.ts"><![CDATA[
+import { z } from 'zod';
+import type { ModuleManifest } from '@surte/core';
+import { TOKENS } from '@surte/core';
+import { ProductRepositoryLocalStorage } from '@surte/infrastructure';
+import { productSteps } from './steps';
+import { ProductsSidebarItem } from './sections/SidebarItem';
+import { ProductsDashboardWidget } from './sections/DashboardWidget';
+
+const configSchema = z.object({
+  variant: z.enum(['full', 'minimal']).default('full'),
+  enableBulkImport: z.boolean().default(true),
+  enableImages: z.boolean().default(true),
+});
+
+export type ProductsConfig = z.infer<typeof configSchema>;
+
+export const productsManifest: ModuleManifest<ProductsConfig> = {
+  id: 'products',
+  version: '1.0.0',
+  displayName: 'Productos',
+
+  steps: productSteps,
+
+  slots: [
+    { slot: 'sidebar.nav', id: 'products-nav', item: { label: 'Productos', icon: 'package', path: '/productos', order: 10 } },
+    { slot: 'dashboard.widgets', id: 'products-kpi', component: ProductsDashboardWidget, priority: 1 },
+  ],
+
+  bindings: [
+    { token: TOKENS.ProductRepository, factory: () => new ProductRepositoryLocalStorage() },
+  ],
+
+  lifecycle: {
+    migrations: [
+      { fromVersion: 0, toVersion: 1, run: (data) => data },
+    ],
+  },
+
+  requires: ['storage'],
+  configSchema,
+};
+    ]]></file>
+
+    <file path="packages/modules/module-products/src/steps/index.ts"><![CDATA[
+import { lazy } from 'react';
+import { z } from 'zod';
+import type { Step } from '@surte/core';
+
+// ⭐ TODOS los componentes son lazy (D4)
+const ProductListView    = lazy(() => import('../views/ProductListView'));
+const ProductDetailView  = lazy(() => import('../views/ProductDetailView'));
+const CreateProductFlow  = lazy(() => import('../patterns/CreateProductFlow'));
+const EditProductFlow    = lazy(() => import('../patterns/EditProductFlow'));
+const BulkImportFlow     = lazy(() => import('../patterns/BulkImportFlow'));
+
+const ProductListActions = lazy(() => import('../sections/ProductListActions'));
+const ProductListFilters = lazy(() => import('../sections/ProductListFilters'));
+const ProductDetailTabs  = lazy(() => import('../sections/ProductDetailTabs'));
+const ProductDetailSidebar = lazy(() => import('../sections/ProductDetailSidebar'));
+const ProductCreateHeader = lazy(() => import('../headers/ProductCreateHeader'));
+const ImportProgressFooter = lazy(() => import('../footers/ImportProgressFooter'));
+
+export const productSteps: Step[] = [
+  // ─── LIST ───
+  {
+    id: 'products.list',
+    moduleId: 'products',
+    path: '/productos',
+    render: {
+      shell: 'inherit',
+      slots: {
+        main: ProductListView,
+        'main.actions': ProductListActions,
+        'main.filters': ProductListFilters,
+      },
+    },
+    title: 'Productos',
+    guards: [],
+    transitions: { next: { type: 'push', stepId: 'products.create' } },
+    contracts: {
+      config: { schema: z.object({}), defaults: {}, description: 'Lista de productos' },
+      slots: { injectable: [] },
+      events: { emits: [{ name: 'productSelected', version: 1, payloadSchema: z.object({ productId: z.string() }), description: 'Producto seleccionado' }] },
+    },
+  },
+
+  // ─── CREATE ───
+  {
+    id: 'products.create',
+    moduleId: 'products',
+    path: '/productos/nuevo',
+    render: {
+      shell: 'inherit',
+      slots: {
+        main: CreateProductFlow,
+        header: ProductCreateHeader,  // ⭐ header custom con progress
+      },
+    },
+    title: 'Nuevo Producto',
+    breadcrumbs: [{ label: 'Productos', stepId: 'products.list' }, { label: 'Nuevo' }],
+    guards: [],
+    transitions: {
+      next:   { type: 'replace', stepId: 'products.detail' },
+      cancel: { type: 'replace', stepId: 'products.list' },
+    },
+    contracts: {
+      config: {
+        schema: z.object({
+          variant: z.enum(['full', 'minimal']).default('full'),
+          showSupplierStep: z.boolean().default(true),
+        }),
+        defaults: { variant: 'full', showSupplierStep: true },
+        description: 'Wizard de creación de producto',
+      },
+      slots: {
+        injectable: [
+          { slotName: 'main.actions', description: 'Acciones extra en header', required: false, maxItems: 3 },
+        ],
+      },
+      events: {
+        emits: [
+          { name: 'productCreated', version: 1, payloadSchema: z.object({ productId: z.string() }), description: 'Producto creado' },
+        ],
+      },
+    },
+  },
+
+  // ─── DETAIL ───
+  {
+    id: 'products.detail',
+    moduleId: 'products',
+    path: '/productos/:id',
+    render: {
+      shell: 'inherit',
+      slots: {
+        main: ProductDetailView,
+        'main.tabs': ProductDetailTabs,
+        'right-panel': ProductDetailSidebar,  // ⭐ panel derecho
+      },
+    },
+    title: ({ params }) => `Producto ${params.id}`,
+    breadcrumbs: ({ params }) => [{ label: 'Productos', stepId: 'products.list' }, { label: params.id }],
+    guards: [],
+    transitions: {},
+    contracts: {
+      config: { schema: z.object({}), defaults: {}, description: 'Detalle de producto' },
+      slots: { injectable: [] },
+      events: { emits: [] },
+    },
+  },
+
+  // ─── IMPORT (FULLSCREEN) ───
+  {
+    id: 'products.import',
+    moduleId: 'products',
+    path: '/productos/importar',
+    render: {
+      shell: 'fullscreen',  // ⭐ override del shell de la app
+      slots: {
+        main: BulkImportFlow,
+        footer: ImportProgressFooter,
+      },
+    },
+    title: 'Importar Productos',
+    guards: [],
+    transitions: {
+      next:   { type: 'replace', stepId: 'products.list' },
+      cancel: { type: 'replace', stepId: 'products.list' },
+    },
+    contracts: {
+      config: { schema: z.object({}), defaults: {}, description: 'Importación masiva' },
+      slots: { injectable: [] },
+      events: { emits: [{ name: 'productsImported', version: 1, payloadSchema: z.object({ count: z.number() }), description: 'Importación completada' }] },
+    },
+  },
+];
+    ]]></file>
+  </module>
+
+  <!-- ════════════════════════════════════════════════════════════════
+       FLUJO DE EJECUCIÓN
+       ════════════════════════════════════════════════════════════════ -->
+  <execution-flow>
+    <flow name="bootstrap">
+      <step n="1">apps/wholesale arranca → Next.js carga app/layout.tsx</step>
+      <step n="2">&lt;SurteProvider config={surteConfig}&gt; compone los 5 contexts</step>
+      <step n="3">ModuleRegistry.bootstrap(config.modules) topological sort por dependsOn</step>
+      <step n="4">Cada módulo corre lifecycle.onBootstrap → bindea repositories en DI Container</step>
+      <step n="5">Merge: steps[], slots[], navItems[] de todos los módulos</step>
+      <step n="6">Si localStorage vacío → carga mocks/seed.ts</step>
+      <step n="7">StepRouter listo en app/[[...path]]/page.tsx</step>
+    </flow>
+
+    <flow name="navigation">
+      <step n="1">Usuario visita /productos/nuevo</step>
+      <step n="2">StepRouter resuelve path → matchea step 'products.create'</step>
+      <step n="3">Corre step.guards en orden (AuthGuard, etc.)</step>
+      <step n="4">Si guard devuelve { decision: 'replace', with: LoginStep } → renderiza Login (mantiene URL)</step>
+      <step n="5">Si todos guards pass → StepRenderer monta el step</step>
+      <step n="6">Resuelve shell ('sidebar-topbar') + override de header desde step</step>
+      <step n="7">Renderiza slots: lazy components con &lt;Suspense&gt; fallback</step>
+      <step n="8">User interactúa → step.transitions.next → StepRouter navega</step>
+    </flow>
+
+    <flow name="cross-module-event">
+      <step n="1">Usuario completa venta en module-sales</step>
+      <step n="2">SaleRepository.create(sale) en infrastructure</step>
+      <step n="3">EventBus.emit({ type: 'sale.completed.v1', payload: { saleId, items, total } })</step>
+      <step n="4">module-stock está suscrito → decrementa stock</step>
+      <step n="5">module-expiration suscrito → recalcula alertas</step>
+      <step n="6">module-reports suscrito → actualiza caché de kardex</step>
+      <step n="7">UI reacciona (toast, badge actualizado) sin que módulos se conozcan</step>
+    </flow>
+  </execution-flow>
+
+  <validation-criteria>
+    <criterion>apps/wholesale + apps/bodega-simple deben buildear con MISMOS módulos pero diferente config.</criterion>
+    <criterion>Quitar un módulo de surte.config.ts NO requiere cambios en código de otros módulos.</criterion>
+    <criterion>Bundle inicial de apps/bodega-simple debe ser menor al de apps/wholesale (lazy + manifests pequeños).</criterion>
+    <criterion>Tests E2E cubren add/remove de módulos sin errores.</criterion>
+  </validation-criteria>
+</artifact>

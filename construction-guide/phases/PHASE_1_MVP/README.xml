@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="phase" id="phase-1-mvp" version="1">
+  <meta><status>pending</status><duration-weeks>4</duration-weeks></meta>
+  <purpose>MVP "Solo Inventario" — entregar el wedge (alertas de vencimiento) + registro por audio.</purpose>
+  <icp-target>Mayoristas establecidos (ver PD-001).</icp-target>
+  <success-metric>20 mayoristas registrando entradas 4+ días/semana durante 4 semanas consecutivas.</success-metric>
+  <modules>
+    <module id="M1_ONBOARDING" file="modules/M1_ONBOARDING.xml"/>
+    <module id="M2_CATALOGO" file="modules/M2_CATALOGO.xml"/>
+    <module id="M3_ENTRADA" file="modules/M3_ENTRADA.xml"/>
+    <module id="M4_STOCK" file="modules/M4_STOCK.xml"/>
+    <module id="M5_ALERTAS" file="modules/M5_ALERTAS.xml"/>
+    <module id="M6_DASHBOARD" file="modules/M6_DASHBOARD.xml"/>
+  </modules>
+  <out-of-scope>Ventas, deudas, marketplace, multi-sucursal, facturación SUNAT.</out-of-scope>
+  <phase-gates>
+    <gate>Los 6 módulos pasan sus gates individuales.</gate>
+    <gate>Flujo end-to-end: Onboarding → Entrada → Stock → Alerta → Dashboard funciona sin dead-ends.</gate>
+    <gate>Funciona en 375x812 (iPhone SE), 768x1024 (tablet), 1920x1080 (presentación).</gate>
+    <gate>localStorage persiste estado completo al recargar.</gate>
+    <gate>1 mayorista real (no familiar) valida prototipo &gt;3 min sin asistencia.</gate>
+  </phase-gates>
+</artifact>

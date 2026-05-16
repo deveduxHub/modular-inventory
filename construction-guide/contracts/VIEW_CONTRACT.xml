@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="contract" id="VIEW_CONTRACT" version="1">
+  <meta>
+    <title>View Contract — composition of patterns OR custom render</title>
+    <enforced-by>VIEW_AGENT</enforced-by>
+    <decision-refs>R-7, R-8 · DS-080, DS-081</decision-refs>
+    <signed-by>W2-CleanCode, W3-BigO</signed-by>
+  </meta>
+
+  <definition>
+    <description>
+      A View is a composition unit. It maps PatternInstances to layout slots, OR provides
+      a custom JSX render function. Views are the lazy boundary (NOT patterns) to avoid
+      request waterfalls.
+    </description>
+
+    <invariants>
+      <invariant id="V-I1">Views are lazy by default. Patterns inside a view share its chunk.</invariant>
+      <invariant id="V-I2">defineLayoutView and defineRenderView are SEPARATE functions (no mode flag).</invariant>
+      <invariant id="V-I3">A View MUST declare every PatternInstance with a unique slot key.</invariant>
+      <invariant id="V-I4">A View NEVER reads from a provider directly; patterns do.</invariant>
+      <invariant id="V-I5">Custom render Views receive a typed `patterns` resolver, not raw children.</invariant>
+    </invariants>
+  </definition>
+
+  <schema lang="typescript"><![CDATA[
+import type { ReactNode } from 'react';
+import type { PatternInstance, PatternId } from './pattern';
+
+// ─── CANONICAL SLOTS (declarative views) ────────────────────────────
+export type LayoutSlot =
+  | 'header' | 'header.left' | 'header.center' | 'header.right'
+  | 'sidebar' | 'sidebar.nav'
+  | 'main' | 'main.top' | 'main.bot' | 'main.actions' | 'main.filters' | 'main.tabs'
+  | 'right-panel'
+  | 'footer'
+  | `slot.${string}`;  // namespaced custom slots
+
+// ─── DECLARATIVE VIEW — most common ─────────────────────────────────
+export interface LayoutViewSpec {
+  readonly id:     string;
+  readonly lazy?:  boolean;  // default true
+  readonly layout: Partial<Record<LayoutSlot, PatternInstance<any> | PatternInstance<any>[]>>;
+  readonly errorBoundary?: { fallback: ReactNode };
+}
+
+export function defineLayoutView(spec: LayoutViewSpec): ViewDefinition;
+
+// ─── RENDER VIEW — escape hatch for irregular layouts ───────────────
+export interface RenderViewSpec {
+  readonly id:       string;
+  readonly lazy?:    boolean;
+  readonly patterns: PatternInstance<any>[];
+  readonly render:   (api: {
+    patterns: PatternsResolver;
+    slots:    Record<string, ReactNode>;
+    ctx:      ResolvedContext;
+  }) => ReactNode;
+  readonly errorBoundary?: { fallback: ReactNode };
+}
+
+export function defineRenderView(spec: RenderViewSpec): ViewDefinition;
+
+// ─── PatternsResolver — type-safe access in custom render ───────────
+export interface PatternsResolver {
+  render(patternId: PatternId | string): ReactNode;
+  has(patternId: PatternId | string): boolean;
+}
+
+// ─── ViewDefinition — what both factories return ────────────────────
+export interface ViewDefinition {
+  readonly id: string;
+  readonly kind: 'layout' | 'render';
+  readonly lazy: boolean;
+  readonly _resolve: (ctx: ResolvedContext) => RenderedView;
+}
+  ]]></schema>
+
+  <examples>
+    <example title="Declarative (90% of cases)"><![CDATA[
+import { defineLayoutView } from '@surte/core';
+import {
+  PageHeaderPattern, ProductFiltersPattern,
+  ProductTablePattern, PaginationPattern,
+} from '@surte/patterns';
+
+export const ProductListView = defineLayoutView({
+  id: 'view.products.list',
+  lazy: true,
+  layout: {
+    header:     PageHeaderPattern.instance({ config: { title: 'Productos' } }),
+    'main.top': ProductFiltersPattern.instance(),
+    'main':     ProductTablePattern.instance({
+                  config: { density: 'comfortable', pageSize: 30 },
+                  slots:  { rowAction: ProductRowMenu },
+                  on:     { rowSelected: ({ productId }) => navigate(`/productos/${productId}`) },
+                }),
+    'main.bot': PaginationPattern.instance(),
+  },
+  errorBoundary: { fallback: <ViewErrorFallback id="products.list" /> },
+});
+    ]]></example>
+
+    <example title="Custom render (rare, irregular layouts)"><![CDATA[
+import { defineRenderView } from '@surte/core';
+
+export const POSView = defineRenderView({
+  id: 'view.sales.pos',
+  patterns: [
+    ProductSearchPattern.instance(),
+    ProductGridPattern.instance({ config: { columns: 4 } }),
+    CartPattern.instance(),
+    PaymentMethodsPattern.instance({ config: { methods: ['cash', 'yape', 'card'] } }),
+    CheckoutButtonPattern.instance(),
+  ],
+  render: ({ patterns }) => (
+    <div className="grid grid-cols-[1fr_400px] h-screen">
+      <main className="flex flex-col gap-4 p-6">
+        {patterns.render('pattern.product-search')}
+        {patterns.render('pattern.product-grid')}
+      </main>
+      <aside className="border-l">
+        {patterns.render('pattern.cart')}
+        {patterns.render('pattern.payment-methods')}
+        {patterns.render('pattern.checkout-button')}
+      </aside>
+    </div>
+  ),
+});
+    ]]></example>
+  </examples>
+
+  <gates>
+    <gate id="V-G1">Layout views have at least the `main` slot.</gate>
+    <gate id="V-G2">Render views declare all referenced patterns in `patterns` array.</gate>
+    <gate id="V-G3">View has a *.view.test.tsx with provider mocks.</gate>
+    <gate id="V-G4">View has a *.stories.tsx in apps/playground.</gate>
+    <gate id="V-G5">View bundle ≤ 160kb gzip (sum of its patterns).</gate>
+  </gates>
+</artifact>

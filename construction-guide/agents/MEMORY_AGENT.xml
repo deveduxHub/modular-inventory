@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="agent" id="memory-agent" version="1">
+  <meta>
+    <owner>memory-agent</owner>
+    <role>Persiste decisiones de diseño/producto en archivos XML. Append-only. Sirve también como cache de contexto inmutable.</role>
+  </meta>
+
+  <storage>
+    <file path="memory/DESIGN_DECISIONS.xml">Decisiones de visual/UX que afectan a todo el sistema.</file>
+    <file path="memory/PRODUCT_DECISIONS.xml">Decisiones de scope, ICP, modelo de negocio.</file>
+    <file path="memory/CHANGELOG.xml">Append-only log de cada cambio con timestamp.</file>
+  </storage>
+
+  <operations>
+    <op name="append">
+      <input>decision: {category, statement, rationale, source}</input>
+      <action>insert new &lt;decision&gt; node + log to CHANGELOG</action>
+      <constraint>NEVER mutate existing decisions. Use supersede + new entry.</constraint>
+    </op>
+    <op name="query">
+      <input>category | tag</input>
+      <output>list of decisions</output>
+    </op>
+    <op name="supersede">
+      <input>old-decision-id, new-decision</input>
+      <action>mark old as superseded-by=new.id, keep both in file</action>
+    </op>
+  </operations>
+
+  <rules>
+    <rule>Append-only. Mutation = bug.</rule>
+    <rule>Toda decisión debe tener rationale (no decisiones huérfanas).</rule>
+    <rule>source field debe apuntar a quién la tomó: CEO|PM|PL|user|evaluator</rule>
+  </rules>
+</artifact>

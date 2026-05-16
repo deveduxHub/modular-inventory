@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="contract" id="TESTING_CONTRACT" version="1">
+  <meta>
+    <title>Testing Contract — 9-layer pyramid with helpers by layer</title>
+    <enforced-by>CI · TESTING_AGENT</enforced-by>
+    <decision-refs>R-11, R-12, R-16, R-17 · DS-093, DS-094, DS-095</decision-refs>
+    <signed-by>W5-CI</signed-by>
+  </meta>
+
+  <pyramid>
+    <layer n="1" name="component" cost="cheap" speed="fast">
+      <target>Bare Component (no providers, no router)</target>
+      <helper>@surte/test-utils → render(&lt;Component {...props} /&gt;)</helper>
+      <file>packages/patterns/X/src/*.component.test.tsx</file>
+    </layer>
+    <layer n="2" name="pattern" cost="cheap" speed="fast">
+      <target>PatternDefinition + mock providers</target>
+      <helper>renderPattern(PatternDef, { providers })</helper>
+      <file>packages/patterns/X/src/*.pattern.test.tsx</file>
+    </layer>
+    <layer n="3" name="view" cost="medium" speed="medium">
+      <target>ViewDefinition + all its patterns + mock providers</target>
+      <helper>renderView(ViewDef, { providers })</helper>
+      <file>apps/&lt;app&gt;/views/*.view.test.tsx</file>
+    </layer>
+    <layer n="4" name="step" cost="medium" speed="medium">
+      <target>StepDefinition: route matching + guards + view mount</target>
+      <helper>renderStep(StepDef, { url, providers })</helper>
+      <file>apps/&lt;app&gt;/steps/*.step.test.tsx</file>
+    </layer>
+    <layer n="5" name="provider-contract" cost="cheap" speed="fast">
+      <target>Provider returns capability shapes that match TypeScript types</target>
+      <helper>z.infer&lt;typeof Schema&gt; satisfies CapabilityApi</helper>
+      <file>packages/providers/X/src/*.contract.test.ts</file>
+    </layer>
+    <layer n="6" name="visual-regression" cost="medium" speed="slow">
+      <target>Storybook stories rendered + compared to baseline (Chromatic/Percy)</target>
+      <helper>chromatic --project-token=...</helper>
+      <file>apps/playground/stories/*.stories.tsx</file>
+    </layer>
+    <layer n="7" name="a11y" cost="cheap" speed="medium">
+      <target>Storybook + @storybook/addon-a11y axe-core run</target>
+      <helper>test-storybook --a11y</helper>
+      <file>(automatic from stories)</file>
+    </layer>
+    <layer n="8" name="e2e" cost="expensive" speed="slow">
+      <target>Full Inventory + real router + real localStorage adapter</target>
+      <helper>Playwright tests against pnpm dev server</helper>
+      <file>apps/&lt;app&gt;/e2e/*.spec.ts</file>
+    </layer>
+    <layer n="9" name="mutation" cost="expensive" speed="very-slow">
+      <target>Stryker.js mutates selectors and invariants, expects tests to catch</target>
+      <helper>stryker run --files 'packages/**/selector.ts'</helper>
+      <file>(stryker.conf.cjs)</file>
+    </layer>
+  </pyramid>
+
+  <budget-gates>
+    <gate id="T-B1">Bundle size: each pattern ≤ 80kb gzip — size-limit enforced.</gate>
+    <gate id="T-B2">Bundle size: each view ≤ 160kb gzip.</gate>
+    <gate id="T-B3">Bundle size: initial Inventory ≤ 180kb gzip.</gate>
+    <gate id="T-B4">Lighthouse Performance ≥ 90 (enforced in CI).</gate>
+    <gate id="T-B5">a11y violations === 0 in all stories.</gate>
+    <gate id="T-B6">Test coverage ≥ 80% for packages/, ≥ 60% for apps/.</gate>
+    <gate id="T-B7">Mutation score ≥ 70% for selectors and pure invariants.</gate>
+  </budget-gates>
+
+  <helpers-api><![CDATA[
+// @surte/test-utils/src/index.ts
+export {
+  // Layer 1
+  render,                       // re-export from @testing-library/react
+
+  // Layer 2
+  renderPattern,                // (Pattern, { providers, config?, slots?, on? }) → result
+
+  // Layer 3
+  renderView,                   // (View, { providers, locale? }) → result
+
+  // Layer 4
+  renderStep,                   // (Step, { url, providers, session? }) → result
+
+  // Mocking helpers
+  mockProvider,                 // (id, capabilities) → ProviderInstance
+  mockProductsProvider,         // ready-to-use stub
+  mockSessionProvider,
+  mockAuthProvider,
+
+  // Fixtures
+  mockProducts,                 // (n: number, overrides?) → Product[]
+  mockStockMovements,
+  mockSales,
+
+  // Storybook
+  withInventoryDecorator,       // wraps story in mock Inventory
+};
+  ]]></helpers-api>
+
+  <gates>
+    <gate id="T-G1">Every Pattern has L1 + L2 tests.</gate>
+    <gate id="T-G2">Every View has L3 test + L6 story.</gate>
+    <gate id="T-G3">Every Step has L4 test.</gate>
+    <gate id="T-G4">Every Provider has L5 contract test.</gate>
+    <gate id="T-G5">Every app has at least 1 L8 (E2E) happy path.</gate>
+    <gate id="T-G6">CI runs L1-L7 on every PR; L8-L9 on main + nightly.</gate>
+  </gates>
+</artifact>

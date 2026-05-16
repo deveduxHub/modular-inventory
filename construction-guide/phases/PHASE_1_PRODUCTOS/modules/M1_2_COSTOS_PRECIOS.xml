@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="module" id="M1_2_COSTOS_PRECIOS" version="1">
+  <meta>
+    <name>Costos y Precios</name>
+    <phase>PHASE_1_PRODUCTOS</phase>
+    <priority>ALTA — sin esto el sistema no puede calcular ganancia</priority>
+    <depends-on>M1_1_INFO_BASICA (el producto debe existir antes de definir precios)</depends-on>
+    <created>2026-05-11</created>
+  </meta>
+
+  <purpose>
+    Definir la estructura económica de un producto: cuánto cuesta comprarlo,
+    cuánto se vende, y cuál es el margen resultante. El margen es SIEMPRE derivado
+    y calculado en tiempo real — nunca se ingresa directamente.
+  </purpose>
+
+  <data-contract>
+    <reads-fields>costo_adquisicion, precio_venta, margen_ganancia (computed), afecto_igv</reads-fields>
+    <writes-fields>costo_adquisicion, precio_venta, afecto_igv</writes-fields>
+    <computed>
+      <field name="margen_ganancia" formula="((precio_venta - costo_adquisicion) / precio_venta) * 100" display="XX.XX%"/>
+      <field name="ganancia_absoluta" formula="precio_venta - costo_adquisicion" display="S/. XX.XX"/>
+    </computed>
+    <invariants>
+      <invariant ref="INV-002">precio_venta SIEMPRE mayor que costo_adquisicion</invariant>
+      <invariant ref="INV-004">margen_ganancia SIEMPRE derivado, nunca guardado</invariant>
+    </invariants>
+  </data-contract>
+
+  <ui-spec>
+
+    <!-- Sección en formulario de producto -->
+    <view id="form-costos-precios" layout="form-section">
+      <section-header icon="dollar-sign" title="Costos y Precios" subtitle="Define cuánto te cuesta y cuánto lo vendes"/>
+
+      <form-fields>
+
+        <field name="costo_adquisicion" component="Input" type="number"
+               label="Costo de adquisición (S/.)"
+               placeholder="0.00"
+               required="true"
+               min="0.01"
+               step="0.01"
+               inputmode="decimal"
+               prefix="S/."
+               hint="¿Cuánto le pagas al proveedor por este producto?"/>
+
+        <field name="precio_venta" component="Input" type="number"
+               label="Precio de venta (S/.)"
+               placeholder="0.00"
+               required="true"
+               min="0.01"
+               step="0.01"
+               inputmode="decimal"
+               prefix="S/."
+               hint="¿A cuánto se lo vendes a tus clientes?"
+               validate-on="change"
+               validation="greater-than:costo_adquisicion"
+               error-message="El precio de venta debe ser mayor al costo de adquisición."/>
+
+        <!-- Panel de margen — solo lectura, calculado en tiempo real -->
+        <field name="margen_panel" component="MarginPanel" type="display-only">
+          <description>
+            Panel visual que muestra en tiempo real mientras el usuario escribe:
+            - Ganancia por unidad: S/. X.XX (precio_venta - costo_adquisicion)
+            - Margen de ganancia: XX.XX%
+            El panel cambia de color según el margen:
+              - rojo: margen menos de 10%
+              - amarillo: margen 10% a 20%
+              - verde: margen mayor a 20%
+            Todos los valores usan font-mono.
+          </description>
+          <display-format>
+            Ganancia por unidad: S/. {ganancia_absoluta}   |   Margen: {margen_ganancia}%
+          </display-format>
+        </field>
+
+        <field name="afecto_igv" component="Toggle"
+               label="Afecto a IGV (18%)"
+               description="Solo informativo por ahora. No modifica el precio calculado."
+               required="true"
+               default="true"/>
+
+      </form-fields>
+    </view>
+
+    <!-- En lista de productos: columna de precios -->
+    <view id="lista-columna-precios" layout="table-column">
+      <column field="costo_adquisicion" label="Costo" render="S/. {valor} en font-mono, color ink-400"/>
+      <column field="precio_venta"      label="Precio" render="S/. {valor} en font-mono, color ink-800 bold"/>
+      <column field="margen_ganancia"   label="Margen" render="{valor}% en font-mono, color semáforo (rojo/amarillo/verde)"/>
+    </view>
+
+    <!-- En detalle de producto: KPI cards de precios -->
+    <view id="detalle-precios" layout="kpi-row">
+      <kpi-card ds-component="KpiCard" label="Costo de adquisición" value="S/. {costo_adquisicion}" font="mono"/>
+      <kpi-card ds-component="KpiCard" label="Precio de venta"      value="S/. {precio_venta}"      font="mono" highlight="true"/>
+      <kpi-card ds-component="KpiCard" label="Ganancia por unidad"  value="S/. {ganancia_absoluta}" font="mono" color="success"/>
+      <kpi-card ds-component="KpiCard" label="Margen"               value="{margen_ganancia}%"      font="mono" color-semaphore="true"/>
+    </view>
+
+  </ui-spec>
+
+  <design-system-checklist>
+    <check ref="DS-003">TODOS los valores monetarios y porcentuales usan font-family: var(--font-mono).</check>
+    <check ref="DS-004">Gap entre los 4 KPI cards: var(--space-4) = 16px.</check>
+    <check ref="DS-005">Inputs de precio min-height: 44px. Prefix "S/." es parte del input, no un label suelto.</check>
+    <check ref="DS-007">KpiCard del DS para el panel de detalle. No crear cards custom.</check>
+    <check ref="DS-010">Inputs de precio y costo con inputmode="decimal" para teclado numérico en mobile.</check>
+    <check>MarginPanel usa var(--color-success-*) para verde, var(--color-warning-*) para amarillo, var(--color-error-*) para rojo. Sin colores hardcoded.</check>
+  </design-system-checklist>
+
+  <copy>
+    <text id="error-precio-menor-costo">El precio de venta debe ser mayor al costo de adquisición.</text>
+    <text id="hint-costo">¿Cuánto le pagas al proveedor? Incluye el precio sin IGV.</text>
+    <text id="hint-precio">¿A cuánto lo vendes? Este es el precio que cobra el cliente.</text>
+    <text id="hint-igv">El IGV es solo informativo. No afecta el cálculo de margen.</text>
+    <text id="label-margen-bajo">Margen bajo — considera ajustar el precio</text>
+    <text id="label-margen-medio">Margen moderado</text>
+    <text id="label-margen-alto">Buen margen</text>
+  </copy>
+
+  <gates>
+    <gate id="G1-2-C1" type="contract" blocker="true">
+      <criterion>El campo margen_ganancia NUNCA tiene un input editable en el formulario. Es siempre display-only.</criterion>
+      <how-to-verify>eval_js: document.querySelector('[name="margen_ganancia"]') debe ser null (no existe como input).</how-to-verify>
+    </gate>
+    <gate id="G1-2-C2" type="contract" blocker="true">
+      <criterion>El margen se recalcula en tiempo real con cada cambio en costo_adquisicion o precio_venta (evento "input", no "change").</criterion>
+      <how-to-verify>Escribir en el input de precio → el panel de margen cambia sin hacer click en ningún botón.</how-to-verify>
+    </gate>
+    <gate id="G1-2-C3" type="contract" blocker="true">
+      <criterion>Si precio_venta ≤ costo_adquisicion, el error aparece inline bajo el campo precio_venta Y el botón Guardar queda deshabilitado.</criterion>
+      <how-to-verify>Poner costo=100, precio=80. Botón Guardar debe tener disabled=true y aparecer error.</how-to-verify>
+    </gate>
+    <gate id="G1-2-V1" type="visual" blocker="true">
+      <criterion>El MarginPanel cambia de color según el semáforo: rojo (&lt;10%), amarillo (10-20%), verde (&gt;20%). Verificar los 3 estados.</criterion>
+      <how-to-verify>screenshot con costo=90/precio=95 (rojo), costo=80/precio=95 (amarillo), costo=60/precio=95 (verde).</how-to-verify>
+    </gate>
+    <gate id="G1-2-V2" type="visual" blocker="true">
+      <criterion>TODOS los valores monetarios (costo, precio, ganancia) en la lista y detalle usan font-mono.</criterion>
+      <how-to-verify>getComputedStyle de cada elemento de precio → fontFamily debe incluir 'JetBrains Mono'.</how-to-verify>
+    </gate>
+    <gate id="G1-2-S1" type="state" blocker="true">
+      <criterion>margen_ganancia NO se guarda en localStorage. Solo se guarda costo_adquisicion y precio_venta.</criterion>
+      <how-to-verify>eval_js: producto en localStorage no tiene campo margen_ganancia (o si existe, es undefined).</how-to-verify>
+    </gate>
+    <gate id="G1-2-R1" type="responsive" blocker="true">
+      <criterion>En mobile (375px), los 4 KPI cards del detalle se muestran en grid 2x2, no en fila horizontal con overflow.</criterion>
+      <how-to-verify>screenshot en 375px del detalle de producto.</how-to-verify>
+    </gate>
+  </gates>
+
+</artifact>

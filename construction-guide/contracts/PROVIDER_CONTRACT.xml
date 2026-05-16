@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="contract" id="PROVIDER_CONTRACT" version="2">
+  <meta>
+    <title>Provider Contract v2 — capability-segregated (ISP)</title>
+    <supersedes>v1 fat ProductsContext (list+get+create+update+remove+stream all together)</supersedes>
+    <enforced-by>PROVIDER_AGENT</enforced-by>
+    <decision-refs>R-2, R-13, R-14 · DS-084, DS-085, DS-086</decision-refs>
+    <signed-by>W6-ISP, W1-SOLID, W3-BigO</signed-by>
+  </meta>
+
+  <rationale>
+    <why>Fat provider interfaces force read-only patterns to depend on write APIs they never use,
+    bloat mocks in tests, prevent SSR optimization (read can be server, write must be client),
+    and violate Interface Segregation. Capability-based providers expose granular tokens
+    (`products:read`, `products:write`, `products:stream`) that patterns can request independently.</why>
+  </rationale>
+
+  <schema lang="typescript"><![CDATA[
+// ─── CAPABILITY TOKEN ───────────────────────────────────────────────
+export type CapabilityToken = `${string}:${'read' | 'write' | 'stream'}`;
+
+// ─── CAPABILITY DEFINITION ──────────────────────────────────────────
+export interface CapabilityDefinition<TApi> {
+  readonly token:    CapabilityToken;
+  readonly factory:  (deps: ProviderDeps) => TApi;
+  readonly runtime?: 'client' | 'server' | 'edge';  // SSR optimization hint
+}
+
+// ─── PROVIDER DEFINITION ────────────────────────────────────────────
+export interface ProviderDefinition {
+  readonly id:           string;
+  readonly version:      `${number}.${number}.${number}`;
+  readonly capabilities: Record<CapabilityToken, CapabilityDefinition<unknown>>;
+  readonly Provider:     ComponentType<{ children: ReactNode; config: unknown }>;
+  readonly configSchema: ZodSchema;
+  readonly experimental?: { signals?: boolean; suspenseRead?: boolean };
+}
+
+export function defineProvider(spec: ProviderDefinition): ProviderDefinition;
+  ]]></schema>
+
+  <capability-example><![CDATA[
+// packages/providers/products-localstorage/src/index.ts
+import { defineProvider } from '@surte/core';
+import { z } from 'zod';
+
+export const productsLocalStorageProvider = defineProvider({
+  id:      'products',
+  version: '1.0.0',
+
+  configSchema: z.object({
+    seed:       z.array(ProductSchema).optional(),
+    storageKey: z.string().default('inventory:products'),
+  }),
+
+  capabilities: {
+    'products:read': {
+      token: 'products:read',
+      runtime: 'client',
+      factory: ({ store }) => ({
+        list:  (q?: ListQuery) => store.list(q),
+        get:   (id: string)    => store.get(id),
+        count: ()              => store.count(),
+      }),
+    },
+    'products:write': {
+      token: 'products:write',
+      runtime: 'client',
+      factory: ({ store }) => ({
+        create: (input: NewProduct)        => store.create(input),
+        update: (id: string, patch: Patch) => store.update(id, patch),
+        remove: (id: string)               => store.remove(id),
+      }),
+    },
+    'products:stream': {
+      token: 'products:stream',
+      runtime: 'client',
+      factory: ({ store }) => ({
+        subscribe: (listener) => store.subscribe(listener),
+      }),
+    },
+  },
+
+  Provider: ProductsLocalStorageProvider,    // React component
+});
+  ]]></capability-example>
+
+  <pattern-consumer-example><![CDATA[
+// ProductTablePattern only needs READ — no write deps leaked
+const ProductTablePattern = definePattern({
+  // ...
+  requires: ['products:read', 'session:read'] as const,
+  // ...
+});
+
+// ProductFormPattern needs both
+const ProductFormPattern = definePattern({
+  // ...
+  requires: ['products:read', 'products:write', 'session:read'] as const,
+  // ...
+});
+  ]]></pattern-consumer-example>
+
+  <composition-rules>
+    <rule>Providers compose via reduceRight to avoid O(N²) re-renders.</rule>
+    <rule>Capability composition is order-independent within a provider; cross-provider order is declared at app level.</rule>
+    <rule>Patterns receive capabilities through `ctx[token]`, NOT through useContext directly.</rule>
+    <rule>Missing required capability → pattern skipped + warn() in dev.</rule>
+    <rule>SSR: capabilities with runtime:'server' resolved server-side; runtime:'client' deferred to hydration.</rule>
+  </composition-rules>
+
+  <gates>
+    <gate id="PR-G1">Provider exposes each capability with its own factory.</gate>
+    <gate id="PR-G2">Read capability NEVER returns write methods.</gate>
+    <gate id="PR-G3">Provider has a *.contract.test.ts validating each capability returns the expected shape.</gate>
+    <gate id="PR-G4">Provider declares runtime hint for SSR optimization.</gate>
+    <gate id="PR-G5">Provider with signals=true uses signal primitives, not React state, for high-frequency updates.</gate>
+  </gates>
+</artifact>

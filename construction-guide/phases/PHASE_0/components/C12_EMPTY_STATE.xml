@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="component-spec" id="C12_EMPTY_STATE" version="1">
+  <meta name="EmptyState" decision-ref="DS-009, DS-017"/>
+  <class>.empty</class>
+  <intent>Cero estados vacíos ciegos: SIEMPRE icon + título + body + CTA primaria + CTA secundaria opcional.</intent>
+
+  <variants>
+    <variant name="first-use"  note="Aún no existe ningún item (catálogo vacío)"/>
+    <variant name="no-results" note="Filtro/búsqueda sin resultados (existen items pero no matchean)"/>
+    <variant name="error"      note="Algo falló al cargar (badge crítico + retry CTA)"/>
+  </variants>
+
+  <structure html='<div class="empty">
+  <div class="empty__art"><svg class="empty__icon"/></div>
+  <h3 class="empty__title">Aún no tienes productos</h3>
+  <p class="empty__body">Crea tu primer producto para empezar a controlar el inventario. Te tomará menos de un minuto.</p>
+  <div class="empty__actions">
+    <button class="btn btn--primary">Crear producto</button>
+    <button class="btn btn--ghost">Importar desde Excel</button>
+  </div>
+</div>'/>
+
+  <parts>
+    <part class=".empty">text-align: center · py: var(--space-16) · px: var(--space-6) · max-width: 480px · margin: 0 auto</part>
+    <part class=".empty__art">w: 80px · h: 80px · bg: var(--terracotta-50) · radius: var(--radius-pill) · grid place-items: center · margin: 0 auto var(--space-6)</part>
+    <part class=".empty__icon">color: var(--terracotta-500) · 36px · Lucide stroke 1.75</part>
+    <part class=".empty__title">font: var(--text-xl) / var(--fw-bold) · letter-spacing: var(--ls-snug) · mb: var(--space-2)</part>
+    <part class=".empty__body">font: var(--text-base) · color: var(--text-muted) · line-height: var(--lh-relaxed) · mb: var(--space-6)</part>
+    <part class=".empty__actions">display: flex · gap: var(--space-3) · justify-content: center · flex-wrap: wrap</part>
+  </parts>
+
+  <do-and-dont>
+    <do>Copy en 2ª persona singular informal ("Aún no tienes…").</do>
+    <do>CTA primaria refleja el verbo de la acción ("Crear producto", no "OK").</do>
+    <dont>NO usar empty state para errores de validación (eso es FormGroup__error).</dont>
+    <dont>NO usar empty state sin CTA — siempre debe haber un próximo paso.</dont>
+  </do-and-dont>
+</artifact>

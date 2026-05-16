@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="module" id="M1_3_UNIDADES" version="1">
+  <meta>
+    <name>Unidades y Medidas</name>
+    <phase>PHASE_1_PRODUCTOS</phase>
+    <priority>ALTA — define cómo el sistema convierte entre compra y venta</priority>
+    <depends-on>M1_1_INFO_BASICA (el producto debe existir)</depends-on>
+    <created>2026-05-11</created>
+  </meta>
+
+  <purpose>
+    Definir en qué unidad se compra el producto y en qué unidad se vende,
+    junto con el factor de conversión. Esto permite que el sistema calcule
+    automáticamente el stock real al registrar entradas y salidas en distintas unidades.
+    Ejemplo: compro "cajas" de 24, vendo "unidades". El sistema sabe que 1 caja = 24 unidades.
+  </purpose>
+
+  <business-logic>
+    <rule id="BL-3-1">
+      Si unidad_compra == unidad_venta → factor_conversion es obligatoriamente 1. No editable.
+    </rule>
+    <rule id="BL-3-2">
+      Si unidad_compra != unidad_venta → factor_conversion requerido y debe ser > 0.
+      Representa: 1 unidad_compra = N unidades_venta.
+    </rule>
+    <rule id="BL-3-3">
+      El stock se almacena siempre en unidad_venta.
+      Cuando se registra una entrada en unidad_compra, se multiplica por factor_conversion para actualizar stock.
+      (Esta regla se implementa en Phase 2. Aquí solo se define el contrato.)
+    </rule>
+    <example>
+      Producto: Aceite Primor
+      unidad_compra = "Caja"   (und_caja)
+      unidad_venta  = "Unidad" (und_unidad)
+      factor        = 12
+      → Entrada de 5 cajas = 5 × 12 = 60 unidades en stock
+    </example>
+  </business-logic>
+
+  <data-contract>
+    <reads-fields>unidad_compra_id, unidad_venta_id, factor_conversion, peso_kg</reads-fields>
+    <writes-fields>unidad_compra_id, unidad_venta_id, factor_conversion, peso_kg</writes-fields>
+    <reads-entities>UnidadMedida (para los selects de unidad)</reads-entities>
+    <computed>
+      <field name="conversion_label" formula="1 {unidad_compra.nombre} = {factor_conversion} {unidad_venta.nombre}(s)" display="1 Caja = 24 Unidades"/>
+    </computed>
+  </data-contract>
+
+  <ui-spec>
+
+    <view id="form-unidades" layout="form-section">
+      <section-header icon="ruler" title="Unidades y Medidas" subtitle="¿En qué unidad lo compras y en cuál lo vendes?"/>
+
+      <form-fields>
+
+        <field name="unidad_compra_id" component="Select"
+               label="Unidad de compra"
+               required="true"
+               options-from="UnidadMedida.all"
+               option-label="nombre"
+               option-value="id"
+               placeholder="¿En qué unidad lo compras?"
+               hint="Cómo lo recibes del proveedor. Ej: Caja, Saco, Paquete."
+               footer-action="+ Nueva unidad" footer-action-opens="modal-nueva-unidad"/>
+
+        <field name="unidad_venta_id" component="Select"
+               label="Unidad de venta"
+               required="true"
+               options-from="UnidadMedida.all"
+               option-label="nombre"
+               option-value="id"
+               placeholder="¿En qué unidad lo vendes?"
+               hint="Cómo lo despachas al cliente. Ej: Unidad, Kg, Litro."/>
+
+        <!-- Panel de conversión: aparece cuando unidad_compra != unidad_venta -->
+        <field name="factor_conversion" component="Input" type="number"
+               label="Factor de conversión"
+               placeholder="Ej: 24"
+               required="true"
+               min="0.0001"
+               step="0.01"
+               inputmode="decimal"
+               show-when="unidad_compra_id != unidad_venta_id"
+               hint="¿Cuántas {unidad_venta.nombre}s hay en 1 {unidad_compra.nombre}?">
+          <dynamic-hint template="¿Cuántas {unidad_venta} hay en 1 {unidad_compra}?"/>
+        </field>
+
+        <!-- Preview de conversión — display only, actualiza en tiempo real -->
+        <field name="conversion_preview" component="ConversionPreview" type="display-only"
+               show-when="factor_conversion > 0">
+          <render>
+            Card con fondo var(--color-ink-50), borde var(--color-ink-200), border-radius var(--radius-md):
+            Texto: "1 {unidad_compra} = {factor_conversion} {unidad_venta}(s)"
+            Font-size: var(--text-body-lg), font-weight: 600, font-mono.
+            Icono "arrow-right-left" de Lucide a la izquierda.
+          </render>
+        </field>
+
+        <!-- Factor = 1 automático cuando misma unidad -->
+        <field name="conversion_same_unit" component="InfoBanner" type="display-only"
+               show-when="unidad_compra_id == unidad_venta_id AND unidad_compra_id != null">
+          <render>
+            Alert tipo "info" del DS: "Compras y vendes en la misma unidad. Factor de conversión = 1."
+          </render>
+        </field>
+
+        <field name="peso_kg" component="Input" type="number"
+               label="Peso por unidad de compra (kg)"
+               placeholder="Ej: 50"
+               required="false"
+               min="0"
+               step="0.01"
+               inputmode="decimal"
+               suffix="kg"
+               hint="Opcional. Para productos que se manejan por peso."/>
+
+      </form-fields>
+    </view>
+
+    <!-- En detalle de producto -->
+    <view id="detalle-unidades" layout="info-row">
+      <info-item label="Compra en"   value="{unidad_compra.nombre}"/>
+      <info-item label="Vende en"    value="{unidad_venta.nombre}"/>
+      <info-item label="Conversión"  value="1 {unidad_compra.nombre} = {factor_conversion} {unidad_venta.nombre}(s)" font="mono"/>
+      <info-item label="Peso"        value="{peso_kg} kg" show-when="peso_kg > 0"/>
+    </view>
+
+  </ui-spec>
+
+  <design-system-checklist>
+    <check ref="DS-003">El conversion_preview usa font-mono para los números y nombres de unidad.</check>
+    <check ref="DS-004">Espaciado entre campos: var(--space-4). Entre sección y preview: var(--space-3).</check>
+    <check ref="DS-005">Selects de unidad min-height: 44px.</check>
+    <check ref="DS-006">Icono "ruler" para la sección. "arrow-right-left" para el preview de conversión.</check>
+    <check ref="DS-007">Alert del DS para el banner "misma unidad". No crear banners custom.</check>
+    <check ref="DS-010">Input de factor_conversion y peso_kg con inputmode="decimal".</check>
+  </design-system-checklist>
+
+  <copy>
+    <text id="label-unidad-compra">Unidad de compra</text>
+    <text id="hint-unidad-compra">Cómo lo recibes del proveedor. Ej: Caja, Saco, Paquete.</text>
+    <text id="label-unidad-venta">Unidad de venta</text>
+    <text id="hint-unidad-venta">Cómo lo despachas al cliente. Ej: Unidad, Kg, Litro.</text>
+    <text id="hint-factor-dynamic">¿Cuántas {unidad_venta} hay en 1 {unidad_compra}?</text>
+    <text id="banner-misma-unidad">Compras y vendes en la misma unidad. Factor de conversión = 1.</text>
+    <text id="error-factor-zero">El factor de conversión debe ser mayor a cero.</text>
+  </copy>
+
+  <gates>
+    <gate id="G1-3-C1" type="contract" blocker="true">
+      <criterion>Cuando unidad_compra == unidad_venta: el campo factor_conversion se oculta y su valor se fija automáticamente en 1.</criterion>
+      <how-to-verify>Seleccionar misma unidad en ambos selects → campo factor desaparece. Guardar → factor=1 en localStorage.</how-to-verify>
+    </gate>
+    <gate id="G1-3-C2" type="contract" blocker="true">
+      <criterion>El conversion_preview se actualiza en tiempo real sin necesidad de guardar.</criterion>
+      <how-to-verify>Cambiar factor_conversion a 24 → preview muestra "1 Caja = 24 Unidades" inmediatamente.</how-to-verify>
+    </gate>
+    <gate id="G1-3-C3" type="contract" blocker="true">
+      <criterion>factor_conversion > 0. Si se ingresa 0 o negativo, error inline y botón Guardar deshabilitado.</criterion>
+      <how-to-verify>Ingresar factor=0 → error visible + botón disabled.</how-to-verify>
+    </gate>
+    <gate id="G1-3-V1" type="visual" blocker="true">
+      <criterion>El conversion_preview es visualmente distinguible como "display only" (fondo diferente al de los inputs).</criterion>
+      <how-to-verify>screenshot del formulario con unidades diferentes seleccionadas.</how-to-verify>
+    </gate>
+    <gate id="G1-3-U1" type="ux" blocker="true">
+      <criterion>El hint del campo factor_conversion se actualiza dinámicamente con los nombres de unidad seleccionados.</criterion>
+      <how-to-verify>Seleccionar "Caja" y "Unidad" → hint dice "¿Cuántas Unidades hay en 1 Caja?"</how-to-verify>
+    </gate>
+    <gate id="G1-3-S1" type="state" blocker="true">
+      <criterion>unidad_compra_id y unidad_venta_id se guardan como IDs (UUID), no como nombres.</criterion>
+      <how-to-verify>eval_js: producto en localStorage tiene unidad_compra_id="und_caja", no "Caja".</how-to-verify>
+    </gate>
+  </gates>
+
+</artifact>

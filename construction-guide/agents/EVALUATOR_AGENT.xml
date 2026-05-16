@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="agent" id="evaluator-agent" version="1">
+  <meta>
+    <owner>evaluator-agent</owner>
+    <role>Ejecuta gates sobre un artefacto producido (HTML/UI) y devuelve report passed/failed con evidencia.</role>
+  </meta>
+
+  <gate-types>
+    <gate-type id="visual">
+      <runs>evaluators/visual.xml</runs>
+      <checks>tokens, fonts, spacing-multiples-of-4, contrast-AA</checks>
+    </gate-type>
+    <gate-type id="ux-flow">
+      <runs>evaluators/ux-flow.xml</runs>
+      <checks>cada acción tiene feedback &lt;100ms, sin dead-ends, back-button siempre presente</checks>
+    </gate-type>
+    <gate-type id="state">
+      <runs>evaluators/state.xml</runs>
+      <checks>localStorage persiste, invariantes no rotas, ciclo entrada→stock→dashboard consistente</checks>
+    </gate-type>
+    <gate-type id="responsive">
+      <runs>evaluators/responsive.xml</runs>
+      <checks>1920x1080, 768x1024, 375x812 sin overflow ni texto cortado</checks>
+    </gate-type>
+    <gate-type id="perf">
+      <runs>evaluators/perf.xml</runs>
+      <checks>TTI &lt;2s en 3G simulado, interacciones &lt;100ms</checks>
+    </gate-type>
+  </gate-types>
+
+  <report-schema>
+    <output type="json">
+      {
+        "module": "M3_ENTRADA",
+        "passed": ["visual.tokens", "visual.fonts"],
+        "failed": [
+          {
+            "gate": "responsive.mobile",
+            "reason": "El form se desborda horizontalmente a 375px",
+            "evidence": "screenshots/M3_375.png",
+            "fix-hint": "Cambiar grid-template-columns: 1fr en breakpoint sm"
+          }
+        ],
+        "verdict": "BLOCK"
+      }
+    </output>
+  </report-schema>
+
+  <rules>
+    <rule>Si UN gate falla, verdict = BLOCK. No hay "casi pasa".</rule>
+    <rule>Cada falla debe incluir fix-hint accionable (no descripción vaga).</rule>
+    <rule>Evidencia obligatoria: screenshot o eval-js output con valores concretos.</rule>
+  </rules>
+</artifact>

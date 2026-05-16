@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phase id="phase-3-marketplace" duration-weeks="6" status="pending">
+  <purpose>Activar moat: marketplace B2B geo-localizado entre mayoristas + monetización.</purpose>
+  <modules>
+    <module id="M11_PERFIL_PUBLICO">Catálogo público del mayorista (visible para otros).</module>
+    <module id="M12_BUSCAR_PROVEEDOR">Buscador con filtro por producto + ubicación + precio.</module>
+    <module id="M13_PEDIDO_B2B">Pedido entre mayoristas con confirmación + chat.</module>
+    <module id="M14_TAKE_RATE">Modelo de cobro 1-2% sobre transacciones gestionadas.</module>
+    <module id="M15_PREMIUM_TIER">Suscripción Pro + Business (analytics, multi-sucursal).</module>
+  </modules>
+  <success-metric>MRR S/. 3K-15K + 10 transacciones B2B/semana en El Avelino.</success-metric>
+</phase>

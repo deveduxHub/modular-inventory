@@ -1,0 +1,493 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="memory" id="design-decisions" version="2" append-only="true">
+
+  <!-- ──────────────────────────────────────────────────────────────────
+       v1 (2026-05-11) — Paleta Cyan/Indigo inicial
+       SUPERSEDED por v2 (2026-05-12). Se preservan por trazabilidad.
+       ────────────────────────────────────────────────────────────── -->
+
+  <decision id="DS-001" category="color" source="PL" date="2026-05-11" status="superseded" superseded-by="DS-011">
+    <statement>Brand color principal: cyan #0693e3 (--color-brand-500).</statement>
+    <rationale>Confianza + acción. Resalta sobre fondos warm-neutral.</rationale>
+  </decision>
+
+  <decision id="DS-002" category="color" source="PL" date="2026-05-11" status="superseded" superseded-by="DS-012">
+    <statement>Triángulo de Valor usa 3 colores fijos: Inversión=Indigo, Movimiento=Cyan, Ganancia=Ámbar.</statement>
+    <rationale>Mapeo mental directo: oscuro=costo, brillante=flujo, cálido=utilidad.</rationale>
+  </decision>
+
+  <decision id="DS-003" category="typography" source="PL" date="2026-05-11" status="active">
+    <statement>Manrope para todo. JetBrains Mono SOLO para números (KPI, precios, SKUs).</statement>
+    <rationale>Manrope rinde excelente en mobile + gran familia de pesos. Mono tabular evita saltos.</rationale>
+  </decision>
+
+  <decision id="DS-004" category="spacing" source="PL" date="2026-05-11" status="active">
+    <statement>Escala de espaciado: SOLO múltiplos de 4, base 8. Tokens space-1..space-20.</statement>
+    <rationale>Evita "spacing por inspiración". Permite evaluación automática.</rationale>
+  </decision>
+
+  <decision id="DS-005" category="accessibility" source="PL" date="2026-05-11" status="active">
+    <statement>Hit target mínimo 44px en mobile. Texto body mínimo 16px. Contraste WCAG AA 4.5:1.</statement>
+    <rationale>ICP usa la app en mercado real con manos ocupadas. No negociable.</rationale>
+  </decision>
+
+  <decision id="DS-006" category="iconografia" source="PL" date="2026-05-11" status="active">
+    <statement>Iconografía: SOLO Lucide, stroke 1.75px.</statement>
+    <rationale>Consistencia + reconocibilidad. Stroke uniforme.</rationale>
+  </decision>
+
+  <decision id="DS-007" category="component" source="PL" date="2026-05-11" status="superseded" superseded-by="DS-017">
+    <statement>Componentes base: Button, Input, Card, Badge, Alert, KpiCard, ListItem, DataTable, EmptyState, Toast, BottomSheet, MicButton.</statement>
+    <rationale>Cobertura para Fase 1.</rationale>
+  </decision>
+
+  <decision id="DS-008" category="motion" source="PL" date="2026-05-11" status="active">
+    <statement>Duraciones: fast=120ms, base=200ms, slow=320ms. Easing default: cubic-bezier(0.22, 1, 0.36, 1).</statement>
+    <rationale>Feedback inmediato sin sensación de lentitud.</rationale>
+  </decision>
+
+  <decision id="DS-009" category="empty-states" source="PL" date="2026-05-11" status="active">
+    <statement>Todo estado vacío debe tener icon + título + mensaje + CTA primaria.</statement>
+    <rationale>Onboarding por uso requiere que ningún estado vacío sea ciego.</rationale>
+  </decision>
+
+  <decision id="DS-010" category="form" source="PL" date="2026-05-11" status="active">
+    <statement>Inputs numéricos usan inputmode="numeric" o "decimal". Inputs de teléfono inputmode="tel".</statement>
+    <rationale>Mobile-first: teclado correcto = menos fricción.</rationale>
+  </decision>
+
+  <!-- ──────────────────────────────────────────────────────────────────
+       v2 (2026-05-12) — Paleta Warm Earth: 6 brand colors definitivas
+       Aprobada por PL via imagen de referencia. Reemplaza DS-001/DS-002.
+       ────────────────────────────────────────────────────────────── -->
+
+  <decision id="DS-011" category="color" source="PL" date="2026-05-12" status="active">
+    <statement>
+      Paleta brand v2 — 6 colores fijos:
+      • EFEBE3 — Soft Linen   → canvas / fondo base de la app
+      • 3F5963 — Blue Slate   → sidebar / surface dark / texto secundario sobre claro
+      • 1F2528 — Carbon Black → texto primario / surface dark intenso
+      • 6C8260 — Dusty Olive  → success / positivo (margen sano, stock OK)
+      • A86250 — Terracotta   → BRAND PRIMARY · CTAs · highlight · warning
+      • 7E8FA0 — Slate Gray   → muted / bordes / texto deshabilitado
+    </statement>
+    <rationale>
+      Paleta warm-earth, baja saturación, alta sofisticación. Diferencia el producto de cualquier SaaS B2B "azul-techy". Probada para mercado real (luz cálida, mano ocupada) y contraste WCAG AA en todas las combinaciones primarias.
+    </rationale>
+  </decision>
+
+  <decision id="DS-012" category="color" source="PL" date="2026-05-12" status="active" supersedes="DS-002">
+    <statement>
+      Triángulo de Valor v2 — 3 colores asignados desde la paleta brand:
+      • Inversión   = Carbon Black 1F2528  (compromiso de capital, gravedad)
+      • Movimiento  = Slate Gray 7E8FA0    (flujo neutro, tránsito de mercancía)
+      • Ganancia    = Dusty Olive 6C8260   (resultado positivo, cosecha)
+      Alerta de riesgo (gasto que supera utilidad) usa Terracotta A86250.
+    </statement>
+    <rationale>
+      Mapeo mental respetado: oscuro=costo, medio=flujo, vegetal=fruto. Ya no inventa una cuarta familia (ámbar) — todo nace de la paleta brand.
+    </rationale>
+  </decision>
+
+  <decision id="DS-013" category="color" source="PL" date="2026-05-12" status="active">
+    <statement>
+      Escala derivada "ink" (neutros warm) construida desde Carbon + Linen:
+      ink-0=#FFFFFF · ink-50=#F7F4ED · ink-100=#EFEBE3 (Linen) · ink-150=#E5E1D7
+      ink-200=#D2CEC4 · ink-300=#B8B4A8 · ink-400=#9C988C · ink-500=#7E8FA0 (Slate)
+      ink-600=#5C6A78 · ink-700=#3F5963 (Blue Slate) · ink-800=#2A3338 · ink-900=#1F2528 (Carbon)
+    </statement>
+    <rationale>Una sola escala neutra cubre todo gris/borde/texto/surface dark. Reemplaza grises ad-hoc.</rationale>
+  </decision>
+
+  <decision id="DS-014" category="color" source="PL" date="2026-05-12" status="active">
+    <statement>
+      Escala derivada "terracotta" (brand) — 8 pasos desde el ancla A86250:
+      terracotta-50=#FBF2EE · 100=#F4DDD3 · 200=#E8BBA8 · 300=#D9957C · 400=#BD7560
+      500=#A86250 (ancla) · 600=#8E4D3F · 700=#6F3B30 · 800=#4F2A22 · 900=#331B16
+    </statement>
+    <rationale>Permite hover/active/focus consistentes y backgrounds suaves para callouts cálidos.</rationale>
+  </decision>
+
+  <decision id="DS-015" category="color" source="PL" date="2026-05-12" status="active">
+    <statement>
+      Escala derivada "olive" (success) — 5 pasos desde 6C8260:
+      olive-50=#EEF1EB · 100=#D5DDCD · 300=#A0B395 · 500=#6C8260 (ancla) · 700=#4A5D40 · 900=#2A3724
+    </statement>
+    <rationale>Tres tonos de margen sano + dos backgrounds para success-callouts y badges OK.</rationale>
+  </decision>
+
+  <decision id="DS-016" category="color" source="PL" date="2026-05-12" status="active">
+    <statement>
+      Semáforo de estado (margen, stock, vencimiento) — 3 tonos derivados de la paleta brand:
+      • OK / Verde     → olive-500 #6C8260
+      • Caución / Ámbar → derivado #C89968 (sandstone warm, complementario de la paleta)
+      • Crítico / Rojo  → terracotta-700 #6F3B30 (más oscuro y serio que el brand)
+      JAMÁS usar los rojos/amarillos genéricos de Bootstrap o Tailwind default.
+    </statement>
+    <rationale>Sandstone preserva el carácter warm-earth incluso en estados de alerta. Terracotta-700 da gravedad al estado crítico sin saltar fuera del sistema.</rationale>
+  </decision>
+
+  <decision id="DS-017" category="component" source="PL" date="2026-05-12" status="active" supersedes="DS-007">
+    <statement>
+      Componentes base v2 — 12 componentes congelados en Fase 0:
+      1. Button (variants: primary, secondary, ghost, danger · sizes: sm/md/lg)
+      2. Input (text, number, date · estados: default/focus/error/disabled)
+      3. Select (single, con opcional searchable)
+      4. FormGroup (label + input + hint + error message)
+      5. Card (surface principal · variants: flat, bordered, elevated)
+      6. KpiCard (número grande mono + label + delta opcional)
+      7. Table (desktop) + List (mobile reflow) · sortable + empty + loading
+      8. Badge (status pills · variants OK/caution/critical/info/neutral)
+      9. Alert (inline · variants info/success/warning/danger · con dismiss opcional)
+      10. Modal (con backdrop, focus trap, ESC close, sin saltos de layout)
+      11. SidebarNav + Topbar (chrome de la app)
+      12. EmptyState (icon + title + body + CTA primaria opcional + secundaria)
+    </statement>
+    <rationale>Cobertura completa para Phase 1..N. Añadir componente nuevo requiere decisión nueva (DS-NNN) y entrada en showcase.</rationale>
+  </decision>
+
+  <decision id="DS-018" category="color" source="PL" date="2026-05-12" status="active">
+    <statement>
+      Surface roles:
+      • canvas       → ink-100 (Linen)        — fondo de página
+      • surface      → ink-0 (white)          — cards, modals
+      • surface-warm → ink-50                 — secciones suaves dentro de cards
+      • surface-dark → ink-900 (Carbon)       — sidebar, topbar
+      • surface-dark-soft → ink-700 (BlueSlate) — alternativa menos intensa
+      Borders: ink-150 (default), ink-200 (énfasis), ink-300 (separadores fuertes).
+    </statement>
+    <rationale>Un consumidor jamás elige un hex — siempre var(--surface-*).</rationale>
+  </decision>
+
+  <decision id="DS-019" category="radius" source="PL" date="2026-05-12" status="active">
+    <statement>
+      Border-radius tokens:
+      radius-sm=4px · radius-md=8px · radius-lg=12px · radius-xl=16px · radius-2xl=24px · radius-pill=999px
+      Aplicación: inputs/buttons=md · cards=lg · modals=xl · badges=pill.
+    </statement>
+    <rationale>Ritmo consistente. Cards más suaves que botones; modals más generosos.</rationale>
+  </decision>
+
+  <decision id="DS-020" category="shadow" source="PL" date="2026-05-12" status="active">
+    <statement>
+      Shadows tintadas con Carbon (rgba(31,37,40, α)) — JAMÁS rgb(0,0,0):
+      shadow-sm   = 0 1px 2px rgba(31,37,40,0.06)
+      shadow-md   = 0 4px 12px rgba(31,37,40,0.08)
+      shadow-lg   = 0 12px 32px rgba(31,37,40,0.12)
+      shadow-focus= 0 0 0 3px rgba(168,98,80,0.30)   (terracotta @ 30%)
+    </statement>
+    <rationale>Sombras negro-puro chocan con paleta warm. Carbon-tinted preserva la temperatura.</rationale>
+  </decision>
+
+  <!-- ──────────────────────────────────────────────────────────────────
+       v3 (2026-05-12) — Tech stack + agentes evaluadores
+       Define la base tecnológica para implementar el DS y todas las fases.
+       ────────────────────────────────────────────────────────────── -->
+
+  <decision id="DS-021" category="tech" source="PL" date="2026-05-12" status="active">
+    <statement>Styling: Tailwind CSS 3.x + helper cn() (tailwind-merge + clsx) + class-variance-authority (cva) para variantes. Plugins: tailwindcss-animate, @tailwindcss/forms, prettier-plugin-tailwindcss.</statement>
+    <rationale>Tokens centralizados en theme.extend, conflict-resolution en runtime, variantes declarativas, orden de classes determinista.</rationale>
+  </decision>
+
+  <decision id="DS-022" category="tech" source="PL" date="2026-05-12" status="active">
+    <statement>Primitivos headless: Radix UI (Slot, Dialog, Dropdown, Tabs, Tooltip) como base de componentes complejos.</statement>
+    <rationale>Accesibilidad probada + patrón asChild + cero estilos opinados que entren en conflicto con Tailwind.</rationale>
+  </decision>
+
+  <decision id="DS-023" category="architecture" source="PL" date="2026-05-12" status="active">
+    <statement>Arquitectura DDD por capas obligatoria desde Fase 1: src/domain/ (entidades, value objects, invariantes, puro TS) → src/application/ (use cases) → src/infrastructure/ (adapters: storage, fetch) → src/ui/ (React: ds, features, pages). ui/ jamás importa infrastructure/ directo.</statement>
+    <rationale>Testabilidad máxima · domain reusable · cambio de storage no rompe UI · evaluación automática de límites por agente 09-ddd.</rationale>
+  </decision>
+
+  <decision id="DS-024" category="tooling" source="PL" date="2026-05-12" status="active">
+    <statement>Documentación: Storybook 8.x con CSF 3.0 + autodocs obligatorio para cada componente del DS y de feature shared. Stories mínimas: Default, una por variante, una por size, una por estado, Playground (todos los argTypes), AllVariants, A11y (cero violaciones AA).</statement>
+    <rationale>Contrato visual ejecutable · QA de variantes · gate de accesibilidad antes de merge.</rationale>
+  </decision>
+
+  <decision id="DS-025" category="theming" source="PL" date="2026-05-12" status="active">
+    <statement>ThemeProvider propio: tokens.ts (TS object as const) genera CSS vars + Tailwind theme.extend. Context expone setTheme/useTheme. Dark mode opt-in via clase .dark en &lt;html&gt;. SSR-safe vía script inline pre-hydrate. Tokens consumidos siempre via CSS vars, jamás hex/rgb literal en JSX.</statement>
+    <rationale>Cambio de tema sin re-render cascade · zero-flash · tipado fuerte de tokens · evaluación automática de literales por agente 11-theme-provider.</rationale>
+  </decision>
+
+  <decision id="DS-026" category="quality" source="PL" date="2026-05-12" status="active">
+    <statement>Gate de fase: los 12 agentes evaluadores en builder-guide/evaluators/ deben devolver OK sobre los artefactos generados antes de cerrar cualquier fase. Agentes: 01-react-patterns · 02-composition · 03-pure-functions · 04-solid · 05-design-patterns · 06-big-o · 07-tailwind · 08-storybook · 09-ddd · 10-overriding · 11-theme-provider · 12-ci-formatting. Un solo FAIL bloquea la entrega.</statement>
+    <rationale>Calidad medible · regresiones detectadas antes de merge · responsabilidades evaluativas separadas (cada agente un foco).</rationale>
+  </decision>
+
+  <decision id="DS-027" category="forms" source="PL" date="2026-05-12" status="active">
+    <statement>Validación: react-hook-form + zod. Schemas zod viven en domain/ (value objects + invariantes). Cero validación manual ad-hoc en componentes.</statement>
+    <rationale>Schemas reusables UI + tests + adapters · errores tipados · single-source para reglas de negocio.</rationale>
+  </decision>
+
+  <decision id="DS-028" category="overriding-strategy" source="PL" date="2026-05-12" status="active">
+    <statement>Estrategia única de override: (1) className via cn() — tw-merge resuelve conflictos; (2) asChild para cambiar elemento renderizado (Radix Slot); (3) slots/compound para sub-partes (Card.Header, etc.); (4) variant API cerrada (enum whitelist); (5) theme override solo global via ThemeProvider. PROHIBIDO: style={{}} con tokens, !important, selectores específicos del consumidor, fork de componente para one-off.</statement>
+    <rationale>Predecible · evaluable automáticamente · evita CSS divergente entre features.</rationale>
+  </decision>
+<!-- ──────────────────────────────────────────────────────────────────
+       v4 (2026-05-12) — Monorepo + Plugin Architecture (Fase -1)
+       Decisiones congeladas en builder-guide/ARCHITECTURE.xml
+       ────────────────────────────────────────────────────────────── -->
+
+  <decision id="DS-029" category="architecture" source="PL" date="2026-05-12" status="active">
+    <statement>Monorepo con pnpm workspaces + Turborepo. Namespace de packages internos: @surte/*.</statement>
+    <rationale>pnpm 3x más rápido + content-addressable storage. Turborepo da cache distribuido y paralelización.</rationale>
+  </decision>
+  <decision id="DS-030" category="architecture" source="PL" date="2026-05-12" status="active">
+    <statement>Estructura apps/ + packages/. packages/modules/* son pluggables.</statement>
+    <rationale>apps deployables ↔ packages reutilizables. Separación canónica.</rationale>
+  </decision>
+  <decision id="DS-031" category="architecture" source="PL" date="2026-05-12" status="active">
+    <statement>Cada módulo de negocio (productos, ventas, etc.) es un package @surte/module-* con ModuleManifest.</statement>
+    <rationale>Add/remove sin tocar otros módulos. Versionado independiente.</rationale>
+  </decision>
+  <decision id="DS-032" category="architecture" source="PL" date="2026-05-12" status="active">
+    <statement>ModuleRegistry + Manifest + DI Container en @surte/shell. Activación via surte.config.ts.</statement>
+    <rationale>Patrón VSCode extension model. Configuración declarativa, no imperativa.</rationale>
+  </decision>
+  <decision id="DS-033" category="architecture" source="PL" date="2026-05-12" status="active">
+    <statement>Layout via Slot pattern. Módulos contribuyen a slots: sidebar, header, footer, right-panel, modal.</statement>
+    <rationale>Composición sobre configuración. Layout se compone solo desde los manifests activos.</rationale>
+  </decision>
+  <decision id="DS-034" category="architecture" source="PL" date="2026-05-12" status="active">
+    <statement>Step Engine con decisiones push/replace/redirect/complete/fail. Guards pueden reemplazar step (ej AuthGuard → login).</statement>
+    <rationale>Flow flexible · guards interrumpen sin perder contexto · permite login mid-flow.</rationale>
+  </decision>
+  <decision id="DS-035" category="architecture" source="PL" date="2026-05-12" status="active">
+    <statement>Cada dominio DDD es package @surte/domain-*. Solo depende de @surte/core. Zero React.</statement>
+    <rationale>Reutilizable en server/worker/CLI. Tests instantáneos.</rationale>
+  </decision>
+  <decision id="DS-036" category="architecture" source="PL" date="2026-05-12" status="active">
+    <statement>Infrastructure como adapter pluggable: storage-local | storage-indexed | storage-supabase. Cambio = 1 línea en surte.config.ts.</statement>
+    <rationale>Hexagonal/Ports&amp;Adapters. Migración a backend real no rompe UI ni dominio.</rationale>
+  </decision>
+  <decision id="DS-037" category="quality" source="PL" date="2026-05-12" status="active">
+    <statement>Dependency rules enforced via ESLint boundaries (matriz en @surte/config-eslint). ui no toca domain ni infrastructure.</statement>
+    <rationale>Capas DDD impuestas por linter, no por buena voluntad.</rationale>
+  </decision>
+  <decision id="DS-038" category="release" source="PL" date="2026-05-12" status="active">
+    <statement>Versionado con Changesets, independiente por package.</statement>
+    <rationale>Publica solo lo que cambió. SemVer por package.</rationale>
+  </decision>
+  <decision id="DS-039" category="architecture" source="PL" date="2026-05-12" status="active">
+    <statement>Event Bus puro TS en @surte/core. Módulos publican/suscriben sin importarse entre sí.</statement>
+    <rationale>Cross-module sin coupling. Test-friendly.</rationale>
+  </decision>
+  <decision id="DS-040" category="performance" source="PL" date="2026-05-12" status="active">
+    <statement>Lazy-loading obligatorio por módulo (React.lazy + dynamic import en ModuleRouter).</statement>
+    <rationale>Bundle inicial estable aunque se agreguen módulos.</rationale>
+  </decision>
+  <decision id="DS-041" category="performance" source="PL" date="2026-05-12" status="active">
+    <statement>Performance budget: shell &lt;180kb gzipped, módulo &lt;80kb cada uno, LCP &lt;2.5s, Lighthouse Performance ≥90.</statement>
+    <rationale>Budget tangible · CI mide y bloquea regresión.</rationale>
+  </decision>
+  <decision id="DS-042" category="tooling" source="PL" date="2026-05-12" status="active">
+    <statement>Storybook como app standalone (apps/storybook) — deployable independiente.</statement>
+    <rationale>Documentación viva separada del producto. Vercel preview por PR.</rationale>
+  </decision>
+  <decision id="DS-043" category="persistence" source="PL" date="2026-05-12" status="active">
+    <statement>Persistencia con schema-version + migrations declaradas por módulo (corren en onInstall del Manifest).</statement>
+    <rationale>Backward-compat de datos persistidos cuando un módulo evoluciona.</rationale>
+  </decision>
+  <decision id="DS-044" category="architecture" source="PL" date="2026-05-12" status="active">
+    <statement>surte.config.ts es la ÚNICA fuente de verdad de qué módulos están activos. Add/remove = comentar/descomentar una línea.</statement>
+    <rationale>Cambios de scope sin tocar código de módulo ni shell.</rationale>
+  </decision>
+  <decision id="DS-045" category="release" source="PL" date="2026-05-12" status="active">
+    <statement>Backward compatibility: SemVer + deprecation 1 minor antes de remove + tests contra API pública (index.ts) en cada package.</statement>
+    <rationale>Garantía contractual de no romper consumidores.</rationale>
+  </decision>
+<!-- ──────────────────────────────────────────────────────────────────
+       v5 (2026-05-14) — Panel de 5 arquitectos: Step-as-Aggregate + plugin arch
+       Decisiones congeladas en builder-guide/ARCHITECTURE.xml v2
+       ────────────────────────────────────────────────────────────── -->
+
+  <decision id="DS-046" category="architecture" source="panel" date="2026-05-14" status="active">
+    <statement>Step = Aggregate (id, moduleId, path, render, guards, transitions, contracts, title, breadcrumbs, permissions).</statement>
+    <rationale>A5: Step es semánticamente rico (preconditions + action + postconditions). Modelarlo como aggregate captura la invariante.</rationale>
+  </decision>
+  <decision id="DS-047" category="architecture" source="panel" date="2026-05-14" status="active">
+    <statement>SlotTree NOMBRADO (no arrays planos). Cada slot tiene identidad semántica: 'header.right', 'main.actions', 'slot.&lt;custom&gt;'.</statement>
+    <rationale>A3: arrays con order frágil. Slots nombrados permiten introspección + override + composición predecible.</rationale>
+  </decision>
+  <decision id="DS-048" category="routing" source="panel" date="2026-05-14" status="active">
+    <statement>Catch-all 'app/[[...path]]/page.tsx' único por app. StepRouter resuelve URL → step desde ModuleRegistry.</statement>
+    <rationale>A2: Next.js permite catch-all + parallel routes. App no conoce rutas individuales. Módulos auto-registran paths.</rationale>
+  </decision>
+  <decision id="DS-049" category="performance" source="A4" date="2026-05-14" status="active">
+    <statement>lazy() OBLIGATORIO en todo SlotContent que sea componente. Cero imports estáticos de views/sections desde steps/index.ts.</statement>
+    <rationale>Bundler analysis. Initial bundle ≤180kb requiere code-split a nivel slot.</rationale>
+  </decision>
+  <decision id="DS-050" category="api-design" source="A3" date="2026-05-14" status="active">
+    <statement>Contracts L0/L1/L2 declarados en cada Step y cada Pattern: L0=config props (zod), L1=slot injections, L2=event hooks. Lo no declarado, no se puede tocar.</statement>
+    <rationale>Customización controlada. App configura via L0, inyecta via L1, escucha via L2. Sin escape hatches.</rationale>
+  </decision>
+  <decision id="DS-051" category="state" source="A3" date="2026-05-14" status="active">
+    <statement>5 Contexts del core: AppContext, ModuleContext, StepContext, SessionContext, EventContext. Compuestos via composeProviders() helper.</statement>
+    <rationale>Cada concern aislado. Composer evita pyramid of doom.</rationale>
+  </decision>
+  <decision id="DS-052" category="state" source="A3" date="2026-05-14" status="active">
+    <statement>SurteProvider usa composeProviders pattern para stackear los 5 contexts sin nesting.</statement>
+    <rationale>Mantenible. Orden explícito de providers.</rationale>
+  </decision>
+  <decision id="DS-053" category="di" source="A1+A5" date="2026-05-14" status="active">
+    <statement>DI Container con symbol tokens (TOKENS.ProductRepository, etc.) en @surte/core. Módulos bindean factory en lifecycle.onBootstrap.</statement>
+    <rationale>Repository pattern. Adapter intercambiable (localStorage ↔ supabase) sin tocar módulos.</rationale>
+  </decision>
+  <decision id="DS-054" category="backend" source="A1+A2" date="2026-05-14" status="active">
+    <statement>Server Actions co-locadas en packages/modules/&lt;X&gt;/src/server/actions/. Sin REST/GraphQL hasta justificar.</statement>
+    <rationale>Type-safety end-to-end con next-safe-action + zod. Boundary clara.</rationale>
+  </decision>
+  <decision id="DS-055" category="events" source="A3+A5" date="2026-05-14" status="active">
+    <statement>EventBus tipado con eventos versionados: 'product.created.v1', 'sale.completed.v1'. Único canal cross-module.</statement>
+    <rationale>Versionado permite evolución. Módulos no se acoplan.</rationale>
+  </decision>
+  <decision id="DS-056" category="performance" source="A4" date="2026-05-14" status="active">
+    <statement>Performance budget medido en CI: size-limit + Lighthouse CI. PR falla si supera 180kb gzip inicial, 80kb slot, LCP &gt;2.5s, Lighthouse Performance &lt;90.</statement>
+    <rationale>Budget tangible enforced automáticamente.</rationale>
+  </decision>
+  <decision id="DS-057" category="api-design" source="panel" date="2026-05-14" status="active">
+    <statement>Cada módulo exporta patterns/ (flows cerrados): CreateProductFlow, EditProductFlow, etc. La app importa y enchufa. La app NO arma flows.</statement>
+    <rationale>Reutilización 1 → N apps. Bug fix → 1 lugar. Consistencia forzada.</rationale>
+  </decision>
+  <decision id="DS-058" category="persistence" source="user" date="2026-05-14" status="active">
+    <statement>Persistencia v1: localStorage + mocks. Sin backend real en Fase -1..7.</statement>
+    <rationale>Claude Design no corre Docker/Supabase. Validamos arch con mocks; swap a Supabase futuro.</rationale>
+  </decision>
+  <decision id="DS-059" category="persistence" source="panel" date="2026-05-14" status="active">
+    <statement>Cada módulo declara migrations en manifest.lifecycle.migrations[]. Schema versionado por módulo.</statement>
+    <rationale>Backward-compat de datos. Cada módulo evoluciona su schema sin romper otros.</rationale>
+  </decision>
+  <decision id="DS-060" category="apps" source="user" date="2026-05-14" status="active">
+    <statement>2 apps de validación dentro del monorepo: apps/wholesale (full, ~8 módulos) + apps/bodega-simple (minimal, ~3 módulos).</statement>
+    <rationale>Validan que add/remove de módulos funciona sin reinvención.</rationale>
+  </decision>
+  <decision id="DS-061" category="apps" source="panel" date="2026-05-14" status="active">
+    <statement>apps/playground es Storybook + demos de patterns y componentes del DS. Deployable independiente.</statement>
+    <rationale>Documentación viva separada de las apps de producto.</rationale>
+  </decision>
+  <decision id="DS-062" category="packages" source="A3" date="2026-05-14" status="active">
+    <statement>@surte/shell-runtime SEPARADO de @surte/core. core es puro TS (zero React); shell-runtime es la implementación React (SurteProvider, StepRouter, SlotSystem).</statement>
+    <rationale>core reusable en server/worker/CLI. UI runtime aislado.</rationale>
+  </decision>
+  <decision id="DS-063" category="packages" source="A3" date="2026-05-14" status="active">
+    <statement>@surte/shells exporta layouts disponibles: SidebarTopbarShell, TopbarOnlyShell, FullscreenShell, ModalShell.</statement>
+    <rationale>Step declara qué shell quiere; shells son intercambiables.</rationale>
+  </decision>
+  <decision id="DS-064" category="packages" source="A5" date="2026-05-14" status="active">
+    <statement>@surte/domain es 1 package monolítico con subpaths: @surte/domain/product, @surte/domain/supplier, etc. NO 1 package por dominio.</statement>
+    <rationale>SUPERSEDES DS-035. Versionado conjunto del bounded context. Menos overhead de releases.</rationale>
+    <supersedes>DS-035</supersedes>
+  </decision>
+  <decision id="DS-065" category="packages" source="A5" date="2026-05-14" status="active">
+    <statement>@surte/application igual: 1 package con subpaths por dominio (commands, queries, event-handlers).</statement>
+    <rationale>Versionado conjunto. Use cases viven cerca del domain que usan.</rationale>
+  </decision>
+  <decision id="DS-066" category="release" source="A1" date="2026-05-14" status="active">
+    <statement>SemVer + Changesets + tests contra index.ts de cada package (API pública).</statement>
+    <rationale>Cambios fuera de index.ts NO son breaking. Tests garantizan contrato.</rationale>
+  </decision>
+  <decision id="DS-067" category="performance" source="A4" date="2026-05-14" status="active">
+    <statement>Steps declarados ESTÁTICAMENTE en packages/modules/&lt;X&gt;/src/steps/index.ts. No dinámicos.</statement>
+    <rationale>Bundler-analyzable. Tree-shaking funciona. Lazy() detectable.</rationale>
+  </decision>
+  <decision id="DS-068" category="data" source="panel" date="2026-05-14" status="active">
+    <statement>Mocks viven en apps/&lt;app&gt;/mocks/. NO en packages. Cada app puede tener seed distinto.</statement>
+    <rationale>Datos de demo dependen de la app, no de los módulos.</rationale>
+  </decision>
+  <decision id="DS-069" category="middleware" source="A2" date="2026-05-14" status="active">
+    <statement>middleware.ts en cada app maneja auth, tenant, locale ANTES del StepRouter.</statement>
+    <rationale>Edge runtime. Decisiones cross-cutting fuera de React.</rationale>
+  </decision>
+  <decision id="DS-070" category="validation" source="panel" date="2026-05-14" status="active">
+    <statement>Validación E2E: tests en apps/wholesale (módulos completos) + apps/bodega-simple (módulos mínimos) cubren add/remove sin errores.</statement>
+    <rationale>Architecture validation. Cualquier regresión rompe E2E.</rationale>
+  </decision>
+<!-- ──────────────────────────────────────────────────────────────────
+       v6 (2026-05-15) — Panel of 6 workers (SOLID + CleanCode + BigO + CC + CI + ISP)
+       converged after 4 iterations. 20 decisions added.
+       ────────────────────────────────────────────────────────────── -->
+
+  <decision id="DS-076" category="patterns" source="W1-SOLID" date="2026-05-15" status="active">
+    <statement>Pattern is the atomic UI unit. 4-layer model: Component → Pattern → View → Step. Each layer is independently testable.</statement>
+    <rationale>SRP at the layer level. Unit tests target Component; integration tests target Pattern; visual tests target View; E2E targets Step+App.</rationale>
+  </decision>
+  <decision id="DS-077" category="patterns" source="W4-CC" date="2026-05-15" status="active">
+    <statement>buildPatternsBy + [Pattern.NamePattern] enum approach is DEPRECATED. Use definePattern() factory returning a PatternDefinition with branded id.</statement>
+    <rationale>Magic strings are refactor-unsafe. Branded types catch typos at compile time. PatternDefinition is more SRP-clean than enum dispatch.</rationale>
+    <supersedes>DS-079 (buildPatternsBy)</supersedes>
+  </decision>
+  <decision id="DS-078" category="patterns" source="W2-CleanCode" date="2026-05-15" status="active">
+    <statement>Pattern IDs are branded types via asPatternId(). Each pattern exports its ID as a const (PRODUCT_TABLE_PATTERN_ID).</statement>
+    <rationale>Type-safe references. TS infers narrowed string literal. IDE rename works across the monorepo.</rationale>
+  </decision>
+  <decision id="DS-079" category="patterns" source="W2-CleanCode" date="2026-05-15" status="active">
+    <statement>Pattern factory method renamed: Pattern.use() → Pattern.instance({config, slots, on}). Returns a PatternInstance, not a component.</statement>
+    <rationale>Explicit verb. Clearer separation between definition and bound instance.</rationale>
+  </decision>
+  <decision id="DS-080" category="views" source="W2-CleanCode" date="2026-05-15" status="active">
+    <statement>defineView is split into defineLayoutView (declarative slots) and defineRenderView (custom JSX). No mode flag.</statement>
+    <rationale>CC reduction. Each function has one responsibility. Type inference cleaner per variant.</rationale>
+  </decision>
+  <decision id="DS-081" category="performance" source="W3-BigO" date="2026-05-15" status="active">
+    <statement>Lazy boundary lives at View level, NOT Pattern level. Patterns within a View share its chunk.</statement>
+    <rationale>Avoid N-request waterfall. A View with 5 patterns = 1 lazy chunk, not 5.</rationale>
+  </decision>
+  <decision id="DS-082" category="steps" source="W1-SOLID" date="2026-05-15" status="active">
+    <statement>Step v2 is composition of 4 SRP-clean concepts: Route + Guards + ViewBinding + Transitions. Defined via defineStep({ route, guards, view, transitions }).</statement>
+    <rationale>SRP. Each concept testable in isolation. Routes generable statically. Guards composable. Transitions declarative.</rationale>
+    <supersedes>STEP_CONTRACT v1 (monolithic Step aggregate)</supersedes>
+  </decision>
+  <decision id="DS-083" category="performance" source="W3-BigO" date="2026-05-15" status="active">
+    <statement>StepRouter uses compressed Radix Trie for O(log N) path matching. Built once at registration time.</statement>
+    <rationale>Linear scan scales poorly past 100 steps. Trie keeps navigation latency &lt;1ms regardless of app size.</rationale>
+  </decision>
+  <decision id="DS-084" category="providers" source="W6-ISP" date="2026-05-15" status="active">
+    <statement>Providers expose capability tokens per CRUD slice: {domain}:read, {domain}:write, {domain}:stream. Patterns request granular capabilities, not whole providers.</statement>
+    <rationale>ISP. Read-only patterns don't depend on write APIs. Mocks shrink. SSR can resolve :read server-side, :write client-side.</rationale>
+  </decision>
+  <decision id="DS-085" category="providers" source="W3-BigO" date="2026-05-15" status="active">
+    <statement>Provider composition uses reduceRight to avoid O(N²) re-render cascades. Order declared at app level.</statement>
+    <rationale>Performance. Naive nesting causes quadratic updates; reduceRight composes once.</rationale>
+  </decision>
+  <decision id="DS-086" category="providers" source="W3-BigO" date="2026-05-15" status="active">
+    <statement>High-frequency providers (cart, stock counter) opt into Signals API via experimental.signals = true. Low-freq stay on Context.</statement>
+    <rationale>React 19. Signals skip re-render of subscriber tree; cart counter update doesn't re-render product table.</rationale>
+  </decision>
+  <decision id="DS-087" category="patterns" source="W1-SOLID" date="2026-05-15" status="active">
+    <statement>Pattern extensibility via plugin extensions array. Built-in: withTelemetry, withFeatureFlag, withErrorBoundary, withCustomStyle, withA11y, withPermission, withSuspenseFallback.</statement>
+    <rationale>OCP. Adding cross-cutting behavior does not modify the Pattern core. Extensions compose via apply().</rationale>
+  </decision>
+  <decision id="DS-088" category="patterns" source="W1-SOLID" date="2026-05-15" status="active">
+    <statement>Extensions are pure functions applied at definition time. They can augment selector, requires, Component wrapping, but cannot replace Component.</statement>
+    <rationale>Predictability. No runtime surprises. ESLint enforces apply() returns valid PatternDefinition.</rationale>
+  </decision>
+  <decision id="DS-089" category="api" source="W1-SOLID" date="2026-05-15" status="active">
+    <statement>&lt;Inventory&gt; is the SINGLE public composition root. Apps never import composeProviders, StepRouter, ModuleRegistry directly.</statement>
+    <rationale>SRP at the API level. App code is composition-root + config. Internals can evolve without breaking apps.</rationale>
+  </decision>
+  <decision id="DS-090" category="resilience" source="W1-SOLID" date="2026-05-15" status="active">
+    <statement>Error boundaries are per-Pattern (via withErrorBoundary extension) + per-View (declared in defineLayoutView). Inventory has an outer fatal boundary.</statement>
+    <rationale>Isolation. One pattern crash does not blank the View. One View crash does not crash the app.</rationale>
+  </decision>
+  <decision id="DS-091" category="performance" source="W3-BigO" date="2026-05-15" status="active">
+    <statement>Selectors use reselectStable (reselect + structural sharing). Same input → referentially equal output.</statement>
+    <rationale>Prevents unnecessary re-renders. Memoization keyed by capability versions, not full ctx.</rationale>
+  </decision>
+  <decision id="DS-092" category="performance" source="W3-BigO" date="2026-05-15" status="active">
+    <statement>React 19 use(promise) opt-in for SSR streaming of async providers via experimental.streaming = true.</statement>
+    <rationale>RSC-native. No blocking on slow data; streams to client as available.</rationale>
+  </decision>
+  <decision id="DS-093" category="testing" source="W5-CI" date="2026-05-15" status="active">
+    <statement>9-layer test pyramid: Component → Pattern → View → Step → Provider-Contract → Visual-Regression → A11y → E2E → Mutation. Each layer has dedicated helpers in @surte/test-utils.</statement>
+    <rationale>Right tool for each scope. Fast feedback at low layers; high-confidence at top. Mutation testing catches silent selector bugs.</rationale>
+  </decision>
+  <decision id="DS-094" category="testing" source="W5-CI" date="2026-05-15" status="active">
+    <statement>Contract tests assert zod schemas align with TypeScript types via z.infer&lt;typeof S&gt; satisfies T. Drift fails CI.</statement>
+    <rationale>Runtime and compile-time stay in sync. No silent drift between schema and TS.</rationale>
+  </decision>
+  <decision id="DS-095" category="ci" source="W5-CI" date="2026-05-15" status="active">
+    <statement>CI budget gates: pattern ≤ 80kb, view ≤ 160kb, initial Inventory ≤ 180kb, Lighthouse ≥ 90, a11y violations = 0, coverage ≥ 80% packages / 60% apps, mutation score ≥ 70% selectors.</statement>
+    <rationale>Tangible, enforced. PR fails if any budget exceeded. No silent regression.</rationale>
+  </decision>
+
+</artifact>

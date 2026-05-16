@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact kind="module" id="M1_4_PROVEEDORES" version="1">
+  <meta>
+    <name>Proveedores</name>
+    <phase>PHASE_1_PRODUCTOS</phase>
+    <priority>MEDIA — necesario para asociar productos a fuentes de compra</priority>
+    <depends-on>M1_1_INFO_BASICA (para asociar proveedor al producto)</depends-on>
+    <created>2026-05-11</created>
+  </meta>
+
+  <purpose>
+    Registrar y gestionar los proveedores del mayorista. Permite saber a quién
+    llamar para reponer un producto, en qué condiciones compra (crédito/contado),
+    y en cuántos días llega la mercadería. En Phase 4 (Gestión de Compras), los
+    proveedores serán el pilar de las órdenes de compra.
+  </purpose>
+
+  <data-contract>
+    <reads-fields>id, nombre, ruc, contacto_nombre, contacto_telefono, contacto_email, direccion, condicion_pago, dias_entrega, notas, estado</reads-fields>
+    <writes-fields>nombre, ruc, contacto_nombre, contacto_telefono, contacto_email, direccion, condicion_pago, dias_entrega, notas, estado</writes-fields>
+    <relation>Un Proveedor puede estar asociado a muchos Productos (campo Producto.proveedor_preferido_id)</relation>
+  </data-contract>
+
+  <ui-spec>
+
+    <!-- VISTA A: Lista de Proveedores (página independiente) -->
+    <view id="lista-proveedores" route="/proveedores" layout="full-content-area">
+      <topbar>
+        <title>Proveedores</title>
+        <subtitle>X proveedores activos</subtitle>
+        <action-primary icon="plus" label="Nuevo proveedor" navigates-to="form-proveedor"/>
+      </topbar>
+
+      <toolbar>
+        <search placeholder="Buscar por nombre o RUC..." applies-to="nombre,ruc" realtime="true"/>
+        <filter-select label="Estado" field="estado" options="activo|inactivo" default="activo"/>
+      </toolbar>
+
+      <data-table show-when="viewport >= 768px" component="DataTable" ds-ref="DS-007">
+        <column field="nombre"          label="Proveedor"      sortable="true"  width="flex">
+          <render>Nombre bold + RUC debajo en font-mono text-sm text-ink-400</render>
+        </column>
+        <column field="contacto_nombre" label="Contacto"       sortable="false" width="180px">
+          <render>Nombre + teléfono debajo en text-sm</render>
+        </column>
+        <column field="condicion_pago"  label="Condición"      sortable="true"  width="140px">
+          <render>
+            Badge: contado=neutral, credito_7d=info, credito_15d=info, credito_30d=warning, credito_60d=warning
+            Labels: "Contado" | "Crédito 7d" | "Crédito 15d" | "Crédito 30d" | "Crédito 60d"
+          </render>
+        </column>
+        <column field="dias_entrega"    label="Entrega"        sortable="true"  width="100px" align="center">
+          <render>{dias_entrega} días — font-mono</render>
+        </column>
+        <column field="estado"          label="Estado"         sortable="false" width="100px">
+          <render>Badge: activo=success, inactivo=neutral</render>
+        </column>
+        <column field="actions"         label=""               width="48px">
+          <render>Botón "..." → dropdown: Editar | Ver productos | Inactivar</render>
+        </column>
+      </data-table>
+
+      <!-- Mobile cards -->
+      <card-list show-when="viewport &lt; 768px">
+        <card-item>
+          <row-1>Nombre (bold) + Badge condicion_pago (derecha)</row-1>
+          <row-2>RUC en font-mono text-ink-400 + Badge estado (derecha)</row-2>
+          <row-3>📞 {contacto_telefono} · Entrega: {dias_entrega} días</row-3>
+        </card-item>
+      </card-list>
+
+      <empty-state ds-ref="DS-009">
+        <icon>truck</icon>
+        <title>No tienes proveedores registrados</title>
+        <message>Agrega tus proveedores para asociarlos a los productos y gestionar tus compras.</message>
+        <cta-primary label="Agregar proveedor" action="navigate-to-form"/>
+      </empty-state>
+    </view>
+
+    <!-- VISTA B: Formulario de Proveedor -->
+    <view id="form-proveedor" route="/proveedores/nuevo" layout="form-page">
+      <topbar>
+        <back-button label="Proveedores"/>
+        <title show-on="create">Nuevo proveedor</title>
+        <title show-on="edit">Editar proveedor</title>
+      </topbar>
+
+      <form-fields>
+        <field name="nombre" component="Input" type="text"
+               label="Nombre del proveedor"
+               placeholder="Ej: Distribuidora El Sol SAC"
+               required="true" max="120"/>
+
+        <field name="ruc" component="Input" type="text"
+               label="RUC"
+               placeholder="20512345678"
+               required="false"
+               maxlength="11"
+               inputmode="numeric"
+               hint="11 dígitos. Solo si tiene RUC."
+               validate-on="blur"
+               validation="ruc-format"
+               error-message="El RUC debe tener exactamente 11 dígitos numéricos."/>
+
+        <field-group label="Datos de contacto" icon="contact">
+          <field name="contacto_nombre" component="Input" type="text"
+                 label="Nombre del contacto"
+                 placeholder="Ej: Juan Pérez"
+                 required="false" max="80"/>
+
+          <field name="contacto_telefono" component="Input" type="tel"
+                 label="Teléfono"
+                 placeholder="Ej: 999-888-777"
+                 required="false"
+                 inputmode="tel"
+                 max="15"/>
+
+          <field name="contacto_email" component="Input" type="email"
+                 label="Email"
+                 placeholder="Ej: juan@empresa.com"
+                 required="false"
+                 max="100"
+                 validate-on="blur"
+                 validation="email-format"
+                 error-message="Email inválido."/>
+        </field-group>
+
+        <field name="direccion" component="Input" type="text"
+               label="Dirección"
+               placeholder="Ej: Av. Grau 245, Lima"
+               required="false" max="200"/>
+
+        <field-group label="Condiciones comerciales" icon="handshake">
+          <field name="condicion_pago" component="Select"
+                 label="Condición de pago"
+                 required="false"
+                 default="contado"
+                 options="contado|credito_7d|credito_15d|credito_30d|credito_60d"
+                 option-labels="Contado|Crédito 7 días|Crédito 15 días|Crédito 30 días|Crédito 60 días"/>
+
+          <field name="dias_entrega" component="Input" type="number"
+                 label="Días de entrega"
+                 placeholder="Ej: 3"
+                 required="false"
+                 min="0"
+                 inputmode="numeric"
+                 suffix="días hábiles"
+                 hint="¿Cuántos días hábiles tarda en entregar desde que le pides?"/>
+        </field-group>
+
+        <field name="notas" component="Textarea"
+               label="Notas"
+               placeholder="Ej: Descuento 5% por pedidos mayores a 100 sacos. Solo entrega lunes a viernes."
+               required="false"
+               max="500"
+               rows="3"/>
+      </form-fields>
+    </view>
+
+    <!-- VISTA C: Selector de proveedor dentro del formulario de producto -->
+    <view id="form-producto-proveedor" layout="form-section">
+      <section-header icon="truck" title="Proveedor" subtitle="¿Quién te suministra este producto?"/>
+
+      <form-fields>
+        <field name="proveedor_preferido_id" component="ProveedorSelect"
+               label="Proveedor preferido"
+               required="false"
+               placeholder="Selecciona un proveedor (opcional)"
+               options-from="Proveedor.where(estado='activo')"
+               option-label="nombre"
+               option-value="id"
+               hint="El proveedor al que llamas primero para reponer este producto."
+               footer-action="+ Nuevo proveedor" footer-action-opens="modal-nuevo-proveedor"
+               show-detail-on-select="true">
+          <on-select-show>
+            Mini card con: nombre, contacto_telefono, condicion_pago badge, dias_entrega.
+            Link "Ver proveedor completo" → navega a detalle de proveedor.
+          </on-select-show>
+        </field>
+      </form-fields>
+    </view>
+
+  </ui-spec>
+
+  <design-system-checklist>
+    <check ref="DS-003">RUC en tabla usa font-mono. días_entrega usa font-mono.</check>
+    <check ref="DS-004">Gap entre field-groups: var(--space-6) = 24px. Gap entre campos dentro de group: var(--space-4) = 16px.</check>
+    <check ref="DS-005">Inputs y selects min-height: 44px. Botón "Nuevo proveedor" min-height: 44px.</check>
+    <check ref="DS-006">Icono "truck" para proveedores en sidebar y topbar. "contact" para sección de contacto. "handshake" para condiciones comerciales.</check>
+    <check ref="DS-007">DataTable del DS para lista desktop. No crear tablas HTML crudas.</check>
+    <check ref="DS-009">EmptyState con los 4 elementos obligatorios.</check>
+    <check ref="DS-010">Input de RUC con inputmode="numeric". Teléfono con inputmode="tel".</check>
+  </design-system-checklist>
+
+  <copy>
+    <text id="toast-proveedor-saved">Proveedor guardado.</text>
+    <text id="toast-proveedor-updated">Proveedor actualizado.</text>
+    <text id="error-ruc-format">El RUC debe tener exactamente 11 dígitos numéricos.</text>
+    <text id="error-email-format">Email inválido.</text>
+    <text id="confirm-inactivar-title">¿Inactivar este proveedor?</text>
+    <text id="confirm-inactivar-body">El proveedor ya no aparecerá en las listas de selección. Los productos asociados conservarán su referencia.</text>
+    <text id="confirm-inactivar-cta">Sí, inactivar</text>
+    <text id="badge-contado">Contado</text>
+    <text id="badge-credito-7">Crédito 7d</text>
+    <text id="badge-credito-15">Crédito 15d</text>
+    <text id="badge-credito-30">Crédito 30d</text>
+    <text id="badge-credito-60">Crédito 60d</text>
+  </copy>
+
+  <gates>
+    <gate id="G1-4-C1" type="contract" blocker="true">
+      <criterion>La lista de proveedores muestra los 5 del seed data al cargar por primera vez.</criterion>
+      <how-to-verify>eval_js: JSON.parse(localStorage.getItem('inv_proveedores')).length === 5</how-to-verify>
+    </gate>
+    <gate id="G1-4-C2" type="contract" blocker="true">
+      <criterion>Validación RUC: solo 11 dígitos numéricos. Letras o longitud distinta produce error inline.</criterion>
+      <how-to-verify>Escribir "2051234" (7 dígitos) y salir del campo → error visible.</how-to-verify>
+    </gate>
+    <gate id="G1-4-C3" type="contract" blocker="true">
+      <criterion>No se puede eliminar un proveedor con productos asociados. Solo inactivar.</criterion>
+      <how-to-verify>Intentar eliminar "prov_001" (tiene productos) → botón eliminar no existe o acción bloqueada con mensaje.</how-to-verify>
+    </gate>
+    <gate id="G1-4-V1" type="visual" blocker="true">
+      <criterion>El badge de condicion_pago tiene el color correcto según la escala definida (contado=neutral, créditos=info o warning).</criterion>
+      <how-to-verify>screenshot de la lista de proveedores.</how-to-verify>
+    </gate>
+    <gate id="G1-4-U1" type="ux" blocker="true">
+      <criterion>Al seleccionar un proveedor en el formulario de producto, aparece su mini-card con teléfono y condición de pago.</criterion>
+      <how-to-verify>En form de producto, seleccionar proveedor → mini-card debe aparecer debajo del select.</how-to-verify>
+    </gate>
+    <gate id="G1-4-U2" type="ux" blocker="true">
+      <criterion>El footer-action "+ Nuevo proveedor" dentro del select de producto abre un modal (no navega fuera del formulario).</criterion>
+      <how-to-verify>Hacer click en "+ Nuevo proveedor" → modal aparece sin perder el formulario de producto.</how-to-verify>
+    </gate>
+    <gate id="G1-4-S1" type="state" blocker="true">
+      <criterion>Crear proveedor desde el modal del formulario de producto → el nuevo proveedor aparece inmediatamente en el select sin recargar la página.</criterion>
+      <how-to-verify>Crear proveedor desde modal → el select de proveedor en el form se actualiza y pre-selecciona el nuevo.</how-to-verify>
+    </gate>
+    <gate id="G1-4-R1" type="responsive" blocker="false">
+      <criterion>En mobile, la lista de proveedores usa cards apiladas con la info clave (nombre, teléfono, condición, estado).</criterion>
+      <how-to-verify>screenshot en 375px de la lista de proveedores.</how-to-verify>
+    </gate>
+  </gates>
+
+</artifact>

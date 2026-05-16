@@ -1,0 +1,74 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "ui": "tui",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "!**/*.test.ts",
+        "!**/*.test.tsx",
+        "!**/*.spec.ts",
+        "!**/*.spec.tsx"
+      ],
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**",
+        "dist/**",
+        "storybook-static/**"
+      ]
+    },
+    "dev": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "persistent": true
+    },
+    "typecheck": {
+      "dependsOn": ["^build"],
+      "inputs": ["**/*.ts", "**/*.tsx", "tsconfig*.json"],
+      "outputs": ["tsconfig.tsbuildinfo"]
+    },
+    "lint": {
+      "inputs": [
+        "**/*.ts",
+        "**/*.tsx",
+        "**/*.js",
+        "**/*.jsx",
+        "eslint.config.*"
+      ],
+      "outputs": []
+    },
+    "test": {
+      "dependsOn": ["typecheck"],
+      "inputs": [
+        "**/*.ts",
+        "**/*.tsx",
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "vitest.config.*"
+      ],
+      "outputs": ["coverage/**"]
+    },
+    "test:e2e": {
+      "dependsOn": ["build"],
+      "inputs": ["**/*.ts", "e2e/**", "playwright.config.*"],
+      "outputs": ["playwright-report/**", "test-results/**"],
+      "cache": false
+    },
+    "storybook": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "persistent": true
+    },
+    "storybook:build": {
+      "dependsOn": ["^build"],
+      "inputs": ["**/*.ts", "**/*.tsx", "**/*.stories.*", ".storybook/**"],
+      "outputs": ["storybook-static/**"]
+    },
+    "size-limit": {
+      "dependsOn": ["build"],
+      "inputs": ["dist/**", ".size-limit.*"],
+      "outputs": []
+    }
+  }
+}
