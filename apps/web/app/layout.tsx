@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { AppProviders } from './_providers'
+import '@surte/design-system/styles'
 import './globals.css'
 
 export const metadata: Metadata = {

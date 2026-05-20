@@ -1,0 +1,10 @@
+// @surte/design-system — components barrel
+export { Button, type ButtonProps, type ButtonVariant, type ButtonSize } from './Button.js'
+export { Card, type CardProps, type CardVariant } from './Card.js'
+export { Badge, type BadgeProps, type BadgeTone } from './Badge.js'
+export { Alert, type AlertProps, type AlertTone } from './Alert.js'
+export { Input, Field, type InputProps, type FieldProps } from './Input.js'
+export { KpiCard, type KpiCardProps, type KpiColor } from './KpiCard.js'
+export { DataTable, type DataTableProps, type DataTableColumn } from './DataTable.js'
+export { ListItem, type ListItemProps } from './ListItem.js'
+export { Stack, Row, Spacer, Divider, type StackProps, type RowProps } from './layout.js'

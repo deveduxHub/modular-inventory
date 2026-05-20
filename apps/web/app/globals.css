@@ -1,53 +1,10 @@
+/*
+ * apps/web — globals.css
+ *
+ * @tailwind directives for this app.
+ * Design-system CSS is imported as a JS side-effect in layout.tsx.
+ */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-:root {
-  --surte-color-primary: #4F46E5;
-  --surte-color-primary-hover: #4338CA;
-  --surte-color-bg-base: #ffffff;
-  --surte-color-bg-surface: #F9FAFB;
-  --surte-color-bg-elevated: #ffffff;
-  --surte-color-text-primary: #111827;
-  --surte-color-text-secondary: #6B7280;
-  --surte-color-text-disabled: #9CA3AF;
-  --surte-color-border: #E5E7EB;
-  --surte-color-border-strong: #9CA3AF;
-  --surte-color-danger: #DC2626;
-  --surte-color-success: #16A34A;
-  --surte-color-warning: #D97706;
-  --surte-radius-sm: 4px;
-  --surte-radius-md: 6px;
-  --surte-radius-lg: 8px;
-  --surte-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --surte-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --surte-font-sans: system-ui, -apple-system, sans-serif;
-  --surte-font-mono: ui-monospace, 'Cascadia Code', monospace;
-  --surte-font-size-xs: 0.75rem;
-  --surte-font-size-sm: 0.875rem;
-  --surte-font-size-base: 1rem;
-  --surte-font-size-lg: 1.125rem;
-  --surte-font-size-xl: 1.25rem;
-  --surte-font-size-2xl: 1.5rem;
-  --surte-font-size-3xl: 1.875rem;
-  --surte-font-weight-normal: 400;
-  --surte-font-weight-medium: 500;
-  --surte-font-weight-semibold: 600;
-  --surte-font-weight-bold: 700;
-  --surte-line-height-tight: 1.25;
-  --surte-line-height-normal: 1.5;
-  --surte-line-height-relaxed: 1.75;
-}
-
-.dark {
-  --surte-color-primary: #818CF8;
-  --surte-color-primary-hover: #6366F1;
-  --surte-color-bg-base: #030712;
-  --surte-color-bg-surface: #111827;
-  --surte-color-bg-elevated: #1F2937;
-  --surte-color-text-primary: #F9FAFB;
-  --surte-color-text-secondary: #9CA3AF;
-  --surte-color-text-disabled: #4B5563;
-  --surte-color-border: #374151;
-  --surte-color-border-strong: #6B7280;
-}
